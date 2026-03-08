@@ -81,12 +81,12 @@ export default function Home() {
           Пройди крізь час. Відчуй кожну епоху.
         </p>
 
-        <button
+      href="/home"
           className="hero-cta opacity-0 animate-fade-up mt-24"
           style={{ animationDelay: "1.7s" }}
         >
           Увійти
-        </button>
+        </a>
       </section>
 
       {/* Версія */}

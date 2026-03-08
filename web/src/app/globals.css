@@ -219,3 +219,62 @@ body {
 .animate-fade-up { animation: fadeUp 1s ease forwards; }
 .animate-fade-in { animation: fadeIn 1s ease forwards; }
 .animate-fade-scale { animation: fadeScale 1.2s ease forwards; }
+/* ===== NAV & CARDS ===== */
+.nav-link {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.3s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  color: var(--gold-light);
+}
+
+.header-btn {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  border: 1px solid var(--gold-dim);
+  padding: 10px 20px;
+  transition: all 0.4s;
+}
+
+.header-btn:hover {
+  border-color: var(--gold);
+  color: #fff;
+}
+
+.hero-cta-secondary {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  padding: 16px 32px;
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  transition: all 0.4s;
+}
+
+.hero-cta-secondary:hover {
+  border-color: var(--gold-dim);
+}
+
+.kaya-card {
+  padding: 32px;
+  border: 1px solid rgba(201, 169, 110, 0.1);
+  background: rgba(201, 169, 110, 0.02);
+  transition: all 0.5s;
+}
+
+.kaya-card:hover {
+  border-color: rgba(201, 169, 110, 0.3);
+  background: rgba(201, 169, 110, 0.04);
+}
