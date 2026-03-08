@@ -46,15 +46,16 @@ export default function HomePage() {
     <div className="max-w-[100vw] overflow-x-hidden">
       <div ref={starfieldRef} className="starfield" />
 
-{/* HEADER */}
+      {/* HEADER */}
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        style={{ top: "20px" }}
+        className={`fixed left-0 w-full z-50 transition-all duration-500 ${
           scrolled
             ? "bg-[rgba(10,10,12,0.85)] backdrop-blur-md border-b border-[rgba(201,169,110,0.1)]"
             : "bg-transparent"
         }`}
       >
-        <div className="w-full py-8 mt-4 grid grid-cols-3 items-center" style={{ paddingLeft: "80px", paddingRight: "80px" }}>
+        <div className="w-full grid grid-cols-3 items-center" style={{ paddingLeft: "80px", paddingRight: "80px", paddingTop: "16px", paddingBottom: "16px" }}>
           <a href="/home" className="font-serif text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
           </a>
@@ -72,7 +73,7 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section className="relative z-[2] min-h-screen flex items-center justify-center pt-24 pb-20 px-6">
+      <section className="relative z-[2] min-h-screen flex items-center justify-center pt-32 pb-20 px-6">
         <div className="max-w-[1100px] mx-auto w-full text-center">
           <p className="font-sans text-[0.72rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
             Освітня платформа
@@ -83,8 +84,8 @@ export default function HomePage() {
           <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 mx-auto max-w-[580px]">
             KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
           </p>
-          <div className="flex flex-wrap gap-5 items-center justify-center">
-            <button className="hero-cta">Почати навчання</button>
+          <div className="inline-flex gap-5 items-center justify-center">
+            <button className="hero-cta" style={{ marginTop: 0 }}>Почати навчання</button>
             <a href="#programs" className="hero-cta-secondary">Переглянути програми</a>
           </div>
         </div>
@@ -109,7 +110,7 @@ export default function HomePage() {
               { icon: "◎", title: "Просторова навігація", desc: "Теми відкриваються як пов'язаний інтелектуальний простір, а не сухий список." },
               { icon: "◇", title: "Персональний шлях", desc: "Платформа адаптується під рівень, темп і роль кожного користувача." },
             ].map((card, i) => (
-              <div key={i} className="kaya-card group p-7">
+              <div key={i} className="kaya-card group p-7 flex flex-col min-h-[220px]">
                 <div className="text-xl mb-4 opacity-50 group-hover:opacity-80 transition-opacity">{card.icon}</div>
                 <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-3">{card.title}</h3>
                 <p className="font-sans text-[0.82rem] font-light leading-[1.7] text-[var(--text-dim)]">{card.desc}</p>
@@ -133,7 +134,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {programs.map((program, i) => (
-              <div key={i} className="kaya-card group cursor-pointer p-7 flex flex-col justify-between min-h-[200px]">
+              <div key={i} className="kaya-card group cursor-pointer p-7 flex flex-col justify-between min-h-[220px]">
                 <div>
                   <h3 className="font-serif text-[1.25rem] text-[var(--gold-light)] mb-3">
                     {program.title}
