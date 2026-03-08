@@ -43,7 +43,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div>
+    <div className="max-w-[100vw] overflow-x-hidden">
       <div ref={starfieldRef} className="starfield" />
 
       {/* HEADER */}
@@ -54,7 +54,7 @@ export default function HomePage() {
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto px-8 py-5 flex items-center justify-between">
+        <div className="max-w-[1100px] mx-auto px-6 py-5 flex items-center justify-between">
           <a href="/home" className="font-serif text-2xl tracking-[0.15em] text-[var(--text)]">
             KAYA
           </a>
@@ -72,115 +72,81 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section className="relative z-[2] min-h-screen flex items-center pt-32 pb-20 px-8 lg:px-16">
-        <div className="max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="max-w-[600px]">
-            <p className="font-sans text-[0.7rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
-              Освітня платформа
-            </p>
-            <h1 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] font-light leading-[1.15] text-[var(--text)] mb-8">
-              Освітній простір, де історія стає маршрутом.
-            </h1>
-            <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-12 max-w-[520px]">
-              KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
-            </p>
-            <div className="flex flex-wrap gap-4 items-center">
-              <button className="hero-cta">Почати навчання</button>
-              <a href="#programs" className="hero-cta-secondary">Переглянути програми</a>
-            </div>
-          </div>
-
-          <div className="hidden lg:flex items-center justify-center">
-            <div className="w-full max-w-[500px] aspect-[4/3] rounded-sm border border-[rgba(201,169,110,0.15)] bg-[rgba(201,169,110,0.02)] flex flex-col items-center justify-center gap-6 p-8">
-              <div className="grid grid-cols-3 gap-3 w-full max-w-[320px]">
-                <div className="aspect-square border border-[rgba(201,169,110,0.1)] bg-[rgba(201,169,110,0.03)] rounded-sm" />
-                <div className="aspect-square border border-[rgba(201,169,110,0.1)] bg-[rgba(201,169,110,0.03)] rounded-sm" />
-                <div className="aspect-square border border-[rgba(201,169,110,0.1)] bg-[rgba(201,169,110,0.03)] rounded-sm" />
-                <div className="aspect-square border border-[rgba(201,169,110,0.1)] bg-[rgba(201,169,110,0.03)] rounded-sm" />
-                <div className="aspect-square border border-[rgba(201,169,110,0.15)] bg-[rgba(201,169,110,0.06)] rounded-sm flex items-center justify-center">
-                  <span className="text-[var(--gold-dim)] text-lg">◈</span>
-                </div>
-                <div className="aspect-square border border-[rgba(201,169,110,0.1)] bg-[rgba(201,169,110,0.03)] rounded-sm" />
-              </div>
-              <p className="font-sans text-[0.65rem] tracking-[0.2em] uppercase text-[var(--text-dim)]">
-                Навчальний простір KAYA
-              </p>
-            </div>
+      <section className="relative z-[2] min-h-screen flex items-center justify-center pt-24 pb-20 px-6">
+        <div className="max-w-[1100px] mx-auto w-full text-center">
+          <p className="font-sans text-[0.72rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
+            Освітня платформа
+          </p>
+          <h1 className="font-serif text-[clamp(2.8rem,5.5vw,5rem)] font-light leading-[1.15] text-[var(--text)] mb-8 mx-auto max-w-[800px]">
+            Освітній простір, де історія стає маршрутом.
+          </h1>
+          <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 mx-auto max-w-[580px]">
+            KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
+          </p>
+          <div className="flex flex-wrap gap-5 items-center justify-center">
+            <button className="hero-cta">Почати навчання</button>
+            <a href="#programs" className="hero-cta-secondary">Переглянути програми</a>
           </div>
         </div>
       </section>
 
       {/* ЩО ТАКЕ KAYA */}
-      <section className="relative z-[2] py-32 px-8">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-20">
-            <p className="font-sans text-[0.68rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
+      <section className="relative z-[2] py-28 px-6">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-16">
+            <p className="font-sans text-[0.7rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
               Про платформу
             </p>
-            <h2 className="font-serif text-[clamp(1.8rem,3.5vw,3rem)] font-light text-[var(--text)]">
+            <h2 className="font-serif text-[clamp(2rem,4vw,3.2rem)] font-light text-[var(--text)]">
               Що таке KAYA?
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="kaya-card group">
-              <div className="text-2xl mb-5 opacity-50 group-hover:opacity-80 transition-opacity">◈</div>
-              <h3 className="font-serif text-[1.15rem] text-[var(--gold-light)] mb-3">Структуровані програми</h3>
-              <p className="font-sans text-[0.8rem] font-light leading-[1.7] text-[var(--text-dim)]">
-                Навчання не фрагментами, а цілісними маршрутами від початку до результату.
-              </p>
-            </div>
-            <div className="kaya-card group">
-              <div className="text-2xl mb-5 opacity-50 group-hover:opacity-80 transition-opacity">◉</div>
-              <h3 className="font-serif text-[1.15rem] text-[var(--gold-light)] mb-3">Підготовка до результату</h3>
-              <p className="font-sans text-[0.8rem] font-light leading-[1.7] text-[var(--text-dim)]">
-                НМТ, іспити, діагностика, контроль прогресу — все в одному просторі.
-              </p>
-            </div>
-            <div className="kaya-card group">
-              <div className="text-2xl mb-5 opacity-50 group-hover:opacity-80 transition-opacity">◎</div>
-              <h3 className="font-serif text-[1.15rem] text-[var(--gold-light)] mb-3">Просторова навігація</h3>
-              <p className="font-sans text-[0.8rem] font-light leading-[1.7] text-[var(--text-dim)]">
-                {"Теми відкриваються як пов'язаний інтелектуальний простір, а не сухий список."}
-              </p>
-            </div>
-            <div className="kaya-card group">
-              <div className="text-2xl mb-5 opacity-50 group-hover:opacity-80 transition-opacity">◇</div>
-              <h3 className="font-serif text-[1.15rem] text-[var(--gold-light)] mb-3">Персональний шлях</h3>
-              <p className="font-sans text-[0.8rem] font-light leading-[1.7] text-[var(--text-dim)]">
-                Платформа адаптується під рівень, темп і роль кожного користувача.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: "◈", title: "Структуровані програми", desc: "Навчання не фрагментами, а цілісними маршрутами від початку до результату." },
+              { icon: "◉", title: "Підготовка до результату", desc: "НМТ, іспити, діагностика, контроль прогресу — все в одному просторі." },
+              { icon: "◎", title: "Просторова навігація", desc: "Теми відкриваються як пов'язаний інтелектуальний простір, а не сухий список." },
+              { icon: "◇", title: "Персональний шлях", desc: "Платформа адаптується під рівень, темп і роль кожного користувача." },
+            ].map((card, i) => (
+              <div key={i} className="kaya-card group p-7">
+                <div className="text-xl mb-4 opacity-50 group-hover:opacity-80 transition-opacity">{card.icon}</div>
+                <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-3">{card.title}</h3>
+                <p className="font-sans text-[0.82rem] font-light leading-[1.7] text-[var(--text-dim)]">{card.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ПРОГРАМИ */}
-      <section id="programs" className="relative z-[2] py-32 px-8">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-20">
-            <p className="font-sans text-[0.68rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
+      <section id="programs" className="relative z-[2] py-28 px-6">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-16">
+            <p className="font-sans text-[0.7rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
               Напрями навчання
             </p>
-            <h2 className="font-serif text-[clamp(1.8rem,3.5vw,3rem)] font-light text-[var(--text)]">
+            <h2 className="font-serif text-[clamp(2rem,4vw,3.2rem)] font-light text-[var(--text)]">
               Програми KAYA
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {programs.map((program, i) => (
-              <div key={i} className="kaya-card group cursor-pointer">
-                <h3 className="font-serif text-[1.3rem] text-[var(--gold-light)] mb-3">
-                  {program.title}
-                </h3>
-                <p className="font-sans text-[0.8rem] font-light leading-[1.7] text-[var(--text-dim)] mb-6">
-                  {program.desc}
-                </p>
+              <div key={i} className="kaya-card group cursor-pointer p-7 flex flex-col justify-between min-h-[200px]">
+                <div>
+                  <h3 className="font-serif text-[1.25rem] text-[var(--gold-light)] mb-3">
+                    {program.title}
+                  </h3>
+                  <p className="font-sans text-[0.82rem] font-light leading-[1.7] text-[var(--text-dim)] mb-6">
+                    {program.desc}
+                  </p>
+                </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-sans text-[0.68rem] tracking-[0.1em] text-[var(--text-dim)]">
+                  <span className="font-sans text-[0.7rem] tracking-[0.1em] text-[var(--text-dim)]">
                     {program.modules} модулів · {program.level}
                   </span>
-                  <span className="font-sans text-[0.68rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] group-hover:text-[var(--gold-light)] transition-colors">
+                  <span className="font-sans text-[0.7rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] group-hover:text-[var(--gold-light)] transition-colors">
                     Детальніше →
                   </span>
                 </div>
@@ -191,8 +157,8 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="relative z-[2] py-16 px-8 border-t border-[rgba(201,169,110,0.08)]">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+      <footer className="relative z-[2] py-16 px-6 border-t border-[rgba(201,169,110,0.08)]">
+        <div className="max-w-[1100px] mx-auto flex items-center justify-between">
           <span className="font-serif text-lg tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
           <span className="font-sans text-[0.65rem] tracking-[0.15em] text-[var(--text-dim)]">
             © 2026 KAYA Learning Management System
