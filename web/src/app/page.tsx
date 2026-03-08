@@ -29,11 +29,9 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      {/* Зоряне небо */}
+    <div>
       <div ref={starfieldRef} className="starfield" />
 
-      {/* Кутові рамки */}
       <div className="fixed inset-0 z-[1] pointer-events-none">
         <div className="corner corner--tl" />
         <div className="corner corner--tr" />
@@ -41,13 +39,9 @@ export default function Home() {
         <div className="corner corner--br" />
       </div>
 
-      {/* Горизонт */}
       <div className="horizon-glow" />
-      <div className="horizon-line" />
 
-      {/* Головний екран */}
       <section className="hero">
-        {/* Декоративна точка */}
         <div
           className="w-3 h-3 rounded-full border border-[var(--gold-dim)] relative mb-28 opacity-0 animate-fade-down"
           style={{ animationDelay: "0.3s" }}
@@ -81,15 +75,11 @@ export default function Home() {
           Пройди крізь час. Відчуй кожну епоху.
         </p>
 
-      href="/home"
-          className="hero-cta opacity-0 animate-fade-up mt-24"
-          style={{ animationDelay: "1.7s" }}
-        >
+        <a href="/home" className="hero-cta opacity-0 animate-fade-up" style={{ animationDelay: "1.7s" }}>
           Увійти
         </a>
       </section>
 
-      {/* Версія */}
       <div className="fixed bottom-0 right-0 z-10 px-10 pb-7 pointer-events-none">
         <span
           className="font-sans text-[0.58rem] tracking-[0.15em] text-[var(--gold-dim)] opacity-0 animate-fade-in"
@@ -98,6 +88,6 @@ export default function Home() {
           v1.0 · 2026
         </span>
       </div>
-    </>
+    </div>
   );
 }
