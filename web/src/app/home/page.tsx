@@ -46,7 +46,7 @@ export default function HomePage() {
     <div className="max-w-[100vw] overflow-x-hidden">
       <div ref={starfieldRef} className="starfield" />
 
-      {/* HEADER */}
+{/* HEADER */}
       <header
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
           scrolled
@@ -54,19 +54,19 @@ export default function HomePage() {
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-[1100px] mx-auto px-6 py-5 flex items-center justify-between">
-          <a href="/home" className="font-serif text-2xl tracking-[0.15em] text-[var(--text)]">
+        <div className="w-full px-12 py-6 grid grid-cols-3 items-center">
+          <a href="/home" className="font-serif text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
           </a>
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#programs" className="nav-link">Програми</a>
-            <a href="#space" className="nav-link">Простір</a>
-            <a href="#how" className="nav-link">Як це працює</a>
-            <a href="#faq" className="nav-link">FAQ</a>
+          <nav className="hidden md:flex items-center justify-center gap-10">
+            <a href="#programs" className="nav-link text-[0.8rem]">Програми</a>
+            <a href="#space" className="nav-link text-[0.8rem]">Простір</a>
+            <a href="#how" className="nav-link text-[0.8rem]">Як це працює</a>
+            <a href="#faq" className="nav-link text-[0.8rem]">FAQ</a>
           </nav>
-          <div className="flex items-center gap-4">
-            <button className="nav-link">UA / EN</button>
-            <a href="/" className="header-btn">Увійти</a>
+          <div className="flex items-center justify-end gap-5">
+            <button className="nav-link text-[0.8rem]">UA / EN</button>
+            <a href="/" className="header-btn text-[0.8rem]">Увійти</a>
           </div>
         </div>
       </header>
