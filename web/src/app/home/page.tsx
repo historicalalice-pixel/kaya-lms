@@ -72,7 +72,7 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section className="relative z-[2] min-h-screen flex items-center pt-32 pb-20 px-8">
+      <section className="relative z-[2] min-h-screen flex items-center pt-32 pb-20 px-8 lg:px-16">
         <div className="max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="max-w-[600px]">
             <p className="font-sans text-[0.7rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
