@@ -54,7 +54,7 @@ export default function HomePage() {
             : "bg-transparent"
         }`}
       >
-        <div className="w-full px-12 py-6 grid grid-cols-3 items-center">
+        <div className="w-full px-40 py-6 grid grid-cols-3 items-center">
           <a href="/home" className="font-serif text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
           </a>
