@@ -79,7 +79,7 @@ export default function HomePage() {
             Освітня платформа
           </p>
           <h1 className="font-serif text-[clamp(2.8rem,5.5vw,5rem)] font-light leading-[1.15] text-[var(--text)] mb-8 mx-auto max-w-[800px]">
-            Освітній простір, де історія стає маршрутом.
+            Простір, де історія набуває голосу.
           </h1>
           <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 mx-auto max-w-[580px]">
             KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
