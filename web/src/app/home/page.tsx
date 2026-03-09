@@ -63,33 +63,33 @@ export default function HomePage() {
             KAYA
           </a>
           <nav className="hidden md:flex items-center justify-center gap-10">
-            <a href="#programs" className="nav-link text-[0.8rem]">Програми</a>
-            <a href="#space" className="nav-link text-[0.8rem]">Простір</a>
-            <a href="#how" className="nav-link text-[0.8rem]">Як це працює</a>
-            <a href="#faq" className="nav-link text-[0.8rem]">FAQ</a>
+            <a href="#programs" className="nav-link text-[0.85rem]">Програми</a>
+            <a href="#space" className="nav-link text-[0.85rem]">Простір</a>
+            <a href="#how" className="nav-link text-[0.85rem]">Як це працює</a>
+            <a href="#faq" className="nav-link text-[0.85rem]">FAQ</a>
           </nav>
           <div className="flex items-center justify-end gap-5">
-            <button className="nav-link text-[0.7rem] md:text-[0.8rem] hidden sm:block">UA / EN</button>
-            <a href="/" className="header-btn text-[0.65rem] md:text-[0.8rem]">Увійти</a>
+            <button className="nav-link text-[0.75rem] md:text-[0.85rem] hidden sm:block">UA / EN</button>
+            <a href="/" className="header-btn text-[0.7rem] md:text-[0.85rem]">Увійти</a>
           </div>
         </div>
       </header>
 
       {/* HERO */}
       <section className="relative z-[2] min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-[700px] mx-auto w-full text-center">
-          <p className="font-sans text-[0.72rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-8">
+        <div className="max-w-[750px] mx-auto w-full text-center">
+          <p className="font-sans text-[0.8rem] tracking-[0.35em] uppercase text-[var(--gold-dim)]" style={{ marginBottom: "30px" }}>
             Освітня платформа
           </p>
-          <h1 className="font-serif text-[clamp(2.2rem,5.5vw,4.5rem)] font-light leading-[1.2] text-[var(--text)] mb-10">
+          <h1 className="font-serif text-[clamp(2.5rem,6vw,5rem)] font-light leading-[1.2] text-[var(--text)]" style={{ marginBottom: "60px" }}>
             Простір, де історія набуває голосу.
           </h1>
-          <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] text-center" style={{ marginBottom: "120px" }}>
+          <p className="font-sans text-[1.1rem] font-light leading-[1.8] text-[var(--text-dim)] text-center" style={{ marginBottom: "60px" }}>
             KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <button className="hero-cta" style={{ marginTop: 0 }}>Почати навчання</button>
-            <a href="#programs" className="hero-cta-secondary">Переглянути програми</a>
+            <button className="hero-cta" style={{ marginTop: 0, width: "250px" }}>Почати навчання</button>
+            <a href="#programs" className="hero-cta-secondary" style={{ width: "250px" }}>Переглянути програми</a>
           </div>
         </div>
       </section>
@@ -98,10 +98,10 @@ export default function HomePage() {
       <section className="relative z-[2] py-28 px-6">
         <div className="max-w-[1100px] mx-auto">
           <div className="text-center mb-16">
-            <p className="font-sans text-[0.7rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
+            <p className="font-sans text-[0.78rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
               Про платформу
             </p>
-            <h2 className="font-serif text-[clamp(2rem,4vw,3.2rem)] font-light text-[var(--text)]">
+            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,3.5rem)] font-light text-[var(--text)]">
               Що таке KAYA?
             </h2>
           </div>
@@ -115,8 +115,8 @@ export default function HomePage() {
             ].map((card, i) => (
               <div key={i} className="kaya-card group p-7 flex flex-col min-h-[220px]">
                 <div className="text-xl mb-4 opacity-50 group-hover:opacity-80 transition-opacity">{card.icon}</div>
-                <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-3">{card.title}</h3>
-                <p className="font-sans text-[0.82rem] font-light leading-[1.7] text-[var(--text-dim)]">{card.desc}</p>
+                <h3 className="font-serif text-[1.2rem] text-[var(--gold-light)] mb-3">{card.title}</h3>
+                <p className="font-sans text-[0.9rem] font-light leading-[1.7] text-[var(--text-dim)]">{card.desc}</p>
               </div>
             ))}
           </div>
@@ -127,10 +127,10 @@ export default function HomePage() {
       <section id="programs" className="relative z-[2] py-28 px-6">
         <div className="max-w-[1100px] mx-auto">
           <div className="text-center mb-16">
-            <p className="font-sans text-[0.7rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
+            <p className="font-sans text-[0.78rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
               Напрями навчання
             </p>
-            <h2 className="font-serif text-[clamp(2rem,4vw,3.2rem)] font-light text-[var(--text)]">
+            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,3.5rem)] font-light text-[var(--text)]">
               Програми KAYA
             </h2>
           </div>
@@ -139,18 +139,18 @@ export default function HomePage() {
             {programs.map((program, i) => (
               <div key={i} className="kaya-card group cursor-pointer p-7 flex flex-col justify-between min-h-[220px]">
                 <div>
-                  <h3 className="font-serif text-[1.25rem] text-[var(--gold-light)] mb-3">
+                  <h3 className="font-serif text-[1.35rem] text-[var(--gold-light)] mb-3">
                     {program.title}
                   </h3>
-                  <p className="font-sans text-[0.82rem] font-light leading-[1.7] text-[var(--text-dim)] mb-6">
+                  <p className="font-sans text-[0.9rem] font-light leading-[1.7] text-[var(--text-dim)] mb-6">
                     {program.desc}
                   </p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-sans text-[0.7rem] tracking-[0.1em] text-[var(--text-dim)]">
+                  <span className="font-sans text-[0.78rem] tracking-[0.1em] text-[var(--text-dim)]">
                     {program.modules} модулів · {program.level}
                   </span>
-                  <span className="font-sans text-[0.7rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] group-hover:text-[var(--gold-light)] transition-colors">
+                  <span className="font-sans text-[0.78rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] group-hover:text-[var(--gold-light)] transition-colors">
                     Детальніше →
                   </span>
                 </div>
@@ -163,8 +163,8 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="relative z-[2] py-16 px-6 border-t border-[rgba(201,169,110,0.08)]">
         <div className="max-w-[1100px] mx-auto flex items-center justify-between">
-          <span className="font-serif text-lg tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
-          <span className="font-sans text-[0.65rem] tracking-[0.15em] text-[var(--text-dim)]">
+          <span className="font-serif text-xl tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
+          <span className="font-sans text-[0.75rem] tracking-[0.15em] text-[var(--text-dim)]">
             © 2026 KAYA Learning Management System
           </span>
         </div>
