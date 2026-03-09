@@ -96,7 +96,7 @@ export default function HomePage() {
 
       {/* ЩО ТАКЕ KAYA */}
       <section className="relative z-[2] py-28 px-6">
-        <div className="max-w-[1100px] mx-auto">
+        <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-16">
             <p className="font-sans text-[0.78rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
               Про платформу
@@ -125,7 +125,7 @@ export default function HomePage() {
 
       {/* ПРОГРАМИ */}
       <section id="programs" className="relative z-[2] py-28 px-6">
-        <div className="max-w-[1100px] mx-auto">
+        <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-16">
             <p className="font-sans text-[0.78rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
               Напрями навчання
@@ -162,7 +162,7 @@ export default function HomePage() {
 
       {/* FOOTER */}
       <footer className="relative z-[2] py-16 px-6 border-t border-[rgba(201,169,110,0.08)]">
-        <div className="max-w-[1100px] mx-auto flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           <span className="font-serif text-xl tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
           <span className="font-sans text-[0.75rem] tracking-[0.15em] text-[var(--text-dim)]">
             © 2026 KAYA Learning Management System
