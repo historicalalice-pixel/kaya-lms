@@ -51,7 +51,7 @@ export default function HomePage() {
         style={{ top: "20px" }}
         className={`fixed left-0 w-full z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-[rgba(10,10,12,0.85)] backdrop-blur-md border-b border-[rgba(201,169,110,0.1)]"
+           ? "bg-[rgba(10,10,12,0.4)] backdrop-blur-sm border-b border-[rgba(201,169,110,0.05)]"
             : "bg-transparent"
         }`}
       >
