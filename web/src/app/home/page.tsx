@@ -55,8 +55,11 @@ export default function HomePage() {
             : "bg-transparent"
         }`}
       >
-        <div className="w-full grid grid-cols-3 items-center" style={{ paddingLeft: "80px", paddingRight: "80px", paddingTop: "16px", paddingBottom: "16px" }}>
-          <a href="/home" className="font-serif text-3xl tracking-[0.2em] text-[var(--text)]">
+        <div
+          className="w-full grid grid-cols-2 md:grid-cols-3 items-center"
+          style={{ paddingLeft: "clamp(20px, 5vw, 80px)", paddingRight: "clamp(20px, 5vw, 80px)", paddingTop: "16px", paddingBottom: "16px" }}
+        >
+          <a href="/home" className="font-serif text-2xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
           </a>
           <nav className="hidden md:flex items-center justify-center gap-10">
@@ -66,25 +69,25 @@ export default function HomePage() {
             <a href="#faq" className="nav-link text-[0.8rem]">FAQ</a>
           </nav>
           <div className="flex items-center justify-end gap-5">
-            <button className="nav-link text-[0.8rem]">UA / EN</button>
-            <a href="/" className="header-btn text-[0.8rem]">Увійти</a>
+            <button className="nav-link text-[0.7rem] md:text-[0.8rem] hidden sm:block">UA / EN</button>
+            <a href="/" className="header-btn text-[0.65rem] md:text-[0.8rem]">Увійти</a>
           </div>
         </div>
       </header>
 
       {/* HERO */}
-      <section className="relative z-[2] min-h-screen flex items-center justify-center pt-32 pb-20 px-6">
-        <div className="max-w-[1100px] mx-auto w-full text-center">
-          <p className="font-sans text-[0.72rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
+      <section className="relative z-[2] min-h-screen flex items-center justify-center px-6">
+        <div className="max-w-[700px] mx-auto w-full text-center">
+          <p className="font-sans text-[0.72rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-8">
             Освітня платформа
           </p>
-          <h1 className="font-serif text-[clamp(2.8rem,5.5vw,5rem)] font-light leading-[1.15] text-[var(--text)] mb-8 mx-auto max-w-[800px]">
+          <h1 className="font-serif text-[clamp(2.2rem,5.5vw,4.5rem)] font-light leading-[1.2] text-[var(--text)] mb-10">
             Простір, де історія набуває голосу.
           </h1>
-          <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 mx-auto max-w-[580px]">
+          <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-16 mx-auto max-w-[500px]">
             KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
           </p>
-          <div className="inline-flex gap-5 items-center justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
             <button className="hero-cta" style={{ marginTop: 0 }}>Почати навчання</button>
             <a href="#programs" className="hero-cta-secondary">Переглянути програми</a>
           </div>
