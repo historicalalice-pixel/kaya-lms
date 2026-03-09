@@ -84,7 +84,7 @@ export default function HomePage() {
           <h1 className="font-serif text-[clamp(2.2rem,5.5vw,4.5rem)] font-light leading-[1.2] text-[var(--text)] mb-10">
             Простір, де історія набуває голосу.
           </h1>
-          <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-16 mx-auto max-w-[500px]">
+          <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-24 mx-auto max-w-[440px] text-center">
             KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
