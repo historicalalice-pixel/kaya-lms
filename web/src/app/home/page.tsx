@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 export default function HomePage() {
   const starfieldRef = useRef<HTMLDivElement>(null);
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const field = starfieldRef.current;
@@ -27,145 +27,102 @@ export default function HomePage() {
     }
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const programs = [
-    { title: "Історія України", desc: "Повний курс від давніх часів до сучасності", modules: 24, level: "Базовий — Поглиблений" },
-    { title: "Всесвітня історія", desc: "Ключові події та процеси світової цивілізації", modules: 20, level: "Базовий — Поглиблений" },
-    { title: "Підготовка до НМТ", desc: "Цілеспрямована підготовка з діагностикою та тестами", modules: 16, level: "Інтенсив" },
-    { title: "Тематичні інтенсиви", desc: "Глибоке занурення в окремі епохи та події", modules: 8, level: "Тематичний" },
-    { title: "Great War Protocol", desc: "Спецкурс: Перша та Друга світові війни", modules: 12, level: "Поглиблений" },
-    { title: "Спецмодулі", desc: "Авторські добірки, нестандартні теми та зв'язки", modules: 6, level: "Різний" },
-  ];
-
   return (
-    <div className="max-w-[100vw] overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-hidden">
       <div ref={starfieldRef} className="starfield" />
 
       {/* HEADER */}
-      <header
-        style={{ top: "20px" }}
-        className={`fixed left-0 w-full z-50 transition-all duration-500 ${
-          scrolled
-           ? "bg-[rgba(10,10,12,0.4)] backdrop-blur-sm border-b border-[rgba(201,169,110,0.05)]"
-            : "bg-transparent"
-        }`}
-      >
+      <header className="relative z-10 w-full">
         <div
-          className="w-full grid grid-cols-2 md:grid-cols-3 items-center"
-          style={{ paddingLeft: "clamp(20px, 5vw, 80px)", paddingRight: "clamp(20px, 5vw, 80px)", paddingTop: "16px", paddingBottom: "16px" }}
+          className="w-full flex items-center justify-between"
+          style={{ 
+            paddingLeft: "clamp(20px, 5vw, 80px)", 
+            paddingRight: "clamp(20px, 5vw, 80px)", 
+            paddingTop: "24px", 
+            paddingBottom: "24px" 
+          }}
         >
-          <a href="/home" className="font-serif text-2xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
+          <Link href="/" className="font-serif text-2xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
-          </a>
-          <nav className="hidden md:flex items-center justify-center gap-10">
-            <a href="#programs" className="nav-link text-[0.85rem]">Програми</a>
-            <a href="#space" className="nav-link text-[0.85rem]">Простір</a>
-            <a href="#how" className="nav-link text-[0.85rem]">Як це працює</a>
-            <a href="#faq" className="nav-link text-[0.85rem]">FAQ</a>
-          </nav>
-          <div className="flex items-center justify-end gap-5">
-            <button className="nav-link text-[0.75rem] md:text-[0.85rem] hidden sm:block">UA / EN</button>
-            <a href="/" className="header-btn text-[0.7rem] md:text-[0.85rem]">Увійти</a>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="nav-link text-[0.85rem]">
+              Увійти
+            </Link>
+            <Link href="/register" className="header-btn text-[0.85rem]">
+              Реєстрація
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative z-[2] min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-[750px] mx-auto w-full text-center">
-          <p className="font-sans text-[0.8rem] tracking-[0.35em] uppercase text-[var(--gold-dim)]" style={{ marginBottom: "30px" }}>
+      {/* MAIN CONTENT */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
+        <div className="max-w-[800px] w-full text-center">
+          
+          {/* HERO TEXT */}
+          <p className="font-sans text-[0.8rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
             Освітня платформа
           </p>
-          <h1 className="font-serif text-[clamp(2.5rem,6vw,5rem)] font-light leading-[1.2] text-[var(--text)]" style={{ marginBottom: "60px" }}>
+          <h1 className="font-serif text-[clamp(2.2rem,5vw,4rem)] font-light leading-[1.2] text-[var(--text)] mb-6">
             Простір, де історія набуває голосу.
           </h1>
-          <p className="font-sans text-[1.1rem] font-light leading-[1.8] text-[var(--text-dim)] text-center" style={{ marginBottom: "60px" }}>
-            KAYA поєднує структуроване навчання, підготовку до іспитів і просторову навігацію, щоб знання складались у цілісну картину.
+          <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-12 max-w-[600px] mx-auto">
+            KAYA — платформа для вивчення історії з репетиторами. 
+            Структуроване навчання, підготовка до НМТ, персональний підхід.
           </p>
+
+          {/* NAVIGATION CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+            <Link href="/courses" className="kaya-card group p-6 text-center hover:border-[var(--gold-light)] transition-all">
+              <div className="text-2xl mb-3 opacity-60 group-hover:opacity-100 transition-opacity">📚</div>
+              <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-2">Курси</h3>
+              <p className="font-sans text-[0.8rem] text-[var(--text-dim)]">Каталог програм навчання</p>
+            </Link>
+
+            <Link href="/about" className="kaya-card group p-6 text-center hover:border-[var(--gold-light)] transition-all">
+              <div className="text-2xl mb-3 opacity-60 group-hover:opacity-100 transition-opacity">✦</div>
+              <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-2">Про нас</h3>
+              <p className="font-sans text-[0.8rem] text-[var(--text-dim)]">Що таке KAYA</p>
+            </Link>
+
+            <Link href="/contacts" className="kaya-card group p-6 text-center hover:border-[var(--gold-light)] transition-all">
+              <div className="text-2xl mb-3 opacity-60 group-hover:opacity-100 transition-opacity">✉</div>
+              <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-2">Контакти</h3>
+              <p className="font-sans text-[0.8rem] text-[var(--text-dim)]">Зв'язатися з нами</p>
+            </Link>
+          </div>
+
+          {/* CTA BUTTONS */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <button className="hero-cta" style={{ marginTop: 0, width: "250px" }}>Почати навчання</button>
-            <a href="#programs" className="hero-cta-secondary" style={{ width: "250px" }}>Переглянути програми</a>
+            <Link href="/register?role=student" className="hero-cta w-full sm:w-[280px] text-center">
+              Я учень — Почати навчання
+            </Link>
+            <Link href="/register?role=tutor" className="hero-cta-secondary w-full sm:w-[280px] text-center">
+              Я репетитор — Приєднатися
+            </Link>
           </div>
+
         </div>
-      </section>
-
-      {/* ЩО ТАКЕ KAYA */}
-      <section className="relative z-[2] py-28 px-6">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-16">
-            <p className="font-sans text-[0.78rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
-              Про платформу
-            </p>
-            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,3.5rem)] font-light text-[var(--text)]">
-              Що таке KAYA?
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { icon: "◈", title: "Структуровані програми", desc: "Навчання не фрагментами, а цілісними маршрутами від початку до результату." },
-              { icon: "◉", title: "Підготовка до результату", desc: "НМТ, іспити, діагностика, контроль прогресу — все в одному просторі." },
-              { icon: "◎", title: "Просторова навігація", desc: "Теми відкриваються як пов'язаний інтелектуальний простір, а не сухий список." },
-              { icon: "◇", title: "Персональний шлях", desc: "Платформа адаптується під рівень, темп і роль кожного користувача." },
-            ].map((card, i) => (
-              <div key={i} className="kaya-card group p-7 flex flex-col min-h-[220px]">
-                <div className="text-xl mb-4 opacity-50 group-hover:opacity-80 transition-opacity">{card.icon}</div>
-                <h3 className="font-serif text-[1.2rem] text-[var(--gold-light)] mb-3">{card.title}</h3>
-                <p className="font-sans text-[0.9rem] font-light leading-[1.7] text-[var(--text-dim)]">{card.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ПРОГРАМИ */}
-      <section id="programs" className="relative z-[2] py-28 px-6">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-16">
-            <p className="font-sans text-[0.78rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-4">
-              Напрями навчання
-            </p>
-            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,3.5rem)] font-light text-[var(--text)]">
-              Програми KAYA
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {programs.map((program, i) => (
-              <div key={i} className="kaya-card group cursor-pointer p-7 flex flex-col justify-between min-h-[220px]">
-                <div>
-                  <h3 className="font-serif text-[1.35rem] text-[var(--gold-light)] mb-3">
-                    {program.title}
-                  </h3>
-                  <p className="font-sans text-[0.9rem] font-light leading-[1.7] text-[var(--text-dim)] mb-6">
-                    {program.desc}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-sans text-[0.78rem] tracking-[0.1em] text-[var(--text-dim)]">
-                    {program.modules} модулів · {program.level}
-                  </span>
-                  <span className="font-sans text-[0.78rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] group-hover:text-[var(--gold-light)] transition-colors">
-                    Детальніше →
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      </main>
 
       {/* FOOTER */}
-      <footer className="relative z-[2] py-16 px-6 border-t border-[rgba(201,169,110,0.08)]">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <span className="font-serif text-xl tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
-          <span className="font-sans text-[0.75rem] tracking-[0.15em] text-[var(--text-dim)]">
-            © 2026 KAYA Learning Management System
+      <footer className="relative z-10 py-6 px-6 border-t border-[rgba(201,169,110,0.08)]">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span className="font-serif text-lg tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
+          <div className="flex items-center gap-6">
+            <Link href="/about" className="font-sans text-[0.75rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
+              Про нас
+            </Link>
+            <Link href="/contacts" className="font-sans text-[0.75rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
+              Контакти
+            </Link>
+            <Link href="/privacy" className="font-sans text-[0.75rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
+              Конфіденційність
+            </Link>
+          </div>
+          <span className="font-sans text-[0.75rem] text-[var(--text-dim)]">
+            © 2026 KAYA LMS
           </span>
         </div>
       </footer>
