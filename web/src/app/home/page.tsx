@@ -137,7 +137,7 @@ export default function HomePage() {
             Простір, де історія набуває голосу.
           </h1>
 
-          <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 max-w-[760px] mx-auto">
+         <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 max-w-[620px] mx-auto text-center">
             KAYA — платформа для вивчення історії з репетиторами.
             Структуроване навчання, підготовка до НМТ, персональний підхід.
           </p>
