@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 export default function CoursesPage() {
@@ -10,6 +10,17 @@ export default function CoursesPage() {
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
   const scrollStartRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Визначаємо мобільний пристрій
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const field = starfieldRef.current;
@@ -32,7 +43,10 @@ export default function CoursesPage() {
     }
   }, []);
 
+  // Карусель тільки для десктопу
   useEffect(() => {
+    if (isMobile) return;
+    
     const track = trackRef.current;
     if (!track) return;
 
@@ -89,50 +103,17 @@ export default function CoursesPage() {
       track.style.cursor = 'grab';
     };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      isDraggingRef.current = true;
-      startXRef.current = e.touches[0].clientX;
-      scrollStartRef.current = positionRef.current;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isDraggingRef.current) return;
-      const diff = e.touches[0].clientX - startXRef.current;
-      positionRef.current = scrollStartRef.current + diff;
-      
-      if (positionRef.current <= -resetPoint) {
-        positionRef.current = 0;
-        scrollStartRef.current = -diff;
-      }
-      if (positionRef.current > 0) {
-        positionRef.current = -resetPoint;
-        scrollStartRef.current = -resetPoint - diff;
-      }
-      
-      track.style.transform = `translateX(${positionRef.current}px)`;
-    };
-
-    const handleTouchEnd = () => {
-      isDraggingRef.current = false;
-    };
-
     track.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-    track.addEventListener('touchstart', handleTouchStart);
-    track.addEventListener('touchmove', handleTouchMove);
-    track.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       cancelAnimationFrame(animationId);
       track.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
-      track.removeEventListener('touchstart', handleTouchStart);
-      track.removeEventListener('touchmove', handleTouchMove);
-      track.removeEventListener('touchend', handleTouchEnd);
     };
-  }, []);
+  }, [isMobile]);
 
   const programs = [
     { title: "Історія України", desc: "Повний курс від давніх часів до сучасності", modules: 24, level: "Базовий — Поглиблений" },
@@ -152,15 +133,15 @@ export default function CoursesPage() {
       {/* HEADER */}
       <header className="relative z-10 w-full border-b border-[rgba(201,169,110,0.08)]">
         <div
-          className="w-full flex items-center justify-between"
+          className="w-full flex items-center justify-between px-4 md:px-0"
           style={{ 
-            paddingLeft: "clamp(20px, 5vw, 80px)", 
-            paddingRight: "clamp(20px, 5vw, 80px)", 
-            paddingTop: "20px", 
-            paddingBottom: "20px" 
+            paddingLeft: "clamp(16px, 5vw, 80px)", 
+            paddingRight: "clamp(16px, 5vw, 80px)", 
+            paddingTop: "16px", 
+            paddingBottom: "16px" 
           }}
         >
-          <Link href="/home" className="font-serif text-2xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
+          <Link href="/home" className="font-serif text-xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
           </Link>
           <nav className="hidden md:flex items-center gap-8">
@@ -168,9 +149,9 @@ export default function CoursesPage() {
             <Link href="/about" className="nav-link text-[0.85rem]">Про нас</Link>
             <Link href="/contacts" className="nav-link text-[0.85rem]">Контакти</Link>
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="nav-link text-[0.85rem]">Увійти</Link>
-            <Link href="/register" className="header-btn text-[0.85rem]">Реєстрація</Link>
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link href="/login" className="nav-link text-[0.7rem] md:text-[0.85rem]">Увійти</Link>
+            <Link href="/register" className="header-btn text-[0.65rem] md:text-[0.85rem] px-3 md:px-5 py-2">Реєстрація</Link>
           </div>
         </div>
       </header>
@@ -179,44 +160,38 @@ export default function CoursesPage() {
       <main className="relative z-10 flex-1 flex flex-col">
         
         {/* PAGE HEADER */}
-        <div className="text-center px-6 pt-6">
+        <div className="text-center px-4 pt-6">
           <Link href="/home" className="inline-flex items-center gap-2 text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors mb-3">
             <span>←</span>
-            <span className="font-sans text-[0.85rem]">На головну</span>
+            <span className="font-sans text-[0.8rem] md:text-[0.85rem]">На головну</span>
           </Link>
-          <h1 className="font-serif text-[clamp(2.8rem,6vw,4.5rem)] font-light text-[var(--text)]">
+          <h1 className="font-serif text-[2rem] md:text-[clamp(2.8rem,6vw,4.5rem)] font-light text-[var(--text)]">
             Програми KAYA
           </h1>
         </div>
 
-        {/* INFINITE CAROUSEL */}
-        <div className="flex-1 flex items-center">
-          <div className="relative w-full overflow-hidden">
-            <div 
-              ref={trackRef}
-              className="flex gap-8 will-change-transform select-none"
-              style={{ paddingLeft: '60px', cursor: 'grab' }}
-            >
-              {duplicatedPrograms.map((program, i) => (
+        {/* MOBILE: Вертикальний список */}
+        {isMobile ? (
+          <div className="flex-1 px-4 py-8">
+            <div className="flex flex-col gap-4">
+              {programs.map((program, i) => (
                 <div 
                   key={i} 
-                  className="kaya-card group p-8 flex flex-col justify-between min-h-[300px] w-[380px] flex-shrink-0 hover:border-[var(--gold-light)] hover:scale-[1.02] transition-all duration-300"
+                  className="kaya-card p-5 flex flex-col"
                 >
-                  <div>
-                    <h3 className="font-serif text-[1.4rem] text-[var(--gold-light)] mb-4">
-                      {program.title}
-                    </h3>
-                    <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-8">
-                      {program.desc}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-sans text-[0.8rem] tracking-[0.1em] text-[var(--text-dim)]">
+                  <h3 className="font-serif text-[1.2rem] text-[var(--gold-light)] mb-2">
+                    {program.title}
+                  </h3>
+                  <p className="font-sans text-[0.85rem] font-light leading-[1.6] text-[var(--text-dim)] mb-4">
+                    {program.desc}
+                  </p>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="font-sans text-[0.7rem] tracking-[0.05em] text-[var(--text-dim)]">
                       {program.modules} модулів · {program.level}
                     </span>
                     <Link 
                       href={`/courses/${program.title.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="font-sans text-[0.8rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors"
+                      className="font-sans text-[0.7rem] tracking-[0.1em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors"
                     >
                       Детальніше →
                     </Link>
@@ -225,11 +200,49 @@ export default function CoursesPage() {
               ))}
             </div>
           </div>
-        </div>
+        ) : (
+          /* DESKTOP: Карусель */
+          <div className="flex-1 flex items-center">
+            <div className="relative w-full overflow-hidden">
+              <div 
+                ref={trackRef}
+                className="flex gap-8 will-change-transform select-none"
+                style={{ paddingLeft: '60px', cursor: 'grab' }}
+              >
+                {duplicatedPrograms.map((program, i) => (
+                  <div 
+                    key={i} 
+                    className="kaya-card group p-8 flex flex-col justify-between min-h-[300px] w-[380px] flex-shrink-0 hover:border-[var(--gold-light)] hover:scale-[1.02] transition-all duration-300"
+                  >
+                    <div>
+                      <h3 className="font-serif text-[1.4rem] text-[var(--gold-light)] mb-4">
+                        {program.title}
+                      </h3>
+                      <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-8">
+                        {program.desc}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-sans text-[0.8rem] tracking-[0.1em] text-[var(--text-dim)]">
+                        {program.modules} модулів · {program.level}
+                      </span>
+                      <Link 
+                        href={`/courses/${program.title.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="font-sans text-[0.8rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors"
+                      >
+                        Детальніше →
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* CTA */}
-        <div className="text-center px-6 pb-8">
-          <Link href="/register" className="hero-cta inline-block">
+        {/* CTA - завжди внизу */}
+        <div className="text-center px-4 py-8">
+          <Link href="/register" className="hero-cta inline-block text-[0.8rem] md:text-[1rem]">
             Почати навчання
           </Link>
         </div>
@@ -237,10 +250,10 @@ export default function CoursesPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className="relative z-10 py-6 px-6 border-t border-[rgba(201,169,110,0.08)]">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-serif text-lg tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
-          <span className="font-sans text-[0.75rem] text-[var(--text-dim)]">
+      <footer className="relative z-10 py-4 md:py-6 px-4 md:px-6 border-t border-[rgba(201,169,110,0.08)]">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 md:gap-4">
+          <span className="font-serif text-base md:text-lg tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
+          <span className="font-sans text-[0.65rem] md:text-[0.75rem] text-[var(--text-dim)]">
             © 2026 KAYA LMS
           </span>
         </div>
