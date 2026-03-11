@@ -76,7 +76,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleOAuthLogin = async (provider: "google" | "apple") => {
+  const handleOAuthLogin = async (provider: "google") => {
     try {
       setLoading(true);
       setErrorMessage("");
@@ -98,7 +98,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("OAUTH LOGIN ERROR:", error);
-      setErrorMessage("Не вдалося виконати вхід через провайдера.");
+      setErrorMessage("Не вдалося виконати вхід через Google.");
     } finally {
       setLoading(false);
     }
@@ -268,25 +268,6 @@ export default function LoginPage() {
                     />
                   </svg>
                   <span>Увійти через Google</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleOAuthLogin("apple")}
-                disabled={loading}
-                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)] disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                <span className="flex items-center justify-center gap-3.5">
-                  <svg
-                    className="w-5 h-5 shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M16.365 1.43c0 1.14-.415 2.216-1.096 3.03-.82.98-2.16 1.73-3.33 1.63-.15-1.09.43-2.25 1.08-3 .72-.83 1.95-1.47 2.96-1.66.29 0 .386-.01.386 0Zm3.345 16.12c-.53 1.2-.78 1.73-1.46 2.78-.95 1.47-2.29 3.3-3.95 3.31-1.48.02-1.86-.96-3.87-.95-2.01.01-2.43.97-3.91.95-1.66-.01-2.93-1.66-3.88-3.12C-.03 15.52-.42 9.63 2.45 7.19c1.4-1.2 3.61-1.92 5.69-1.92 2.12 0 3.46.96 5.22.96 1.7 0 2.73-.96 5.2-.96 1.85 0 3.81 1 5.2 2.72-4.58 2.51-3.84 9.03-.06 11.56Z" />
-                  </svg>
-                  <span>Увійти через Apple</span>
                 </span>
               </button>
             </div>
