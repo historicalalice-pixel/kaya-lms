@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import LogoutButton from "@/app/components/logout-button";
+import { createClient } from "@/lib/supabase/client";
 
 export default function HomePage() {
   const starfieldRef = useRef<HTMLDivElement>(null);
+
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const field = starfieldRef.current;
@@ -38,6 +42,35 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    const supabase = createClient();
+
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (!error && data.user) {
+        setUserEmail(data.user.email ?? null);
+      } else {
+        setUserEmail(null);
+      }
+
+      setAuthLoading(false);
+    };
+
+    loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
       <div ref={starfieldRef} className="starfield" />
@@ -61,7 +94,27 @@ export default function HomePage() {
           </Link>
 
           <div className="flex items-center gap-4">
-            <LogoutButton />
+            {authLoading ? (
+              <span className="font-sans text-[0.85rem] text-[var(--text-dim)]">
+                ...
+              </span>
+            ) : userEmail ? (
+              <>
+                <span className="hidden sm:inline font-sans text-[0.82rem] text-[var(--text-dim)] max-w-[220px] truncate">
+                  {userEmail}
+                </span>
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="nav-link text-[0.85rem]">
+                  Увійти
+                </Link>
+                <Link href="/register" className="header-btn text-[0.85rem]">
+                  Реєстрація
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -69,13 +122,14 @@ export default function HomePage() {
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="max-w-[800px] w-full text-center">
-          {/* HERO TEXT */}
           <p className="font-sans text-[0.8rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
             Освітня платформа
           </p>
+
           <h1 className="font-serif text-[clamp(2.2rem,5vw,4rem)] font-light leading-[1.2] text-[var(--text)] mb-6">
             Простір, де історія набуває голосу.
           </h1>
+
           <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-12 max-w-[600px] mx-auto">
             KAYA — платформа для вивчення історії з репетиторами.
             Структуроване навчання, підготовка до НМТ, персональний підхід.
