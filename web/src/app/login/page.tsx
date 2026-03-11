@@ -55,7 +55,7 @@ export default function LoginPage() {
 
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-8 md:px-16 lg:px-32 py-8">
-       <div className="w-full max-w-[700px] md:max-w-[800px]">
+       <div className="w-full" style={{ maxWidth: "750px" }}>
           
           {/* FORM HEADER */}
           <div className="text-center mb-10">
