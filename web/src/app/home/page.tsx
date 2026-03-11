@@ -72,7 +72,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden">
+    <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
       <div ref={starfieldRef} className="starfield" />
 
       {/* HEADER */}
@@ -80,37 +80,43 @@ export default function HomePage() {
         <div
           className="w-full flex items-center justify-between"
           style={{
-            paddingLeft: "clamp(20px, 5vw, 80px)",
-            paddingRight: "clamp(20px, 5vw, 80px)",
-            paddingTop: "24px",
-            paddingBottom: "24px",
+            paddingLeft: "clamp(28px, 7vw, 140px)",
+            paddingRight: "clamp(28px, 7vw, 140px)",
+            paddingTop: "28px",
+            paddingBottom: "20px",
           }}
         >
           <Link
             href="/"
-            className="font-serif text-2xl md:text-3xl tracking-[0.2em] text-[var(--text)]"
+            className="font-serif text-[2.3rem] md:text-[3rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300"
           >
             KAYA
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5 md:gap-6">
             {authLoading ? (
-              <span className="font-sans text-[0.85rem] text-[var(--text-dim)]">
+              <span className="font-sans text-[0.95rem] text-[var(--text-dim)]">
                 ...
               </span>
             ) : userEmail ? (
               <>
-                <span className="hidden sm:inline font-sans text-[0.82rem] text-[var(--text-dim)] max-w-[220px] truncate">
+                <span className="hidden md:inline font-sans text-[0.9rem] text-[var(--text-dim)] max-w-[260px] truncate">
                   {userEmail}
                 </span>
                 <LogoutButton />
               </>
             ) : (
               <>
-                <Link href="/login" className="nav-link text-[0.85rem]">
+                <Link
+                  href="/login"
+                  className="font-sans text-[0.95rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300"
+                >
                   Увійти
                 </Link>
-                <Link href="/register" className="header-btn text-[0.85rem]">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center min-h-[48px] px-6 md:px-7 border border-[rgba(201,169,110,0.55)] bg-[rgba(201,169,110,0.04)] font-sans text-[0.92rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.95)] hover:border-[rgba(227,196,136,0.9)] hover:bg-[rgba(201,169,110,0.08)] transition-all duration-300"
+                >
                   Реєстрація
                 </Link>
               </>
@@ -120,80 +126,72 @@ export default function HomePage() {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="max-w-[800px] w-full text-center">
-          <p className="font-sans text-[0.8rem] tracking-[0.35em] uppercase text-[var(--gold-dim)] mb-6">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-14 md:py-16">
+        <div className="max-w-[1180px] w-full text-center">
+          {/* HERO TEXT */}
+          <p className="font-sans text-[0.92rem] md:text-[1rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-7">
             Освітня платформа
           </p>
 
-          <h1 className="font-serif text-[clamp(2.2rem,5vw,4rem)] font-light leading-[1.2] text-[var(--text)] mb-6">
+          <h1 className="font-serif text-[clamp(3rem,7vw,6.2rem)] font-light leading-[1.08] text-[var(--text)] mb-8 max-w-[1100px] mx-auto">
             Простір, де історія набуває голосу.
           </h1>
 
-          <p className="font-sans text-[1rem] font-light leading-[1.8] text-[var(--text-dim)] mb-12 max-w-[600px] mx-auto">
+          <p className="font-sans text-[1.15rem] md:text-[1.35rem] font-light leading-[1.85] text-[var(--text-dim)] mb-14 max-w-[860px] mx-auto">
             KAYA — платформа для вивчення історії з репетиторами.
             Структуроване навчання, підготовка до НМТ, персональний підхід.
           </p>
 
           {/* NAVIGATION CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
             <Link
               href="/courses"
-              className="kaya-card group p-6 text-center hover:border-[var(--gold-light)] transition-all"
+              className="kaya-card group p-10 md:p-12 text-center hover:border-[var(--gold-light)] transition-all duration-300"
             >
-              <div className="text-2xl mb-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                📚
-              </div>
-              <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-2">
+              <h3 className="font-serif text-[1.55rem] md:text-[1.8rem] text-[var(--gold-light)] mb-4">
                 Курси
               </h3>
-              <p className="font-sans text-[0.8rem] text-[var(--text-dim)]">
+              <p className="font-sans text-[1rem] md:text-[1.08rem] leading-[1.8] text-[var(--text-dim)] max-w-[260px] mx-auto">
                 Каталог програм навчання
               </p>
             </Link>
 
             <Link
               href="/about"
-              className="kaya-card group p-6 text-center hover:border-[var(--gold-light)] transition-all"
+              className="kaya-card group p-10 md:p-12 text-center hover:border-[var(--gold-light)] transition-all duration-300"
             >
-              <div className="text-2xl mb-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                ✦
-              </div>
-              <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-2">
+              <h3 className="font-serif text-[1.55rem] md:text-[1.8rem] text-[var(--gold-light)] mb-4">
                 Про нас
               </h3>
-              <p className="font-sans text-[0.8rem] text-[var(--text-dim)]">
+              <p className="font-sans text-[1rem] md:text-[1.08rem] leading-[1.8] text-[var(--text-dim)] max-w-[260px] mx-auto">
                 Що таке KAYA
               </p>
             </Link>
 
             <Link
               href="/contacts"
-              className="kaya-card group p-6 text-center hover:border-[var(--gold-light)] transition-all"
+              className="kaya-card group p-10 md:p-12 text-center hover:border-[var(--gold-light)] transition-all duration-300"
             >
-              <div className="text-2xl mb-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                ✉
-              </div>
-              <h3 className="font-serif text-[1.1rem] text-[var(--gold-light)] mb-2">
+              <h3 className="font-serif text-[1.55rem] md:text-[1.8rem] text-[var(--gold-light)] mb-4">
                 Контакти
               </h3>
-              <p className="font-sans text-[0.8rem] text-[var(--text-dim)]">
+              <p className="font-sans text-[1rem] md:text-[1.08rem] leading-[1.8] text-[var(--text-dim)] max-w-[260px] mx-auto">
                 Зв'язатися з нами
               </p>
             </Link>
           </div>
 
           {/* CTA BUTTONS */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+          <div className="flex flex-col lg:flex-row gap-5 items-center justify-center">
             <Link
               href="/register?role=student"
-              className="hero-cta w-full sm:w-[280px] text-center"
+              className="hero-cta w-full lg:w-[360px] text-center text-[1rem] md:text-[1.04rem] min-h-[64px] flex items-center justify-center"
             >
               Я учень — Почати навчання
             </Link>
             <Link
               href="/register?role=tutor"
-              className="hero-cta-secondary w-full sm:w-[280px] text-center"
+              className="hero-cta-secondary w-full lg:w-[360px] text-center text-[1rem] md:text-[1.04rem] min-h-[64px] flex items-center justify-center"
             >
               Я репетитор — Приєднатися
             </Link>
@@ -204,30 +202,30 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="relative z-10 py-6 px-6 border-t border-[rgba(201,169,110,0.08)]">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-serif text-lg tracking-[0.15em] text-[var(--text-dim)]">
+          <span className="font-serif text-[1.25rem] tracking-[0.18em] text-[var(--text-dim)]">
             KAYA
           </span>
           <div className="flex items-center gap-6">
             <Link
               href="/about"
-              className="font-sans text-[0.75rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
+              className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
             >
               Про нас
             </Link>
             <Link
               href="/contacts"
-              className="font-sans text-[0.75rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
+              className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
             >
               Контакти
             </Link>
             <Link
               href="/privacy"
-              className="font-sans text-[0.75rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
+              className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
             >
               Конфіденційність
             </Link>
           </div>
-          <span className="font-sans text-[0.75rem] text-[var(--text-dim)]">
+          <span className="font-sans text-[0.82rem] text-[var(--text-dim)]">
             © 2026 KAYA LMS
           </span>
         </div>
