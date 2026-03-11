@@ -88,7 +88,7 @@ export default function HomePage() {
         >
           <Link
             href="/"
-            className="font-serif text-[2.3rem] md:text-[3rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300"
+            className="font-serif text-[2.15rem] md:text-[2.75rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300"
           >
             KAYA
           </Link>
@@ -109,13 +109,13 @@ export default function HomePage() {
               <>
                 <Link
                   href="/login"
-                  className="font-sans text-[0.95rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300"
+                  className="font-sans text-[0.92rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300"
                 >
                   Увійти
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center min-h-[48px] px-6 md:px-7 border border-[rgba(201,169,110,0.55)] bg-[rgba(201,169,110,0.04)] font-sans text-[0.92rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.95)] hover:border-[rgba(227,196,136,0.9)] hover:bg-[rgba(201,169,110,0.08)] transition-all duration-300"
+                  className="inline-flex items-center justify-center min-h-[48px] px-6 md:px-7 border border-[rgba(201,169,110,0.55)] bg-[rgba(201,169,110,0.04)] font-sans text-[0.9rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.95)] hover:border-[rgba(227,196,136,0.9)] hover:bg-[rgba(201,169,110,0.08)] transition-all duration-300"
                 >
                   Реєстрація
                 </Link>
@@ -126,18 +126,18 @@ export default function HomePage() {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-14 md:py-16">
-        <div className="max-w-[1180px] w-full text-center">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-14">
+        <div className="max-w-[980px] w-full mx-auto text-center">
           {/* HERO TEXT */}
-          <p className="font-sans text-[0.92rem] md:text-[1rem] tracking-[0.4em] uppercase text-[var(--gold-dim)] mb-7">
+          <p className="font-sans text-[0.9rem] md:text-[0.95rem] tracking-[0.38em] uppercase text-[var(--gold-dim)] mb-7">
             Освітня платформа
           </p>
 
-          <h1 className="font-serif text-[clamp(3rem,7vw,6.2rem)] font-light leading-[1.08] text-[var(--text)] mb-8 max-w-[1100px] mx-auto">
+          <h1 className="font-serif text-[clamp(2.6rem,5.4vw,4.9rem)] font-light leading-[1.12] text-[var(--text)] mb-8 max-w-[1000px] mx-auto">
             Простір, де історія набуває голосу.
           </h1>
 
-          <p className="font-sans text-[1.15rem] md:text-[1.35rem] font-light leading-[1.85] text-[var(--text-dim)] mb-14 max-w-[860px] mx-auto">
+          <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 max-w-[760px] mx-auto">
             KAYA — платформа для вивчення історії з репетиторами.
             Структуроване навчання, підготовка до НМТ, персональний підхід.
           </p>
@@ -146,36 +146,36 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
             <Link
               href="/courses"
-              className="kaya-card group p-10 md:p-12 text-center hover:border-[var(--gold-light)] transition-all duration-300"
+              className="kaya-card group p-8 md:p-10 text-center hover:border-[var(--gold-light)] transition-all duration-300"
             >
-              <h3 className="font-serif text-[1.55rem] md:text-[1.8rem] text-[var(--gold-light)] mb-4">
+              <h3 className="font-serif text-[1.35rem] md:text-[1.55rem] text-[var(--gold-light)] mb-4">
                 Курси
               </h3>
-              <p className="font-sans text-[1rem] md:text-[1.08rem] leading-[1.8] text-[var(--text-dim)] max-w-[260px] mx-auto">
+              <p className="font-sans text-[0.98rem] md:text-[1.02rem] leading-[1.8] text-[var(--text-dim)] max-w-[240px] mx-auto">
                 Каталог програм навчання
               </p>
             </Link>
 
             <Link
               href="/about"
-              className="kaya-card group p-10 md:p-12 text-center hover:border-[var(--gold-light)] transition-all duration-300"
+              className="kaya-card group p-8 md:p-10 text-center hover:border-[var(--gold-light)] transition-all duration-300"
             >
-              <h3 className="font-serif text-[1.55rem] md:text-[1.8rem] text-[var(--gold-light)] mb-4">
+              <h3 className="font-serif text-[1.35rem] md:text-[1.55rem] text-[var(--gold-light)] mb-4">
                 Про нас
               </h3>
-              <p className="font-sans text-[1rem] md:text-[1.08rem] leading-[1.8] text-[var(--text-dim)] max-w-[260px] mx-auto">
+              <p className="font-sans text-[0.98rem] md:text-[1.02rem] leading-[1.8] text-[var(--text-dim)] max-w-[240px] mx-auto">
                 Що таке KAYA
               </p>
             </Link>
 
             <Link
               href="/contacts"
-              className="kaya-card group p-10 md:p-12 text-center hover:border-[var(--gold-light)] transition-all duration-300"
+              className="kaya-card group p-8 md:p-10 text-center hover:border-[var(--gold-light)] transition-all duration-300"
             >
-              <h3 className="font-serif text-[1.55rem] md:text-[1.8rem] text-[var(--gold-light)] mb-4">
+              <h3 className="font-serif text-[1.35rem] md:text-[1.55rem] text-[var(--gold-light)] mb-4">
                 Контакти
               </h3>
-              <p className="font-sans text-[1rem] md:text-[1.08rem] leading-[1.8] text-[var(--text-dim)] max-w-[260px] mx-auto">
+              <p className="font-sans text-[0.98rem] md:text-[1.02rem] leading-[1.8] text-[var(--text-dim)] max-w-[240px] mx-auto">
                 Зв'язатися з нами
               </p>
             </Link>
@@ -185,13 +185,13 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row gap-5 items-center justify-center">
             <Link
               href="/register?role=student"
-              className="hero-cta w-full lg:w-[360px] text-center text-[1rem] md:text-[1.04rem] min-h-[64px] flex items-center justify-center"
+              className="hero-cta w-full lg:w-[340px] text-center text-[0.98rem] md:text-[1rem] min-h-[60px] flex items-center justify-center"
             >
               Я учень — Почати навчання
             </Link>
             <Link
               href="/register?role=tutor"
-              className="hero-cta-secondary w-full lg:w-[360px] text-center text-[1rem] md:text-[1.04rem] min-h-[64px] flex items-center justify-center"
+              className="hero-cta-secondary w-full lg:w-[340px] text-center text-[0.98rem] md:text-[1rem] min-h-[60px] flex items-center justify-center"
             >
               Я репетитор — Приєднатися
             </Link>
@@ -202,7 +202,7 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="relative z-10 py-6 px-6 border-t border-[rgba(201,169,110,0.08)]">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-serif text-[1.25rem] tracking-[0.18em] text-[var(--text-dim)]">
+          <span className="font-serif text-[1.2rem] tracking-[0.18em] text-[var(--text-dim)]">
             KAYA
           </span>
           <div className="flex items-center gap-6">
