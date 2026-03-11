@@ -49,7 +49,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setErrorMessage("");
 
     try {
@@ -68,9 +67,38 @@ export default function LoginPage() {
       }
 
       router.push("/home");
+      router.refresh();
     } catch (error) {
       console.error("LOGIN ERROR:", error);
       setErrorMessage("Сталася помилка під час входу. Спробуйте ще раз.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOAuthLogin = async (provider: "google" | "apple") => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const supabase = createClient();
+
+      const redirectBase =
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${redirectBase}/auth/callback?next=/home`,
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+      }
+    } catch (error) {
+      console.error("OAUTH LOGIN ERROR:", error);
+      setErrorMessage("Не вдалося виконати вхід через провайдера.");
     } finally {
       setLoading(false);
     }
@@ -212,10 +240,16 @@ export default function LoginPage() {
             <div className="flex flex-col gap-3.5">
               <button
                 type="button"
-                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)]"
+                onClick={() => handleOAuthLogin("google")}
+                disabled={loading}
+                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span className="flex items-center justify-center gap-3.5">
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="w-5 h-5 shrink-0"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="currentColor"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -230,7 +264,7 @@ export default function LoginPage() {
                     />
                     <path
                       fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      d="M12 5.38c1.61 0 3.06.55 4.2 1.63l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
                   <span>Увійти через Google</span>
@@ -239,7 +273,9 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)]"
+                onClick={() => handleOAuthLogin("apple")}
+                disabled={loading}
+                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span className="flex items-center justify-center gap-3.5">
                   <svg
@@ -248,18 +284,18 @@ export default function LoginPage() {
                     fill="currentColor"
                     aria-hidden="true"
                   >
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                    <path d="M16.365 1.43c0 1.14-.415 2.216-1.096 3.03-.82.98-2.16 1.73-3.33 1.63-.15-1.09.43-2.25 1.08-3 .72-.83 1.95-1.47 2.96-1.66.29 0 .386-.01.386 0Zm3.345 16.12c-.53 1.2-.78 1.73-1.46 2.78-.95 1.47-2.29 3.3-3.95 3.31-1.48.02-1.86-.96-3.87-.95-2.01.01-2.43.97-3.91.95-1.66-.01-2.93-1.66-3.88-3.12C-.03 15.52-.42 9.63 2.45 7.19c1.4-1.2 3.61-1.92 5.69-1.92 2.12 0 3.46.96 5.22.96 1.7 0 2.73-.96 5.2-.96 1.85 0 3.81 1 5.2 2.72-4.58 2.51-3.84 9.03-.06 11.56Z" />
                   </svg>
                   <span>Увійти через Apple</span>
                 </span>
               </button>
             </div>
 
-            <p className="text-center mt-8 md:mt-9 font-sans text-[0.98rem] text-[rgba(245,239,230,0.62)]">
-              Немає акаунту?{" "}
+            <p className="mt-7 text-center font-sans text-[0.94rem] text-[rgba(245,239,230,0.64)]">
+              Ще не маєте акаунта?{" "}
               <Link
                 href="/register"
-                className="text-[rgba(227,196,136,0.96)] hover:text-[var(--gold-light)] hover:underline underline-offset-4 transition-colors duration-300"
+                className="text-[rgba(227,196,136,0.96)] hover:text-[var(--gold-light)] transition-colors duration-300"
               >
                 Зареєструватися
               </Link>
@@ -267,14 +303,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-
-      <footer className="relative z-10 px-6 pb-5 pt-1 md:px-10 md:pb-6">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-center">
-          <span className="font-sans text-[0.8rem] tracking-[0.02em] text-[rgba(245,239,230,0.36)]">
-            © 2026 KAYA LMS
-          </span>
-        </div>
-      </footer>
     </div>
   );
 }

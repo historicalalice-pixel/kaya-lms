@@ -50,17 +50,16 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setErrorMessage("");
     setSuccessMessage("");
 
     if (password !== confirmPassword) {
-      setErrorMessage("Паролі не збігаються");
+      setErrorMessage("Паролі не збігаються.");
       return;
     }
 
     if (!agree) {
-      setErrorMessage("Потрібно погодитися з умовами");
+      setErrorMessage("Потрібно погодитися з умовами користування.");
       return;
     }
 
@@ -69,10 +68,14 @@ export default function RegisterPage() {
 
       const supabase = createClient();
 
+      const redirectBase =
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: `${redirectBase}/auth/callback?next=/home`,
           data: {
             full_name: name,
           },
@@ -84,14 +87,47 @@ export default function RegisterPage() {
         return;
       }
 
-      setSuccessMessage("Акаунт створено. Перевірте свою пошту для підтвердження.");
+      setSuccessMessage(
+        "Акаунт створено. Перевірте пошту, щоб підтвердити email."
+      );
+
       setName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
       setAgree(false);
-    } catch {
-      setErrorMessage("Сталася помилка. Спробуйте ще раз.");
+    } catch (error) {
+      console.error("REGISTER ERROR:", error);
+      setErrorMessage("Сталася помилка під час реєстрації. Спробуйте ще раз.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOAuthRegister = async (provider: "google" | "apple") => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      const supabase = createClient();
+
+      const redirectBase =
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${redirectBase}/auth/callback?next=/home`,
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+      }
+    } catch (error) {
+      console.error("OAUTH REGISTER ERROR:", error);
+      setErrorMessage("Не вдалося виконати реєстрацію через провайдера.");
     } finally {
       setLoading(false);
     }
@@ -113,7 +149,7 @@ export default function RegisterPage() {
       </header>
 
       <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-6 md:px-10 md:py-8">
-        <div className="w-full max-w-[500px] md:translate-y-4">
+        <div className="w-full max-w-[560px] md:translate-y-4">
           <div className="text-center mb-8 md:mb-10">
             <Link
               href="/home"
@@ -123,12 +159,12 @@ export default function RegisterPage() {
               <span className="font-sans">На головну</span>
             </Link>
 
-            <h1 className="font-serif text-[2.75rem] leading-none md:text-[3.7rem] font-light text-[rgba(245,239,230,0.96)] mb-3">
+            <h1 className="font-serif text-[2.65rem] leading-none md:text-[3.8rem] font-light text-[rgba(245,239,230,0.96)] mb-3">
               Реєстрація
             </h1>
 
             <p className="font-sans text-[1rem] md:text-[1.08rem] text-[rgba(245,239,230,0.72)]">
-              Створіть свій акаунт у KAYA
+              Створіть акаунт і почніть свій шлях у KAYA
             </p>
           </div>
 
@@ -281,10 +317,16 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-3.5">
               <button
                 type="button"
-                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)]"
+                onClick={() => handleOAuthRegister("google")}
+                disabled={loading}
+                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span className="flex items-center justify-center gap-3.5">
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="w-5 h-5 shrink-0"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="currentColor"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -308,7 +350,9 @@ export default function RegisterPage() {
 
               <button
                 type="button"
-                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)]"
+                onClick={() => handleOAuthRegister("apple")}
+                disabled={loading}
+                className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.01)] px-5 font-sans text-[0.98rem] text-[rgba(245,239,230,0.9)] transition-all duration-300 hover:border-[rgba(227,196,136,0.74)] hover:bg-[rgba(201,169,110,0.045)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span className="flex items-center justify-center gap-3.5">
                   <svg
@@ -324,11 +368,11 @@ export default function RegisterPage() {
               </button>
             </div>
 
-            <p className="text-center mt-8 md:mt-9 font-sans text-[0.98rem] text-[rgba(245,239,230,0.62)]">
+            <p className="mt-7 text-center font-sans text-[0.94rem] text-[rgba(245,239,230,0.64)]">
               Уже маєте акаунт?{" "}
               <Link
                 href="/login"
-                className="text-[rgba(227,196,136,0.96)] hover:text-[var(--gold-light)] hover:underline underline-offset-4 transition-colors duration-300"
+                className="text-[rgba(227,196,136,0.96)] hover:text-[var(--gold-light)] transition-colors duration-300"
               >
                 Увійти
               </Link>
@@ -336,14 +380,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </main>
-
-      <footer className="relative z-10 px-6 pb-5 pt-1 md:px-10 md:pb-6">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-center">
-          <span className="font-sans text-[0.8rem] tracking-[0.02em] text-[rgba(245,239,230,0.36)]">
-            © 2026 KAYA LMS
-          </span>
-        </div>
-      </footer>
     </div>
   );
 }
