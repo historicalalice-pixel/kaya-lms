@@ -2,13 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const starfieldRef = useRef<HTMLDivElement>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const field = starfieldRef.current;
@@ -41,23 +47,39 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("Login attempt:", {
-      email,
-      rememberMe,
-    });
+    setErrorMessage("");
 
-    // Тут підключиш реальний логін
-    // await signIn(...)
+    try {
+      setLoading(true);
+
+      const supabase = createClient();
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      router.push("/home");
+    } catch (error) {
+      console.error("LOGIN ERROR:", error);
+      setErrorMessage("Сталася помилка під час входу. Спробуйте ще раз.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
       <div ref={starfieldRef} className="starfield" aria-hidden="true" />
 
-      {/* HEADER */}
       <header className="relative z-10 w-full">
         <div className="flex items-center justify-center px-6 pt-6 pb-4 md:px-10 md:pt-8 md:pb-5">
           <Link
@@ -69,7 +91,6 @@ export default function LoginPage() {
         </div>
       </header>
 
-      {/* MAIN */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-6 md:px-10 md:py-8">
         <div className="w-full max-w-[500px] md:translate-y-4">
           <div className="text-center mb-8 md:mb-10">
@@ -90,7 +111,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* FORM SHELL */}
           <div className="rounded-[20px] border border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,14,0.3)] backdrop-blur-[6px] px-5 py-7 md:px-7 md:py-9 shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_14px_40px_rgba(0,0,0,0.24)]">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
@@ -166,15 +186,21 @@ export default function LoginPage() {
                 </Link>
               </div>
 
+              {errorMessage && (
+                <p className="font-sans text-[0.92rem] text-red-400">
+                  {errorMessage}
+                </p>
+              )}
+
               <button
                 type="submit"
-                className="w-full h-[56px] rounded-[14px] border border-[rgba(201,169,110,0.5)] bg-[rgba(201,169,110,0.05)] font-sans text-[0.97rem] font-medium uppercase tracking-[0.34em] text-[rgba(245,239,230,0.96)] transition-all duration-300 hover:border-[rgba(227,196,136,0.92)] hover:bg-[rgba(201,169,110,0.09)] hover:shadow-[0_10px_26px_rgba(201,169,110,0.08),inset_0_0_0_1px_rgba(255,255,255,0.03)] active:scale-[0.995]"
+                disabled={loading}
+                className="w-full h-[56px] rounded-[14px] border border-[rgba(201,169,110,0.5)] bg-[rgba(201,169,110,0.05)] font-sans text-[0.97rem] font-medium uppercase tracking-[0.34em] text-[rgba(245,239,230,0.96)] transition-all duration-300 hover:border-[rgba(227,196,136,0.92)] hover:bg-[rgba(201,169,110,0.09)] hover:shadow-[0_10px_26px_rgba(201,169,110,0.08),inset_0_0_0_1px_rgba(255,255,255,0.03)] active:scale-[0.995] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Увійти
+                {loading ? "Вхід..." : "Увійти"}
               </button>
             </form>
 
-            {/* DIVIDER */}
             <div className="flex items-center gap-4 my-7 md:my-8">
               <div className="flex-1 h-px bg-[rgba(201,169,110,0.14)]" />
               <span className="font-sans text-[0.88rem] text-[rgba(245,239,230,0.48)]">
@@ -183,7 +209,6 @@ export default function LoginPage() {
               <div className="flex-1 h-px bg-[rgba(201,169,110,0.14)]" />
             </div>
 
-            {/* SOCIAL BUTTONS */}
             <div className="flex flex-col gap-3.5">
               <button
                 type="button"
@@ -230,7 +255,6 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* REGISTER */}
             <p className="text-center mt-8 md:mt-9 font-sans text-[0.98rem] text-[rgba(245,239,230,0.62)]">
               Немає акаунту?{" "}
               <Link
@@ -244,7 +268,6 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {/* FOOTER */}
       <footer className="relative z-10 px-6 pb-5 pt-1 md:px-10 md:pb-6">
         <div className="mx-auto flex max-w-[1400px] items-center justify-center">
           <span className="font-sans text-[0.8rem] tracking-[0.02em] text-[rgba(245,239,230,0.36)]">
