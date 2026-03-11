@@ -128,7 +128,6 @@ export default function HomePage() {
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-14">
         <div className="max-w-[980px] w-full mx-auto text-center">
-          {/* HERO TEXT */}
           <p className="font-sans text-[0.9rem] md:text-[0.95rem] tracking-[0.38em] uppercase text-[var(--gold-dim)] mb-7">
             Освітня платформа
           </p>
@@ -137,10 +136,14 @@ export default function HomePage() {
             Простір, де історія набуває голосу.
           </h1>
 
-         <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)] mb-14 max-w-[620px] mx-auto text-center">
-            KAYA — платформа для вивчення історії з репетиторами.
-            Структуроване навчання, підготовка до НМТ, персональний підхід.
-          </p>
+          <div className="mb-14 max-w-[820px] mx-auto text-center">
+            <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)]">
+              KAYA — платформа для вивчення історії з репетиторами.
+            </p>
+            <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)]">
+              Структуроване навчання, підготовка до НМТ, персональний підхід.
+            </p>
+          </div>
 
           {/* NAVIGATION CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
