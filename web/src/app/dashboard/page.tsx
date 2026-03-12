@@ -38,9 +38,10 @@ export default async function Dashboard() {
           </p>
 
           <div className="mt-6 flex flex-col gap-2 text-sm text-[rgba(245,239,230,0.62)]">
-            <p>Користувач: {user.email}</p>
-            <p>Роль: {profile?.role}</p>
-          </div>
+  <p>Користувач: {displayName}</p>
+  <p>Email: {user.email}</p>
+  <p>Роль: {profile?.role}</p>
+</div>
         </div>
 
         <div className="rounded-2xl border border-[rgba(201,169,110,0.18)] bg-[rgba(255,255,255,0.02)] p-8">
