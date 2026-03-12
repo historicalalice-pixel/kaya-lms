@@ -66,7 +66,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/home");
+      router.push("/dashboard");
       router.refresh();
     } catch (error) {
       console.error("LOGIN ERROR:", error);
@@ -89,7 +89,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${redirectBase}/auth/callback?next=/home`,
+          redirectTo: `${redirectBase}/auth/callback?next=/dashboard`,
         },
       });
 
