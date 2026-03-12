@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -7,10 +8,14 @@ export default async function Dashboard() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) {
+    redirect("/login");
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user?.id)
+    .eq("id", user.id)
     .single();
 
   return (
@@ -21,7 +26,7 @@ export default async function Dashboard() {
       </h1>
 
       <p className="mt-4 text-gray-400">
-        Користувач: {user?.email}
+        Користувач: {user.email}
       </p>
 
       <p className="mt-2 text-gray-500">
