@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import LogoutButton from "../components/logout-button";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -22,26 +23,34 @@ export default async function Dashboard() {
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="mx-auto max-w-5xl space-y-8">
         <div className="rounded-2xl border border-[rgba(201,169,110,0.18)] bg-[rgba(255,255,255,0.02)] p-8">
-          <p className="text-sm uppercase tracking-[0.28em] text-[rgba(201,169,110,0.78)]">
-            KAYA
-          </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.28em] text-[rgba(201,169,110,0.78)]">
+                KAYA
+              </p>
 
-          <h1 className="mt-4 text-3xl md:text-4xl font-semibold text-[rgba(245,239,230,0.96)]">
-            Вітаємо, {displayName}
-          </h1>
+              <h1 className="mt-4 text-3xl font-semibold text-[rgba(245,239,230,0.96)] md:text-4xl">
+                Вітаємо, {displayName}
+              </h1>
 
-          <p className="mt-3 text-[rgba(245,239,230,0.68)] max-w-2xl">
-            Це твій навчальний кабінет. Тут будуть твої курси, прогрес і
-            наступні кроки у навчанні.
-          </p>
+              <p className="mt-3 max-w-2xl text-[rgba(245,239,230,0.68)]">
+                Це твій навчальний кабінет. Тут будуть твої курси, прогрес і
+                наступні кроки у навчанні.
+              </p>
+            </div>
+
+            <div className="shrink-0">
+              <LogoutButton />
+            </div>
+          </div>
 
           <div className="mt-6 flex flex-col gap-2 text-sm text-[rgba(245,239,230,0.62)]">
-  <p>Користувач: {displayName}</p>
-  <p>Email: {user.email}</p>
-  <p>Роль: {profile?.role}</p>
-</div>
+            <p>Користувач: {displayName}</p>
+            <p>Email: {user.email}</p>
+            <p>Роль: {profile?.role}</p>
+          </div>
         </div>
 
         <div className="rounded-2xl border border-[rgba(201,169,110,0.18)] bg-[rgba(255,255,255,0.02)] p-8">
@@ -58,7 +67,6 @@ export default async function Dashboard() {
               <p className="text-sm text-[rgba(245,239,230,0.6)]">
                 Активний курс
               </p>
-
               <p className="mt-2 text-lg font-medium">Немає</p>
             </div>
 
@@ -66,7 +74,6 @@ export default async function Dashboard() {
               <p className="text-sm text-[rgba(245,239,230,0.6)]">
                 Завершено уроків
               </p>
-
               <p className="mt-2 text-lg font-medium">0</p>
             </div>
 
@@ -74,7 +81,6 @@ export default async function Dashboard() {
               <p className="text-sm text-[rgba(245,239,230,0.6)]">
                 Загальний прогрес
               </p>
-
               <p className="mt-2 text-lg font-medium">0%</p>
             </div>
           </div>
