@@ -286,29 +286,6 @@ export default function MapPage() {
             </button>
           ))}
 
-          {/* Кнопка fullscreen — правий верхній кут карти */}
-            <button
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              title={isFullscreen ? "Згорнути" : "Повний екран"}
-              style={{
-                position: "absolute", top: 12, right: 12, zIndex: 20,
-                width: 32, height: 32,
-                background: "rgba(10,10,12,0.88)",
-                border: "1px solid rgba(201,169,110,0.25)",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(201,169,110,0.65)",
-              }}
-            >
-              {isFullscreen ? (
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <path d="M2 5H5V2M8 2V5H11M11 8H8V11M5 11V8H2" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              ) : (
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <path d="M1 4V1H4M9 1H12V4M12 9V12H9M4 12H1V9" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              )}
-            </button>
         </div>
 
         {/* MAIN LAYOUT */}
@@ -331,6 +308,30 @@ export default function MapPage() {
                 </div>
               )}
             </div>
+
+            {/* Кнопка fullscreen — правий верхній кут карти */}
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? "Згорнути" : "Повний екран"}
+              style={{
+                position: "absolute", top: 12, right: 12, zIndex: 20,
+                width: 32, height: 32,
+                background: "rgba(10,10,12,0.88)",
+                border: "1px solid rgba(201,169,110,0.25)",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                color: "rgba(201,169,110,0.65)",
+              }}
+            >
+              {isFullscreen ? (
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M2 5H5V2M8 2V5H11M11 8H8V11M5 11V8H2" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M1 4V1H4M9 1H12V4M12 9V12H9M4 12H1V9" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              )}
+            </button>
 
             {/* Картка події поверх карти */}
             {activeEvent && (
