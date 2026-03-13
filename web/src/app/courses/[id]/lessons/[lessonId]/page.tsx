@@ -61,6 +61,36 @@ export default function LessonPage() {
 
   if (!lesson) return null;
 
+  // ── РЕЖИМ КАРТИ — повний екран ──────────────────────────────────────────────
+  if (showMap) {
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#0a0a0c", display: "flex", flexDirection: "column", zIndex: 100 }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 24px",
+          borderBottom: "1px solid rgba(201,169,110,0.1)",
+          flexShrink: 0,
+        }}>
+          <h2 style={{
+            fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem",
+            fontWeight: 300, color: "#e8e4dd", margin: 0,
+          }}>{lesson.title}</h2>
+          <button onClick={() => setShowMap(false)} style={{
+            padding: "8px 20px", background: "transparent",
+            border: "1px solid rgba(201,169,110,0.25)", cursor: "pointer",
+            fontFamily: "'Manrope', sans-serif", fontSize: "0.62rem",
+            letterSpacing: "0.2em", textTransform: "uppercase",
+            color: "rgba(201,169,110,0.7)",
+          }}>← До уроку</button>
+        </div>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <MapEmbed topicId={lesson.map_topic_id || "rus"} />
+        </div>
+      </div>
+    );
+  }
+
+  // ── РЕЖИМ УРОКУ ─────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0c", display: "flex", flexDirection: "column" }}>
       <header style={{
@@ -87,82 +117,57 @@ export default function LessonPage() {
       </header>
 
       <main style={{
-        flex: 1, padding: "60px clamp(20px, 5vw, 80px)",
-        maxWidth: showMap ? "100%" : 800,
-        margin: "0 auto", width: "100%",
-        display: showMap ? "flex" : "block",
+        flex: 1,
+        padding: "60px clamp(20px, 5vw, 80px)",
+        maxWidth: 800,
+        margin: "0 auto",
+        width: "100%",
       }}>
-        {!showMap ? (
-          <div>
-            <p style={{
-              fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
-              letterSpacing: "0.35em", textTransform: "uppercase",
-              color: "rgba(138,116,68,0.7)", marginBottom: 16,
-            }}>Урок</p>
-            <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(2rem, 5vw, 3.2rem)",
-              fontWeight: 300, color: "#e8e4dd",
-              marginBottom: 40, lineHeight: 1.1,
-            }}>{lesson.title}</h1>
-            <div style={{ width: 40, height: 1, background: "rgba(201,169,110,0.3)", marginBottom: 40 }} />
-            <p style={{
-              fontFamily: "'Manrope', sans-serif", fontSize: "0.9rem",
-              color: "rgba(232,228,221,0.8)", lineHeight: 1.9, marginBottom: 60,
-            }}>{lesson.content}</p>
+        <p style={{
+          fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
+          letterSpacing: "0.35em", textTransform: "uppercase",
+          color: "rgba(138,116,68,0.7)", marginBottom: 16,
+        }}>Урок</p>
+        <h1 style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: "clamp(2rem, 5vw, 3.2rem)",
+          fontWeight: 300, color: "#e8e4dd",
+          marginBottom: 40, lineHeight: 1.1,
+        }}>{lesson.title}</h1>
+        <div style={{ width: 40, height: 1, background: "rgba(201,169,110,0.3)", marginBottom: 40 }} />
+        <p style={{
+          fontFamily: "'Manrope', sans-serif", fontSize: "0.9rem",
+          color: "rgba(232,228,221,0.8)", lineHeight: 1.9, marginBottom: 60,
+        }}>{lesson.content}</p>
 
-            {lesson.has_map && (
-              <div style={{
-                padding: "28px 32px",
-                border: "1px solid rgba(201,169,110,0.2)",
-                background: "rgba(201,169,110,0.03)",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                gap: 24, flexWrap: "wrap",
-              }}>
-                <div>
-                  <p style={{
-                    fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
-                    letterSpacing: "0.25em", textTransform: "uppercase",
-                    color: "rgba(201,169,110,0.6)", marginBottom: 6,
-                  }}>◈ Інтерактивна карта</p>
-                  <p style={{
-                    fontFamily: "'Cormorant Garamond', serif", fontSize: "1.15rem",
-                    fontWeight: 300, color: "#e8e4dd",
-                  }}>Дослідити на карті: {lesson.title}</p>
-                </div>
-                <button onClick={() => setShowMap(true)} style={{
-                  padding: "12px 28px", background: "transparent",
-                  border: "1px solid rgba(201,169,110,0.4)", cursor: "pointer",
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.68rem",
-                  letterSpacing: "0.2em", textTransform: "uppercase",
-                  color: "rgba(201,169,110,0.9)", transition: "all 0.3s", whiteSpace: "nowrap",
-                }}>
-                  Відкрити карту →
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", width: "100%", margin: "0 -80px", padding: 0 }}>
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "0 0 20px 0", flexShrink: 0,
-            }}>
-              <h2 style={{
-                fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem",
+        {lesson.has_map && (
+          <div style={{
+            padding: "28px 32px",
+            border: "1px solid rgba(201,169,110,0.2)",
+            background: "rgba(201,169,110,0.03)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            gap: 24, flexWrap: "wrap",
+          }}>
+            <div>
+              <p style={{
+                fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
+                letterSpacing: "0.25em", textTransform: "uppercase",
+                color: "rgba(201,169,110,0.6)", marginBottom: 6,
+              }}>◈ Інтерактивна карта</p>
+              <p style={{
+                fontFamily: "'Cormorant Garamond', serif", fontSize: "1.15rem",
                 fontWeight: 300, color: "#e8e4dd",
-              }}>{lesson.title}</h2>
-              <button onClick={() => setShowMap(false)} style={{
-                padding: "8px 20px", background: "transparent",
-                border: "1px solid rgba(201,169,110,0.25)", cursor: "pointer",
-                fontFamily: "'Manrope', sans-serif", fontSize: "0.62rem",
-                letterSpacing: "0.2em", textTransform: "uppercase",
-                color: "rgba(201,169,110,0.6)",
-              }}>← До уроку</button>
+              }}>Дослідити на карті: {lesson.title}</p>
             </div>
-            <div style={{ flex: 1, minHeight: "calc(100vh - 200px)" }}>
-              <MapEmbed topicId={lesson.map_topic_id || "rus"} />
-            </div>
+            <button onClick={() => setShowMap(true)} style={{
+              padding: "12px 28px", background: "transparent",
+              border: "1px solid rgba(201,169,110,0.4)", cursor: "pointer",
+              fontFamily: "'Manrope', sans-serif", fontSize: "0.68rem",
+              letterSpacing: "0.2em", textTransform: "uppercase",
+              color: "rgba(201,169,110,0.9)", transition: "all 0.3s", whiteSpace: "nowrap",
+            }}>
+              Відкрити карту →
+            </button>
           </div>
         )}
       </main>
