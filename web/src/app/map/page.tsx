@@ -286,33 +286,29 @@ export default function MapPage() {
             </button>
           ))}
 
-          {/* Кнопка fullscreen в switcher рядку */}
-          <button onClick={() => setIsFullscreen(!isFullscreen)} style={{
-            marginLeft: "auto", padding: "0 16px",
-            background: "transparent", border: "none",
-            borderBottom: "2px solid transparent",
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-            fontFamily: "'Manrope', sans-serif", fontSize: "0.62rem",
-            letterSpacing: "0.15em", textTransform: "uppercase",
-            color: "rgba(201,169,110,0.55)",
-            whiteSpace: "nowrap",
-          }}>
-            {isFullscreen ? (
-              <>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M1 4H4V1M8 1V4H11M11 8H8V11M4 11V8H1" stroke="currentColor" strokeWidth="1.5"/>
+          {/* Кнопка fullscreen — іконка в правому нижньому куті */}
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? "Згорнути" : "Повний екран"}
+              style={{
+                position: "absolute", bottom: 28, right: 12, zIndex: 20,
+                width: 30, height: 30,
+                background: "rgba(10,10,12,0.88)",
+                border: "1px solid rgba(201,169,110,0.25)",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                color: "rgba(201,169,110,0.65)",
+              }}
+            >
+              {isFullscreen ? (
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M2 5H5V2M8 2V5H11M11 8H8V11M5 11V8H2" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
-                Згорнути
-              </>
-            ) : (
-              <>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M0 3V0H3M9 0H12V3M12 9V12H9M3 12H0V9" stroke="currentColor" strokeWidth="1.5"/>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M1 4V1H4M9 1H12V4M12 9V12H9M4 12H1V9" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
-                Повний екран
-              </>
-            )}
-          </button>
+              )}
+            </button>
         </div>
 
         {/* MAIN LAYOUT */}
