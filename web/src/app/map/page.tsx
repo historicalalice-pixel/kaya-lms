@@ -11,7 +11,7 @@ const TOPICS = [
     label: "Київська Русь",
     period: "IX–XIII ст.",
     center: [33.0, 51.5] as [number, number],
-    zoom: 5.2,
+    zoom: 3.8,
     color: "#c9a96e",
     territory: {
       type: "Feature" as const,
@@ -48,7 +48,7 @@ const TOPICS = [
     label: "Козацька держава",
     period: "XVI–XVIII ст.",
     center: [32.5, 49.5] as [number, number],
-    zoom: 6.0,
+    zoom: 4.5,
     color: "#e2c992",
     territory: {
       type: "Feature" as const,
@@ -83,7 +83,7 @@ const TOPICS = [
     label: "УНР та ЗУНР",
     period: "1917–1921",
     center: [30.5, 49.8] as [number, number],
-    zoom: 6.0,
+    zoom: 4.5,
     color: "#f0d080",
     territory: {
       type: "Feature" as const,
@@ -286,13 +286,13 @@ export default function MapPage() {
             </button>
           ))}
 
-          {/* Кнопка fullscreen — іконка в правому нижньому куті */}
+          {/* Кнопка fullscreen — правий верхній кут карти */}
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               title={isFullscreen ? "Згорнути" : "Повний екран"}
               style={{
-                position: "absolute", bottom: 28, right: 12, zIndex: 20,
-                width: 30, height: 30,
+                position: "absolute", top: 12, right: 12, zIndex: 20,
+                width: 32, height: 32,
                 background: "rgba(10,10,12,0.88)",
                 border: "1px solid rgba(201,169,110,0.25)",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
