@@ -28,9 +28,9 @@ const TOPICS = [
     },
     events: [
       { id: 1, year: 882, title: "Олег захоплює Київ", coords: [30.52, 50.45] as [number, number], desc: "Князь Олег об'єднує Новгород і Київ, заснувавши Київську Русь як державу." },
-      { id: 2, year: 988, title: "Хрещення Русі", coords: [28.47, 49.23] as [number, number], desc: "Князь Володимир Великий хрестить Русь у православну віру, змінивши хід історії." },
-      { id: 3, year: 1037, title: "Будівництво Софійського собору", coords: [36.92, 50.01] as [number, number], desc: "Ярослав Мудрий будує Софійський собор — символ могутності Київської Русі." },
-      { id: 4, year: 1240, title: "Батиєва навала. Падіння Києва", coords: [32.05, 48.62] as [number, number], desc: "Монгольська орда під керівництвом Батия руйнує Київ. Кінець Київської Русі." },
+      { id: 2, year: 988, title: "Хрещення Русі", coords: [33.38, 44.61] as [number, number], desc: "Князь Володимир Великий хрестить Русь у Корсуні (Херсонес, Крим)." },
+      { id: 3, year: 1037, title: "Будівництво Софійського собору", coords: [30.514, 50.453] as [number, number], desc: "Ярослав Мудрий будує Софійський собор — символ могутності Київської Русі." },
+      { id: 4, year: 1240, title: "Батиєва навала. Падіння Києва", coords: [30.62, 50.35] as [number, number], desc: "Монгольська орда під керівництвом Батия руйнує Київ. Кінець Київської Русі." },
     ],
     figures: [
       { name: "Олег Віщий", years: "?–912", role: "Перший князь Київської Русі" },
@@ -225,14 +225,20 @@ export default function MapPage() {
       el.title = event.title;
 
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(1.3)";
+        el.style.width = "34px";
+        el.style.height = "34px";
         el.style.borderColor = "#fff";
         el.style.color = "#fff";
+        el.style.marginLeft = "-3px";
+        el.style.marginTop = "-3px";
       });
       el.addEventListener("mouseleave", () => {
-        el.style.transform = "scale(1)";
+        el.style.width = "28px";
+        el.style.height = "28px";
         el.style.borderColor = activeTopic.color;
         el.style.color = activeTopic.color;
+        el.style.marginLeft = "0px";
+        el.style.marginTop = "0px";
       });
       el.addEventListener("click", () => {
         setActiveEvent(event);
