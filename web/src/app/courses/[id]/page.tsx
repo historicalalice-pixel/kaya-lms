@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import LogoutButton from "../../components/logout-button";
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,6 +24,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0c", display: "flex", flexDirection: "column" }}>
+
       <header style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "20px clamp(20px, 5vw, 80px) 16px",
@@ -40,14 +40,11 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
           letterSpacing: "0.3em", textTransform: "uppercase",
           color: "rgba(138,116,68,0.8)",
         }}>{course.title}</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <Link href="/courses" style={{
-            fontFamily: "'Manrope', sans-serif", fontSize: "0.72rem",
-            letterSpacing: "0.18em", textTransform: "uppercase",
-            color: "rgba(201,169,110,0.7)", textDecoration: "none",
-          }}>← Курси</Link>
-          <LogoutButton />
-        </div>
+        <Link href="/courses" style={{
+          fontFamily: "'Manrope', sans-serif", fontSize: "0.72rem",
+          letterSpacing: "0.18em", textTransform: "uppercase",
+          color: "rgba(201,169,110,0.7)", textDecoration: "none",
+        }}>← Курси</Link>
       </header>
 
       <main style={{
