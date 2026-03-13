@@ -220,6 +220,7 @@ function WaxSeal({
 export default function HomePage() {
   const starfieldRef = useRef<HTMLDivElement>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
@@ -246,22 +247,52 @@ export default function HomePage() {
 
   useEffect(() => {
     const supabase = createClient();
+
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getUser();
       if (!error && data.user) {
         setUserEmail(data.user.email ?? null);
+        // Завантажуємо full_name з профілю
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.user.id)
+          .single();
+        setUserName(profile?.full_name ?? null);
       } else {
         setUserEmail(null);
+        setUserName(null);
       }
       setAuthLoading(false);
     };
+
     loadUser();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email ?? null);
+      if (session?.user) {
+        setUserEmail(session.user.email ?? null);
+        // Оновлюємо ім'я при зміні сесії
+        const supabase2 = createClient();
+        supabase2
+          .from("profiles")
+          .select("full_name")
+          .eq("id", session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            setUserName(profile?.full_name ?? null);
+          });
+      } else {
+        setUserEmail(null);
+        setUserName(null);
+      }
       setAuthLoading(false);
     });
+
     return () => { subscription.unsubscribe(); };
   }, []);
+
+  // Показуємо ім'я якщо є, інакше email
+  const displayName = userName || userEmail;
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
@@ -290,9 +321,17 @@ export default function HomePage() {
               <span className="font-sans text-[0.95rem] text-[var(--text-dim)]">...</span>
             ) : userEmail ? (
               <>
-                <span className="hidden md:inline font-sans text-[0.9rem] text-[var(--text-dim)] max-w-[260px] truncate">
-                  {userEmail}
+                {/* Ім'я користувача */}
+                <span className="hidden md:inline font-sans text-[0.85rem] text-[var(--text-dim)] max-w-[200px] truncate">
+                  {displayName}
                 </span>
+                {/* Кнопка кабінету */}
+                <Link
+                  href="/dashboard"
+                  className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300"
+                >
+                  Кабінет
+                </Link>
                 <LogoutButton />
               </>
             ) : (
@@ -327,7 +366,6 @@ export default function HomePage() {
             Простір, де історія набуває голосу.
           </h1>
 
-          {/* Підзаголовок — по центру, без max-w що зсуває вліво */}
           <div className="mb-14 text-center">
             <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)]">
               KAYA — платформа для вивчення історії з репетиторами.
@@ -374,7 +412,7 @@ export default function HomePage() {
             />
           </div>
 
-          {/* CTA BUTTON */}
+          {/* CTA */}
           <div className="flex items-center justify-center">
             <Link
               href="/register?role=student"

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import LogoutButton from "../components/logout-button";
+import OnboardingForm from "./onboarding-form";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -16,11 +17,12 @@ export default async function Dashboard() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role, full_name, phone, grade, telegram, onboarding_completed")
     .eq("id", user.id)
     .single();
 
   const displayName = profile?.full_name || user.email;
+  const needsOnboarding = !profile?.onboarding_completed;
 
   return (
     <div
@@ -31,6 +33,8 @@ export default async function Dashboard() {
         fontFamily: "var(--font-sans, 'Manrope', sans-serif)",
       }}
     >
+      {needsOnboarding && <OnboardingForm userId={user.id} />}
+
       {/* HEADER */}
       <header
         style={{
@@ -62,7 +66,6 @@ export default async function Dashboard() {
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <span
             style={{
-              fontFamily: "var(--font-sans, 'Manrope', sans-serif)",
               fontSize: "0.85rem",
               color: "var(--text-dim, #9a958d)",
               maxWidth: 260,
@@ -92,7 +95,6 @@ export default async function Dashboard() {
         <div>
           <p
             style={{
-              fontFamily: "var(--font-sans, 'Manrope', sans-serif)",
               fontSize: "0.7rem",
               letterSpacing: "0.35em",
               textTransform: "uppercase",
@@ -112,7 +114,7 @@ export default async function Dashboard() {
               lineHeight: 1.2,
             }}
           >
-            Вітаємо, {displayName}
+            Вітаємо, {profile?.full_name || displayName}
           </h1>
           <p
             style={{
@@ -147,7 +149,6 @@ export default async function Dashboard() {
                 border: "1px solid rgba(201,169,110,0.12)",
                 background: "rgba(201,169,110,0.02)",
                 padding: "24px 28px",
-                transition: "border-color 0.3s",
               }}
             >
               <p
@@ -171,26 +172,13 @@ export default async function Dashboard() {
               >
                 {item.value}
               </p>
-              {/* Progress bar */}
               <div
                 style={{
                   marginTop: 14,
                   height: 1,
                   background: "rgba(201,169,110,0.1)",
-                  position: "relative",
                 }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    height: "100%",
-                    width: "0%",
-                    background: "linear-gradient(90deg, transparent, var(--gold, #c9a96e))",
-                  }}
-                />
-              </div>
+              />
             </div>
           ))}
         </div>
@@ -239,11 +227,9 @@ export default async function Dashboard() {
               border: "1px solid rgba(201,169,110,0.4)",
               color: "var(--gold-light, #e2c992)",
               textDecoration: "none",
-              fontFamily: "var(--font-sans, 'Manrope', sans-serif)",
               fontSize: "0.68rem",
               letterSpacing: "0.25em",
               textTransform: "uppercase",
-              transition: "all 0.3s",
               whiteSpace: "nowrap",
             }}
           >
@@ -292,7 +278,6 @@ export default async function Dashboard() {
                 border: "1px solid rgba(201,169,110,0.35)",
                 color: "var(--gold-light, #e2c992)",
                 textDecoration: "none",
-                fontFamily: "var(--font-sans, 'Manrope', sans-serif)",
                 fontSize: "0.65rem",
                 letterSpacing: "0.25em",
                 textTransform: "uppercase",
@@ -316,78 +301,58 @@ export default async function Dashboard() {
           >
             Домашні завдання
           </p>
-
-          {/* Порожній стан */}
           <div
             style={{
               border: "1px solid rgba(201,169,110,0.1)",
               background: "rgba(201,169,110,0.015)",
               padding: "32px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 0,
             }}
           >
-            {/* Приклад ДЗ — буде динамічним */}
             <div
               style={{
                 padding: "24px 0",
                 borderBottom: "1px solid rgba(201,169,110,0.08)",
                 display: "flex",
-                flexDirection: "column",
-                gap: 12,
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 16,
+                flexWrap: "wrap",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: 16,
-                  flexWrap: "wrap",
-                }}
-              >
-                <div>
-                  <p
-                    style={{
-                      fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
-                      fontSize: "1.1rem",
-                      fontWeight: 300,
-                      color: "var(--text, #e8e4dd)",
-                      marginBottom: 6,
-                    }}
-                  >
-                    Завдань поки немає
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "0.72rem",
-                      color: "var(--text-dim, #9a958d)",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    Нові завдання з&apos;являться після запису на курс
-                  </p>
-                </div>
-                <span
+              <div>
+                <p
                   style={{
-                    fontSize: "0.6rem",
-                    letterSpacing: "0.2em",
-                    textTransform: "uppercase",
-                    color: "var(--text-dim, #9a958d)",
-                    border: "1px solid rgba(201,169,110,0.15)",
-                    padding: "4px 12px",
-                    whiteSpace: "nowrap",
+                    fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
+                    fontSize: "1.1rem",
+                    fontWeight: 300,
+                    color: "var(--text, #e8e4dd)",
+                    marginBottom: 6,
                   }}
                 >
-                  Очікується
-                </span>
+                  Завдань поки немає
+                </p>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-dim, #9a958d)" }}>
+                  Нові завдання з&apos;являться після запису на курс
+                </p>
               </div>
+              <span
+                style={{
+                  fontSize: "0.6rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--text-dim, #9a958d)",
+                  border: "1px solid rgba(201,169,110,0.15)",
+                  padding: "4px 12px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Очікується
+              </span>
             </div>
           </div>
         </div>
 
-        {/* ОЦІНКИ ТА КОМЕНТАРІ ВЧИТЕЛЯ */}
+        {/* ОЦІНКИ ТА КОМЕНТАРІ */}
         <div>
           <p
             style={{
@@ -400,7 +365,6 @@ export default async function Dashboard() {
           >
             Оцінки та коментарі вчителя
           </p>
-
           <div
             style={{
               border: "1px solid rgba(201,169,110,0.1)",
@@ -418,7 +382,6 @@ export default async function Dashboard() {
                 flexWrap: "wrap",
               }}
             >
-              {/* Оцінка */}
               <div
                 style={{
                   width: 64,
@@ -454,19 +417,11 @@ export default async function Dashboard() {
                 >
                   Оцінок поки немає
                 </p>
-                <p
-                  style={{
-                    fontSize: "0.7rem",
-                    color: "rgba(154,149,141,0.6)",
-                    letterSpacing: "0.05em",
-                  }}
-                >
+                <p style={{ fontSize: "0.7rem", color: "rgba(154,149,141,0.6)" }}>
                   Вчитель залишить оцінку та коментар після перевірки ДЗ
                 </p>
               </div>
             </div>
-
-            {/* Коментар вчителя */}
             <div style={{ paddingTop: 20 }}>
               <p
                 style={{
@@ -514,13 +469,11 @@ export default async function Dashboard() {
               key={link.href}
               href={link.href}
               style={{
-                fontFamily: "var(--font-sans, 'Manrope', sans-serif)",
                 fontSize: "0.7rem",
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
                 color: "var(--text-dim, #9a958d)",
                 textDecoration: "none",
-                transition: "color 0.3s",
               }}
             >
               {link.label}
