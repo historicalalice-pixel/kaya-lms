@@ -13,6 +13,11 @@ function WaxSeal({
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hovered, setHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsTouchDevice(window.matchMedia("(hover: none)").matches);
+  }, []);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -109,32 +114,41 @@ function WaxSeal({
 
   return (
     <div
-      style={{ position: "relative", width: 220, height: 220, cursor: "pointer" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      style={{ position: "relative", width: "min(220px, 80vw)", height: "min(220px, 80vw)", cursor: "pointer" }}
+      onMouseEnter={() => !isTouchDevice && setHovered(true)}
+      onMouseLeave={() => !isTouchDevice && setHovered(false)}
     >
-      <svg
-        ref={svgRef}
-        viewBox="0 0 200 200"
-        style={{
-          width: 220, height: 220, display: "block", overflow: "visible",
-          position: "absolute", top: 0, left: 0,
-          transition: "opacity 0.45s ease, transform 0.45s ease",
-          opacity: hovered ? 0 : 1,
-          transform: hovered ? "scale(0.92)" : "scale(1)",
-          pointerEvents: hovered ? "none" : "auto",
-        }}
-      />
-      <Link href={href} style={{
-        position: "absolute", top: "50%", left: "50%", width: 240,
-        transform: hovered ? "translate(-50%, -50%) scale(1)" : "translate(-50%, -50%) scale(0.88)",
-        background: "rgba(12,10,7,0.97)",
-        border: "1px solid rgba(201,169,110,0.28)",
-        padding: "26px 22px", zIndex: 10, textDecoration: "none",
-        opacity: hovered ? 1 : 0,
-        transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
-        pointerEvents: hovered ? "auto" : "none",
-      }}>
+      {isTouchDevice ? (
+        <Link href={href} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", zIndex: 5 }}>
+          <svg ref={svgRef} viewBox="0 0 200 200" style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }} />
+          <div style={{ position: "absolute", bottom: "18%", fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(0.95rem, 3.5vw, 1.1rem)", fontWeight: 300, color: "#c9a96e", letterSpacing: "0.05em", textAlign: "center" }}>
+            {cardTitle} →
+          </div>
+        </Link>
+      ) : (
+        <>
+          <svg
+            ref={svgRef}
+            viewBox="0 0 200 200"
+            style={{
+              width: "100%", height: "100%", display: "block", overflow: "visible",
+              position: "absolute", top: 0, left: 0,
+              transition: "opacity 0.45s ease, transform 0.45s ease",
+              opacity: hovered ? 0 : 1,
+              transform: hovered ? "scale(0.92)" : "scale(1)",
+              pointerEvents: hovered ? "none" : "auto",
+            }}
+          />
+          <Link href={href} style={{
+            position: "absolute", top: "50%", left: "50%", width: "min(240px, 85vw)",
+            transform: hovered ? "translate(-50%, -50%) scale(1)" : "translate(-50%, -50%) scale(0.88)",
+            background: "rgba(12,10,7,0.97)",
+            border: "1px solid rgba(201,169,110,0.28)",
+            padding: "22px 18px", zIndex: 10, textDecoration: "none",
+            opacity: hovered ? 1 : 0,
+            transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
+            pointerEvents: hovered ? "auto" : "none",
+          }}>
         <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 300, color: "#e2c992", letterSpacing: "0.05em", marginBottom: 10 }}>
           {cardTitle}
         </div>
@@ -145,6 +159,8 @@ function WaxSeal({
           {cardLinkText} →
         </div>
       </Link>
+        </>
+      )}
     </div>
   );
 }
@@ -154,6 +170,7 @@ export default function HomePage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const field = starfieldRef.current;
@@ -212,16 +229,17 @@ export default function HomePage() {
       <div ref={starfieldRef} className="starfield" />
 
       {/* HEADER */}
-      <header className="relative z-10 w-full">
+      <header className="relative z-20 w-full">
         <div
           className="w-full flex items-center justify-between"
-          style={{ paddingLeft: "clamp(28px, 7vw, 140px)", paddingRight: "clamp(28px, 7vw, 140px)", paddingTop: "28px", paddingBottom: "20px" }}
+          style={{ paddingLeft: "clamp(20px, 7vw, 140px)", paddingRight: "clamp(20px, 7vw, 140px)", paddingTop: "22px", paddingBottom: "18px" }}
         >
-          <Link href="/" className="font-serif text-[2.15rem] md:text-[2.75rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300">
+          <Link href="/" className="font-serif text-[2rem] md:text-[2.75rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300">
             KAYA
           </Link>
 
-          <div className="flex items-center gap-5 md:gap-6">
+          {/* DESKTOP AUTH */}
+          <div className="hidden md:flex items-center gap-5 md:gap-6">
             {authLoading ? (
               <span className="font-sans text-[0.95rem] text-[var(--text-dim)]">...</span>
             ) : userEmail ? (
@@ -229,7 +247,6 @@ export default function HomePage() {
                 <span className="hidden md:inline font-sans text-[0.85rem] text-[var(--text-dim)] max-w-[180px] truncate">
                   {displayName}
                 </span>
-
                 <Link href="/dashboard" className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300">
                   Кабінет
                 </Link>
@@ -246,8 +263,46 @@ export default function HomePage() {
               </>
             )}
           </div>
+
+          {/* HAMBURGER (mobile) */}
+          <button
+            className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-[6px] focus:outline-none"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Меню"
+          >
+            <span style={{ display: "block", width: "22px", height: "1px", background: "var(--gold)", transition: "all 0.3s ease", transform: mobileMenuOpen ? "translateY(7px) rotate(45deg)" : "none" }} />
+            <span style={{ display: "block", width: "22px", height: "1px", background: "var(--gold)", transition: "all 0.3s ease", opacity: mobileMenuOpen ? 0 : 1 }} />
+            <span style={{ display: "block", width: "22px", height: "1px", background: "var(--gold)", transition: "all 0.3s ease", transform: mobileMenuOpen ? "translateY(-7px) rotate(-45deg)" : "none" }} />
+          </button>
         </div>
       </header>
+
+      {/* MOBILE MENU */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 50, background: "rgba(10,10,12,0.97)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", transition: "opacity 0.35s ease, visibility 0.35s ease", opacity: mobileMenuOpen ? 1 : 0, visibility: mobileMenuOpen ? "visible" : "hidden" }}>
+        <button onClick={() => setMobileMenuOpen(false)} style={{ position: "absolute", top: "24px", right: "clamp(20px, 5vw, 80px)", background: "none", border: "none", cursor: "pointer", color: "var(--gold)", fontSize: "1.5rem", lineHeight: 1 }} aria-label="Закрити">✕</button>
+        <div style={{ fontFamily: "var(--font-serif), serif", fontSize: "1.6rem", letterSpacing: "0.3em", color: "var(--text-dim)", marginBottom: "40px" }}>KAYA</div>
+        <nav style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+          {[{ href: "/courses", label: "Курси" }, { href: "/about", label: "Про нас" }, { href: "/contacts", label: "Контакти" }].map((link) => (
+            <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} style={{ fontFamily: "var(--font-serif), serif", fontSize: "clamp(1.8rem, 8vw, 2.4rem)", fontWeight: 300, letterSpacing: "0.08em", color: "var(--text)", textDecoration: "none", padding: "10px 40px", display: "block", textAlign: "center" }}>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div style={{ width: "40px", height: "1px", background: "rgba(201,169,110,0.25)", margin: "28px 0" }} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+          {userEmail ? (
+            <>
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-dim)", textDecoration: "none" }}>Кабінет</Link>
+              <LogoutButton />
+            </>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-dim)", textDecoration: "none" }}>Увійти</Link>
+              <Link href="/register" onClick={() => setMobileMenuOpen(false)} style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold-light)", textDecoration: "none", border: "1px solid rgba(201,169,110,0.4)", padding: "12px 32px" }}>Реєстрація</Link>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* MAIN */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-14">
@@ -268,7 +323,7 @@ export default function HomePage() {
           </div>
 
           {/* WAX SEALS */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 40, alignItems: "center", justifyContent: "center", marginBottom: 64 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(16px, 5vw, 40px)", alignItems: "center", justifyContent: "center", marginBottom: 48 }}>
             <WaxSeal label="КУРСИ" seed={42.1} href="/courses" cardTitle="Курси" cardDesc="Каталог програм з історії України та світу. Підготовка до НМТ." cardLinkText="Переглянути" />
             <WaxSeal label="ПРО НАС" seed={87.5} href="/about" cardTitle="Про нас" cardDesc="KAYA — платформа з репетиторами для глибокого вивчення історії." cardLinkText="Дізнатися більше" />
             <WaxSeal label="КОНТАКТИ" seed={133.9} href="/contacts" cardTitle="Контакти" cardDesc="Зв'яжіться з нами — відповімо на будь-які питання." cardLinkText="Написати" />

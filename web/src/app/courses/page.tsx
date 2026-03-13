@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Header from "@/app/components/header";
 
 type Course = {
   id: string;
@@ -112,24 +113,7 @@ export default function CoursesPage() {
     <div className="min-h-screen flex flex-col overflow-hidden">
       <div ref={starfieldRef} className="starfield" />
 
-      {/* HEADER */}
-      <header className="relative z-10 w-full border-b border-[rgba(201,169,110,0.08)]">
-        <div className="w-full flex items-center justify-between"
-          style={{ padding: "16px clamp(16px, 5vw, 80px)" }}>
-          <Link href="/home" className="font-serif text-xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
-            KAYA
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/courses" className="nav-link text-[0.85rem] text-[var(--gold-light)]">Курси</Link>
-            <Link href="/about" className="nav-link text-[0.85rem]">Про нас</Link>
-            <Link href="/contacts" className="nav-link text-[0.85rem]">Контакти</Link>
-          </nav>
-          <div className="flex items-center gap-2 md:gap-4">
-            <Link href="/login" className="nav-link text-[0.7rem] md:text-[0.85rem]">Увійти</Link>
-            <Link href="/register" className="header-btn text-[0.65rem] md:text-[0.85rem] px-3 md:px-5 py-2">Реєстрація</Link>
-          </div>
-        </div>
-      </header>
+      <Header activePage="courses" />
 
       {/* MAIN */}
       <main className="relative z-10 flex-1 flex flex-col">
