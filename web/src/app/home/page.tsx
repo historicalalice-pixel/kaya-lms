@@ -137,7 +137,6 @@ function WaxSeal({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* SEAL */}
       <svg
         ref={svgRef}
         viewBox="0 0 200 200"
@@ -155,8 +154,6 @@ function WaxSeal({
           pointerEvents: hovered ? "none" : "auto",
         }}
       />
-
-      {/* CARD */}
       <Link
         href={href}
         style={{
@@ -320,16 +317,18 @@ export default function HomePage() {
 
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-14">
-        <div className="max-w-[980px] w-full mx-auto text-center">
+        <div className="w-full mx-auto text-center" style={{ maxWidth: 980 }}>
+
           <p className="font-sans text-[0.9rem] md:text-[0.95rem] tracking-[0.38em] uppercase text-[var(--gold-dim)] mb-7">
             Освітня платформа
           </p>
 
-          <h1 className="font-serif text-[clamp(2.6rem,5.4vw,4.9rem)] font-light leading-[1.12] text-[var(--text)] mb-8 max-w-[1000px] mx-auto">
+          <h1 className="font-serif text-[clamp(2.6rem,5.4vw,4.9rem)] font-light leading-[1.12] text-[var(--text)] mb-8 mx-auto">
             Простір, де історія набуває голосу.
           </h1>
 
-          <div className="mb-14 max-w-[820px] mx-auto text-center">
+          {/* Підзаголовок — по центру, без max-w що зсуває вліво */}
+          <div className="mb-14 text-center">
             <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)]">
               KAYA — платформа для вивчення історії з репетиторами.
             </p>
