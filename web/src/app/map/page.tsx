@@ -13,26 +13,19 @@ const TOPICS = [
     center: [33.0, 51.5] as [number, number],
     zoom: 5.2,
     color: "#c9a96e",
-    // Класичні кордони X ст. — від Новгорода до Чорного моря
     territory: {
       type: "Feature" as const,
       properties: { name: "Київська Русь" },
       geometry: {
         type: "Polygon" as const,
         coordinates: [[
-          // Північ — Новгород
           [30.5, 58.5], [32.0, 59.5], [34.5, 59.0],
-          // Схід — Ростов, Суздаль
           [38.0, 57.5], [40.5, 56.5], [41.0, 54.0],
-          // Чернігів, Переяслав
           [39.0, 51.5], [37.5, 50.5],
-          // Тмутаракань (Крим/Азов)
           [36.5, 47.5], [34.0, 45.5], [33.5, 44.5],
-          // Захід — Галич, Волинь
           [31.0, 46.5], [29.0, 46.0],
           [24.5, 48.5], [23.5, 50.5],
           [24.0, 52.5], [26.0, 54.5],
-          // Назад на Новгород
           [28.5, 57.0], [30.5, 58.5]
         ]]
       }
@@ -57,20 +50,15 @@ const TOPICS = [
     center: [32.5, 49.5] as [number, number],
     zoom: 6.0,
     color: "#e2c992",
-    // Гетьманщина після Зборівського договору 1649
     territory: {
       type: "Feature" as const,
       properties: { name: "Гетьманщина" },
       geometry: {
         type: "Polygon" as const,
         coordinates: [[
-          // Північ
           [29.5, 52.4], [31.5, 53.0], [33.5, 52.8], [35.5, 52.0],
-          // Схід — Слобожанщина
           [37.5, 51.0], [38.0, 49.5],
-          // Південь — Запоріжжя
           [35.5, 47.8], [34.0, 47.2], [32.0, 46.8],
-          // Захід — Поділля
           [30.0, 47.5], [28.5, 48.5],
           [27.5, 50.0], [28.0, 51.5],
           [29.5, 52.4]
@@ -78,10 +66,10 @@ const TOPICS = [
       }
     },
     events: [
-      { id: 1, year: 1648, title: "Битва під Жовтими Водами", coords: [33.35, 48.35] as [number, number], desc: "Перша перемога Богдана Хмельницького над польськими військами. Початок Національно-визвольної війни українського народу." },
+      { id: 1, year: 1648, title: "Битва під Жовтими Водами", coords: [33.35, 48.35] as [number, number], desc: "Перша перемога Богдана Хмельницького над польськими військами. Початок Національно-визвольної війни." },
       { id: 2, year: 1649, title: "Битва під Зборовом", coords: [25.15, 49.67] as [number, number], desc: "Козацько-татарське військо оточує польського короля Яна II Казимира. Зборівський мирний договір." },
-      { id: 3, year: 1654, title: "Переяславська рада", coords: [31.45, 50.07] as [number, number], desc: "Рада у Переяславі. Гетьман Хмельницький укладає союз з Московським царством — дискусійна сторінка історії." },
-      { id: 4, year: 1709, title: "Полтавська битва", coords: [34.55, 49.59] as [number, number], desc: "Поразка шведського короля Карла XII та гетьмана Мазепи. Фактичний кінець незалежної козацької політики." },
+      { id: 3, year: 1654, title: "Переяславська рада", coords: [31.45, 50.07] as [number, number], desc: "Рада у Переяславі. Гетьман Хмельницький укладає союз з Московським царством." },
+      { id: 4, year: 1709, title: "Полтавська битва", coords: [34.55, 49.59] as [number, number], desc: "Поразка Карла XII та Мазепи. Фактичний кінець незалежної козацької політики." },
     ],
     figures: [
       { name: "Богдан Хмельницький", years: "1595–1657", role: "Гетьман, засновник Гетьманщини, полководець" },
@@ -97,21 +85,16 @@ const TOPICS = [
     center: [30.5, 49.8] as [number, number],
     zoom: 6.0,
     color: "#f0d080",
-    // Кордони УНР + ЗУНР після Акту Злуки 1919
     territory: {
       type: "Feature" as const,
       properties: { name: "УНР та ЗУНР" },
       geometry: {
         type: "Polygon" as const,
         coordinates: [[
-          // Північ
           [27.5, 52.0], [30.0, 52.5], [32.5, 52.3], [34.5, 52.0],
-          // Схід — Харків, Донбас
           [36.5, 51.0], [37.5, 49.5], [37.0, 47.8],
-          // Південь — Крим (під УНР)
           [35.5, 46.5], [34.0, 45.0], [33.0, 44.5],
           [31.0, 46.0], [29.5, 46.2],
-          // Захід — ЗУНР (Галичина)
           [22.5, 48.0], [22.0, 49.5], [23.5, 50.5],
           [24.5, 51.5], [26.0, 52.0], [27.5, 52.0]
         ]]
@@ -119,7 +102,7 @@ const TOPICS = [
     },
     events: [
       { id: 1, year: 1917, title: "Проголошення УНР", coords: [30.52, 50.45] as [number, number], desc: "Українська Центральна Рада проголошує Українську Народну Республіку у складі федеративної Росії." },
-      { id: 2, year: 1918, title: "IV Універсал. Незалежність", coords: [30.62, 50.38] as [number, number], desc: "22 січня 1918 року — УНР проголошує повну незалежність від Росії. Перша незалежна українська держава." },
+      { id: 2, year: 1918, title: "IV Універсал. Незалежність", coords: [30.62, 50.38] as [number, number], desc: "22 січня 1918 — УНР проголошує повну незалежність від Росії. Перша незалежна українська держава." },
       { id: 3, year: 1918, title: "Проголошення ЗУНР", coords: [24.02, 49.84] as [number, number], desc: "Листопад 1918 — Західноукраїнська Народна Республіка зі столицею у Львові після розпаду Австро-Угорщини." },
       { id: 4, year: 1919, title: "Акт Злуки", coords: [30.52, 51.50] as [number, number], desc: "22 січня 1919 у Києві — урочисте об'єднання УНР і ЗУНР в єдину соборну українську державу." },
     ],
@@ -141,6 +124,7 @@ export default function MapPage() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Ініціалізація Mapbox
   useEffect(() => {
     if (mapInstanceRef.current || !mapRef.current) return;
 
@@ -155,7 +139,6 @@ export default function MapPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mapboxgl = (window as any).mapboxgl;
       mapboxgl.accessToken = MAPBOX_TOKEN;
-
       const map = new mapboxgl.Map({
         container: mapRef.current,
         style: "mapbox://styles/mapbox/dark-v11",
@@ -163,7 +146,6 @@ export default function MapPage() {
         zoom: activeTopic.zoom,
         projection: "mercator",
       });
-
       map.on("load", () => {
         setMapLoaded(true);
         mapInstanceRef.current = map;
@@ -181,6 +163,7 @@ export default function MapPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Оновлення теми
   useEffect(() => {
     if (!mapLoaded || !mapInstanceRef.current) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,30 +174,16 @@ export default function MapPage() {
     map.flyTo({ center: activeTopic.center, zoom: activeTopic.zoom, duration: 1800 });
     setActiveEvent(null);
 
-    ["territory-fill", "territory-outline"].forEach((id) => {
-      if (map.getLayer(id)) map.removeLayer(id);
-    });
-    ["territory-source"].forEach((id) => {
-      if (map.getSource(id)) map.removeSource(id);
-    });
+    ["territory-fill", "territory-outline"].forEach((id) => { if (map.getLayer(id)) map.removeLayer(id); });
+    ["territory-source"].forEach((id) => { if (map.getSource(id)) map.removeSource(id); });
     document.querySelectorAll(".kaya-marker").forEach((el) => el.remove());
 
     map.addSource("territory-source", {
       type: "geojson",
       data: { type: "FeatureCollection", features: [activeTopic.territory] },
     });
-    map.addLayer({
-      id: "territory-fill",
-      type: "fill",
-      source: "territory-source",
-      paint: { "fill-color": activeTopic.color, "fill-opacity": 0.1 },
-    });
-    map.addLayer({
-      id: "territory-outline",
-      type: "line",
-      source: "territory-source",
-      paint: { "line-color": activeTopic.color, "line-width": 1.5, "line-opacity": 0.55 },
-    });
+    map.addLayer({ id: "territory-fill", type: "fill", source: "territory-source", paint: { "fill-color": activeTopic.color, "fill-opacity": 0.1 } });
+    map.addLayer({ id: "territory-outline", type: "line", source: "territory-source", paint: { "line-color": activeTopic.color, "line-width": 1.5, "line-opacity": 0.55 } });
 
     activeTopic.events.forEach((event) => {
       const el = document.createElement("div");
@@ -231,352 +200,156 @@ export default function MapPage() {
         transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
       `;
       el.textContent = String(event.year);
-
       el.addEventListener("mouseenter", () => {
-        el.style.borderColor = "#fff";
-        el.style.color = "#fff";
+        el.style.borderColor = "#fff"; el.style.color = "#fff";
         el.style.boxShadow = `0 0 20px ${activeTopic.color}99`;
       });
       el.addEventListener("mouseleave", () => {
-        el.style.borderColor = activeTopic.color;
-        el.style.color = activeTopic.color;
+        el.style.borderColor = activeTopic.color; el.style.color = activeTopic.color;
         el.style.boxShadow = `0 0 14px ${activeTopic.color}55`;
       });
       el.addEventListener("click", () => setActiveEvent(event));
-
-      new mapboxgl.Marker({ element: el, anchor: "center" })
-        .setLngLat(event.coords)
-        .addTo(map);
+      new mapboxgl.Marker({ element: el, anchor: "center" }).setLngLat(event.coords).addTo(map);
     });
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTopic, mapLoaded]);
 
-  // Resize карти при зміні fullscreen
+  // Resize карти при fullscreen
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     setTimeout(() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (mapInstanceRef.current as any).resize();
-    }, 350);
+    }, 50);
   }, [isFullscreen]);
 
   const topic = activeTopic;
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#0a0a0c",
-      display: "flex", flexDirection: "column",
-      position: "relative",
-    }}>
-
-      {/* HEADER */}
-      <header style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        paddingLeft: "clamp(20px, 5vw, 80px)", paddingRight: "clamp(20px, 5vw, 80px)",
-        paddingTop: 20, paddingBottom: 16,
-        borderBottom: "1px solid rgba(201,169,110,0.1)",
-        flexShrink: 0,
-      }}>
-        <Link href="/home" style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: "1.8rem", letterSpacing: "0.24em",
-          color: "rgba(245,239,230,0.9)", textDecoration: "none", fontWeight: 300,
-        }}>KAYA</Link>
-
-        <span style={{
-          fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
-          letterSpacing: "0.3em", textTransform: "uppercase",
-          color: "rgba(138,116,68,0.8)",
-        }}>Інтерактивна карта</span>
-
-        <Link href="/dashboard" style={{
-          fontFamily: "'Manrope', sans-serif", fontSize: "0.72rem",
-          letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(201,169,110,0.7)", textDecoration: "none",
-        }}>← Кабінет</Link>
-      </header>
-
-      {/* TOPIC SWITCHER */}
+    <>
+      {/* Головний контейнер — стає fixed при fullscreen */}
       <div style={{
-        display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)",
-        flexShrink: 0, overflowX: "auto",
+        position: isFullscreen ? "fixed" : "relative",
+        inset: isFullscreen ? 0 : "auto",
+        zIndex: isFullscreen ? 200 : "auto",
+        minHeight: isFullscreen ? "100vh" : "100vh",
+        background: "#0a0a0c",
+        display: "flex", flexDirection: "column",
       }}>
-        {TOPICS.map((t) => (
-          <button key={t.id} onClick={() => setActiveTopic(t)} style={{
-            padding: "14px 28px", background: "transparent", border: "none",
-            borderBottom: activeTopic.id === t.id ? `2px solid ${t.color}` : "2px solid transparent",
-            cursor: "pointer", fontFamily: "'Manrope', sans-serif",
-            fontSize: "0.72rem", letterSpacing: "0.15em", textTransform: "uppercase",
-            color: activeTopic.id === t.id ? t.color : "rgba(154,149,141,0.6)",
-            whiteSpace: "nowrap", transition: "all 0.3s",
+
+        {/* HEADER — тільки в звичайному режимі */}
+        {!isFullscreen && (
+          <header style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            paddingLeft: "clamp(20px, 5vw, 80px)", paddingRight: "clamp(20px, 5vw, 80px)",
+            paddingTop: 20, paddingBottom: 16,
+            borderBottom: "1px solid rgba(201,169,110,0.1)",
+            flexShrink: 0,
           }}>
-            {t.label}
-            <span style={{ marginLeft: 8, fontSize: "0.6rem", opacity: 0.6 }}>{t.period}</span>
-          </button>
-        ))}
-      </div>
+            <Link href="/home" style={{
+              fontFamily: "'Cormorant Garamond', serif", fontSize: "1.8rem",
+              letterSpacing: "0.24em", color: "rgba(245,239,230,0.9)",
+              textDecoration: "none", fontWeight: 300,
+            }}>KAYA</Link>
+            <span style={{
+              fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
+              letterSpacing: "0.3em", textTransform: "uppercase",
+              color: "rgba(138,116,68,0.8)",
+            }}>Інтерактивна карта</span>
+            <Link href="/dashboard" style={{
+              fontFamily: "'Manrope', sans-serif", fontSize: "0.72rem",
+              letterSpacing: "0.18em", textTransform: "uppercase",
+              color: "rgba(201,169,110,0.7)", textDecoration: "none",
+            }}>← Кабінет</Link>
+          </header>
+        )}
 
-      {/* MAIN LAYOUT */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
-
-        {/* КАРТА */}
-        <div style={{ flex: 1, position: "relative" }}>
-          <div ref={mapRef} style={{ width: "100%", height: "100%" }}>
-            {!mapLoaded && (
-              <div style={{
-                position: "absolute", inset: 0, display: "flex",
-                alignItems: "center", justifyContent: "center",
-                background: "#0a0a0c", zIndex: 10,
-              }}>
-                <p style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "1.2rem", fontStyle: "italic",
-                  color: "rgba(201,169,110,0.5)",
-                }}>Завантаження карти...</p>
-              </div>
-            )}
-          </div>
-
-          {/* Кнопка повного екрану */}
-          <button
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            style={{
-              position: "absolute", top: 12, right: 12, zIndex: 20,
-              width: 36, height: 36,
-              background: "rgba(10,10,12,0.9)",
-              border: "1px solid rgba(201,169,110,0.3)",
-              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              color: "rgba(201,169,110,0.7)",
-              transition: "all 0.2s",
-            }}
-            title={isFullscreen ? "Зменшити" : "Повний екран"}
-          >
-            {isFullscreen ? (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 5H5V2M9 2V5H12M12 9H9V12M5 12V9H2" stroke="currentColor" strokeWidth="1.5"/>
-              </svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 4V1H4M10 1H13V4M13 10V13H10M4 13H1V10" stroke="currentColor" strokeWidth="1.5"/>
-              </svg>
-            )}
-          </button>
-
-          {/* Картка події поверх карти (fullscreen або завжди на мобільному) */}
-          {activeEvent && isFullscreen && (
-            <div style={{
-              position: "absolute", bottom: 24, left: "50%",
-              transform: "translateX(-50%)",
-              width: "min(480px, calc(100% - 48px))",
-              background: "rgba(10,10,12,0.97)",
-              border: `1px solid ${topic.color}55`,
-              padding: "20px 24px", zIndex: 30,
-              boxShadow: `0 0 40px rgba(0,0,0,0.8)`,
+        {/* TOPIC SWITCHER */}
+        <div style={{
+          display: "flex",
+          borderBottom: "1px solid rgba(201,169,110,0.08)",
+          flexShrink: 0, overflowX: "auto",
+          paddingLeft: isFullscreen ? 8 : 0,
+        }}>
+          {TOPICS.map((t) => (
+            <button key={t.id} onClick={() => setActiveTopic(t)} style={{
+              padding: isFullscreen ? "10px 20px" : "14px 28px",
+              background: "transparent", border: "none",
+              borderBottom: activeTopic.id === t.id ? `2px solid ${t.color}` : "2px solid transparent",
+              cursor: "pointer", fontFamily: "'Manrope', sans-serif",
+              fontSize: "0.72rem", letterSpacing: "0.15em", textTransform: "uppercase",
+              color: activeTopic.id === t.id ? t.color : "rgba(154,149,141,0.6)",
+              whiteSpace: "nowrap", transition: "all 0.3s",
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                <span style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem",
-                  letterSpacing: "0.2em", color: topic.color,
-                }}>{activeEvent.year} р.</span>
-                <button onClick={() => setActiveEvent(null)} style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  color: "rgba(154,149,141,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0,
-                }}>×</button>
-              </div>
-              <p style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "1.15rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 8,
-              }}>{activeEvent.title}</p>
-              <p style={{
-                fontFamily: "'Manrope', sans-serif", fontSize: "0.75rem",
-                color: "rgba(154,149,141,0.85)", lineHeight: 1.75,
-              }}>{activeEvent.desc}</p>
-            </div>
-          )}
+              {t.label}
+              <span style={{ marginLeft: 8, fontSize: "0.6rem", opacity: 0.6 }}>{t.period}</span>
+            </button>
+          ))}
+
+          {/* Кнопка fullscreen в switcher рядку */}
+          <button onClick={() => setIsFullscreen(!isFullscreen)} style={{
+            marginLeft: "auto", padding: "0 16px",
+            background: "transparent", border: "none",
+            borderBottom: "2px solid transparent",
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+            fontFamily: "'Manrope', sans-serif", fontSize: "0.62rem",
+            letterSpacing: "0.15em", textTransform: "uppercase",
+            color: "rgba(201,169,110,0.55)",
+            whiteSpace: "nowrap",
+          }}>
+            {isFullscreen ? (
+              <>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M1 4H4V1M8 1V4H11M11 8H8V11M4 11V8H1" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+                Згорнути
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M0 3V0H3M9 0H12V3M12 9V12H9M3 12H0V9" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+                Повний екран
+              </>
+            )}
+          </button>
         </div>
 
-        {/* БОКОВА ПАНЕЛЬ — прихована у fullscreen */}
-        {!isFullscreen && (
-          <div style={{
-            width: 320, flexShrink: 0,
-            background: "rgba(10,10,12,0.97)",
-            borderLeft: "1px solid rgba(201,169,110,0.1)",
-            display: "flex", flexDirection: "column", overflow: "hidden",
-          }}>
-            {/* Назва теми */}
-            <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
-              <p style={{
-                fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
-                letterSpacing: "0.3em", textTransform: "uppercase",
-                color: "rgba(138,116,68,0.7)", marginBottom: 8,
-              }}>{topic.period}</p>
-              <h2 style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "1.5rem", fontWeight: 300, color: "#e8e4dd", lineHeight: 1.2,
-              }}>{topic.label}</h2>
-            </div>
+        {/* MAIN LAYOUT */}
+        <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
 
-            {/* Активна подія */}
-            {activeEvent && (
-              <div style={{
-                margin: "14px 14px 0",
-                padding: "14px 16px",
-                background: "rgba(201,169,110,0.04)",
-                border: `1px solid ${topic.color}33`,
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                  <span style={{
-                    fontFamily: "'Manrope', sans-serif", fontSize: "0.62rem",
-                    letterSpacing: "0.2em", color: topic.color,
-                  }}>{activeEvent.year} р.</span>
-                  <button onClick={() => setActiveEvent(null)} style={{
-                    background: "none", border: "none", cursor: "pointer",
-                    color: "rgba(154,149,141,0.5)", fontSize: "1rem", lineHeight: 1, padding: 0,
-                  }}>×</button>
-                </div>
-                <p style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "1.05rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 8,
-                }}>{activeEvent.title}</p>
-                <p style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.72rem",
-                  color: "rgba(154,149,141,0.8)", lineHeight: 1.7,
-                }}>{activeEvent.desc}</p>
-              </div>
-            )}
-
-            {/* Вкладки */}
-            <div style={{ display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)", marginTop: 14 }}>
-              {(["events", "figures"] as const).map((tab) => (
-                <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                  flex: 1, padding: "10px",
-                  background: "transparent", border: "none",
-                  borderBottom: activeTab === tab ? `1px solid ${topic.color}` : "1px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Manrope', sans-serif",
-                  fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase",
-                  color: activeTab === tab ? topic.color : "rgba(154,149,141,0.5)",
-                  transition: "all 0.2s",
+          {/* КАРТА — один div, завжди в DOM */}
+          <div style={{ flex: 1, position: "relative" }}>
+            <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: 400 }}>
+              {!mapLoaded && (
+                <div style={{
+                  position: "absolute", inset: 0, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  background: "#0a0a0c", zIndex: 10,
                 }}>
-                  {tab === "events" ? "Хронологія" : "Постаті"}
-                </button>
-              ))}
-            </div>
-
-            {/* Список */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
-              {activeTab === "events" ? (
-                topic.events.map((event) => (
-                  <button key={event.id} onClick={() => setActiveEvent(event)} style={{
-                    width: "100%", textAlign: "left", padding: "13px 22px",
-                    background: activeEvent?.id === event.id ? "rgba(201,169,110,0.05)" : "transparent",
-                    border: "none",
-                    borderLeft: activeEvent?.id === event.id ? `2px solid ${topic.color}` : "2px solid transparent",
-                    cursor: "pointer", transition: "all 0.2s",
-                  }}>
-                    <span style={{
-                      fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
-                      letterSpacing: "0.15em", color: topic.color, display: "block", marginBottom: 4,
-                    }}>{event.year} р.</span>
-                    <span style={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontSize: "0.98rem", fontWeight: 300,
-                      color: "#e8e4dd", display: "block", lineHeight: 1.3,
-                    }}>{event.title}</span>
-                  </button>
-                ))
-              ) : (
-                topic.figures.map((figure) => (
-                  <div key={figure.name} style={{
-                    padding: "13px 22px",
-                    borderBottom: "1px solid rgba(201,169,110,0.05)",
-                  }}>
-                    <p style={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontSize: "1.02rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 4,
-                    }}>{figure.name}</p>
-                    <p style={{
-                      fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
-                      letterSpacing: "0.1em", color: topic.color, marginBottom: 4,
-                    }}>{figure.years}</p>
-                    <p style={{
-                      fontFamily: "'Manrope', sans-serif", fontSize: "0.7rem",
-                      color: "rgba(154,149,141,0.7)", lineHeight: 1.5,
-                    }}>{figure.role}</p>
-                  </div>
-                ))
+                  <p style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: "1.2rem", fontStyle: "italic",
+                    color: "rgba(201,169,110,0.5)",
+                  }}>Завантаження карти...</p>
+                </div>
               )}
             </div>
 
-            {!activeEvent && (
-              <div style={{ padding: "10px 22px", borderTop: "1px solid rgba(201,169,110,0.06)" }}>
-                <p style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem",
-                  letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6,
-                }}>Натискай на маркери на карті щоб дізнатись більше про подію</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* FULLSCREEN — повний екран overlay */}
-      {isFullscreen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "#0a0a0c",
-          display: "flex", flexDirection: "column",
-        }}>
-          {/* Мінімальний хедер у fullscreen */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "12px 20px",
-            borderBottom: "1px solid rgba(201,169,110,0.08)",
-            flexShrink: 0,
-          }}>
-            <div style={{ display: "flex", gap: 0 }}>
-              {TOPICS.map((t) => (
-                <button key={t.id} onClick={() => setActiveTopic(t)} style={{
-                  padding: "8px 18px", background: "transparent", border: "none",
-                  borderBottom: activeTopic.id === t.id ? `2px solid ${t.color}` : "2px solid transparent",
-                  cursor: "pointer", fontFamily: "'Manrope', sans-serif",
-                  fontSize: "0.68rem", letterSpacing: "0.15em", textTransform: "uppercase",
-                  color: activeTopic.id === t.id ? t.color : "rgba(154,149,141,0.5)",
-                  whiteSpace: "nowrap",
-                }}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => setIsFullscreen(false)} style={{
-              background: "rgba(201,169,110,0.06)",
-              border: "1px solid rgba(201,169,110,0.25)",
-              cursor: "pointer", padding: "7px 16px",
-              fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem",
-              letterSpacing: "0.15em", textTransform: "uppercase",
-              color: "rgba(201,169,110,0.7)",
-            }}>
-              ✕ Вийти
-            </button>
-          </div>
-
-          {/* Карта на весь екран */}
-          <div style={{ flex: 1, position: "relative" }}>
-            <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
-
-            {/* Картка події у fullscreen */}
+            {/* Картка події поверх карти */}
             {activeEvent && (
               <div style={{
-                position: "absolute", bottom: 28, left: "50%",
-                transform: "translateX(-50%)",
-                width: "min(520px, calc(100% - 48px))",
+                position: "absolute",
+                bottom: isFullscreen ? 28 : 20,
+                left: "50%", transform: "translateX(-50%)",
+                width: isFullscreen ? "min(520px, calc(100% - 48px))" : "min(380px, calc(100% - 32px))",
                 background: "rgba(10,10,12,0.97)",
                 border: `1px solid ${topic.color}44`,
-                padding: "22px 28px", zIndex: 30,
-                boxShadow: "0 8px 60px rgba(0,0,0,0.7)",
+                padding: "18px 22px", zIndex: 30,
+                boxShadow: "0 8px 50px rgba(0,0,0,0.7)",
+                pointerEvents: "auto",
               }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                   <span style={{
                     fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem",
                     letterSpacing: "0.2em", color: topic.color,
@@ -588,31 +361,109 @@ export default function MapPage() {
                 </div>
                 <p style={{
                   fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "1.2rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 10,
+                  fontSize: isFullscreen ? "1.2rem" : "1.05rem",
+                  fontWeight: 400, color: "#e8e4dd", marginBottom: 8,
                 }}>{activeEvent.title}</p>
                 <p style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.76rem",
-                  color: "rgba(154,149,141,0.85)", lineHeight: 1.75,
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: "0.74rem", color: "rgba(154,149,141,0.85)", lineHeight: 1.75,
                 }}>{activeEvent.desc}</p>
               </div>
             )}
-
-            {/* Кнопка згорнути */}
-            <button onClick={() => setIsFullscreen(false)} style={{
-              position: "absolute", top: 14, right: 14, zIndex: 20,
-              width: 36, height: 36,
-              background: "rgba(10,10,12,0.9)",
-              border: "1px solid rgba(201,169,110,0.3)",
-              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              color: "rgba(201,169,110,0.7)",
-            }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 5H5V2M9 2V5H12M12 9H9V12M5 12V9H2" stroke="currentColor" strokeWidth="1.5"/>
-              </svg>
-            </button>
           </div>
+
+          {/* БОКОВА ПАНЕЛЬ — прихована у fullscreen */}
+          {!isFullscreen && (
+            <div style={{
+              width: 320, flexShrink: 0,
+              background: "rgba(10,10,12,0.97)",
+              borderLeft: "1px solid rgba(201,169,110,0.1)",
+              display: "flex", flexDirection: "column", overflow: "hidden",
+            }}>
+              <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
+                <p style={{
+                  fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
+                  letterSpacing: "0.3em", textTransform: "uppercase",
+                  color: "rgba(138,116,68,0.7)", marginBottom: 8,
+                }}>{topic.period}</p>
+                <h2 style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: "1.5rem", fontWeight: 300, color: "#e8e4dd", lineHeight: 1.2,
+                }}>{topic.label}</h2>
+              </div>
+
+              {/* Вкладки */}
+              <div style={{ display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)", marginTop: 8 }}>
+                {(["events", "figures"] as const).map((tab) => (
+                  <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                    flex: 1, padding: "10px",
+                    background: "transparent", border: "none",
+                    borderBottom: activeTab === tab ? `1px solid ${topic.color}` : "1px solid transparent",
+                    cursor: "pointer", fontFamily: "'Manrope', sans-serif",
+                    fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase",
+                    color: activeTab === tab ? topic.color : "rgba(154,149,141,0.5)",
+                    transition: "all 0.2s",
+                  }}>
+                    {tab === "events" ? "Хронологія" : "Постаті"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Список */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
+                {activeTab === "events" ? (
+                  topic.events.map((event) => (
+                    <button key={event.id} onClick={() => setActiveEvent(event)} style={{
+                      width: "100%", textAlign: "left", padding: "13px 22px",
+                      background: activeEvent?.id === event.id ? "rgba(201,169,110,0.05)" : "transparent",
+                      border: "none",
+                      borderLeft: activeEvent?.id === event.id ? `2px solid ${topic.color}` : "2px solid transparent",
+                      cursor: "pointer", transition: "all 0.2s",
+                    }}>
+                      <span style={{
+                        fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
+                        letterSpacing: "0.15em", color: topic.color, display: "block", marginBottom: 4,
+                      }}>{event.year} р.</span>
+                      <span style={{
+                        fontFamily: "'Cormorant Garamond', serif", fontSize: "0.98rem",
+                        fontWeight: 300, color: "#e8e4dd", display: "block", lineHeight: 1.3,
+                      }}>{event.title}</span>
+                    </button>
+                  ))
+                ) : (
+                  topic.figures.map((figure) => (
+                    <div key={figure.name} style={{
+                      padding: "13px 22px", borderBottom: "1px solid rgba(201,169,110,0.05)",
+                    }}>
+                      <p style={{
+                        fontFamily: "'Cormorant Garamond', serif",
+                        fontSize: "1.02rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 4,
+                      }}>{figure.name}</p>
+                      <p style={{
+                        fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem",
+                        letterSpacing: "0.1em", color: topic.color, marginBottom: 4,
+                      }}>{figure.years}</p>
+                      <p style={{
+                        fontFamily: "'Manrope', sans-serif", fontSize: "0.7rem",
+                        color: "rgba(154,149,141,0.7)", lineHeight: 1.5,
+                      }}>{figure.role}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {!activeEvent && (
+                <div style={{ padding: "10px 22px", borderTop: "1px solid rgba(201,169,110,0.06)" }}>
+                  <p style={{
+                    fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem",
+                    letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6,
+                  }}>Натискай на маркери на карті щоб дізнатись більше</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
