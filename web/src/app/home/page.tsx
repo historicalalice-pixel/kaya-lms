@@ -6,19 +6,10 @@ import LogoutButton from "@/app/components/logout-button";
 import { createClient } from "@/lib/supabase/client";
 
 function WaxSeal({
-  label,
-  seed,
-  href,
-  cardTitle,
-  cardDesc,
-  cardLinkText,
+  label, seed, href, cardTitle, cardDesc, cardLinkText,
 }: {
-  label: string;
-  seed: number;
-  href: string;
-  cardTitle: string;
-  cardDesc: string;
-  cardLinkText: string;
+  label: string; seed: number; href: string;
+  cardTitle: string; cardDesc: string; cardLinkText: string;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -26,7 +17,6 @@ function WaxSeal({
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-
     const ns = "http://www.w3.org/2000/svg";
 
     function sr(s: number) {
@@ -66,25 +56,15 @@ function WaxSeal({
     const gradId = `g_${label.replace(/\s/g, "_")}_${seed}`;
     const grad = document.createElementNS(ns, "radialGradient");
     grad.setAttribute("id", gradId);
-    grad.setAttribute("cx", "50%");
-    grad.setAttribute("cy", "38%");
-    grad.setAttribute("r", "58%");
-    (
-      [
-        ["0%", "#1a1608"],
-        ["45%", "#2e2510"],
-        ["68%", "#5a4418"],
-        ["82%", "#8a6a28"],
-        ["92%", "#c9a96e"],
-        ["97%", "#e2c070"],
-        ["100%", "#a07a30"],
-      ] as [string, string][]
-    ).forEach(([offset, color]) => {
-      const stop = document.createElementNS(ns, "stop");
-      stop.setAttribute("offset", offset);
-      stop.setAttribute("stop-color", color);
-      grad.appendChild(stop);
-    });
+    grad.setAttribute("cx", "50%"); grad.setAttribute("cy", "38%"); grad.setAttribute("r", "58%");
+    ([ ["0%","#1a1608"],["45%","#2e2510"],["68%","#5a4418"],["82%","#8a6a28"],
+       ["92%","#c9a96e"],["97%","#e2c070"],["100%","#a07a30"] ] as [string,string][])
+      .forEach(([offset, color]) => {
+        const stop = document.createElementNS(ns, "stop");
+        stop.setAttribute("offset", offset);
+        stop.setAttribute("stop-color", color);
+        grad.appendChild(stop);
+      });
     defs.appendChild(grad);
     svg.appendChild(defs);
 
@@ -106,12 +86,10 @@ function WaxSeal({
     svg.appendChild(ring);
 
     const shadow = document.createElementNS(ns, "text");
-    shadow.setAttribute("x", "100");
-    shadow.setAttribute("y", "106");
+    shadow.setAttribute("x", "100"); shadow.setAttribute("y", "106");
     shadow.setAttribute("text-anchor", "middle");
     shadow.setAttribute("font-family", "Manrope, sans-serif");
-    shadow.setAttribute("font-size", "10");
-    shadow.setAttribute("font-weight", "400");
+    shadow.setAttribute("font-size", "10"); shadow.setAttribute("font-weight", "400");
     shadow.setAttribute("letter-spacing", "4");
     shadow.setAttribute("fill", "rgba(0,0,0,0.95)");
     shadow.setAttribute("transform", "translate(0.9,0.9)");
@@ -119,12 +97,10 @@ function WaxSeal({
     svg.appendChild(shadow);
 
     const text = document.createElementNS(ns, "text");
-    text.setAttribute("x", "100");
-    text.setAttribute("y", "106");
+    text.setAttribute("x", "100"); text.setAttribute("y", "106");
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("font-family", "Manrope, sans-serif");
-    text.setAttribute("font-size", "10");
-    text.setAttribute("font-weight", "400");
+    text.setAttribute("font-size", "10"); text.setAttribute("font-weight", "400");
     text.setAttribute("letter-spacing", "4");
     text.setAttribute("fill", "rgba(220,185,110,0.8)");
     text.textContent = label;
@@ -141,75 +117,31 @@ function WaxSeal({
         ref={svgRef}
         viewBox="0 0 200 200"
         style={{
-          width: 220,
-          height: 220,
-          display: "block",
-          overflow: "visible",
-          position: "absolute",
-          top: 0,
-          left: 0,
+          width: 220, height: 220, display: "block", overflow: "visible",
+          position: "absolute", top: 0, left: 0,
           transition: "opacity 0.45s ease, transform 0.45s ease",
           opacity: hovered ? 0 : 1,
           transform: hovered ? "scale(0.92)" : "scale(1)",
           pointerEvents: hovered ? "none" : "auto",
         }}
       />
-      <Link
-        href={href}
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          width: 240,
-          transform: hovered
-            ? "translate(-50%, -50%) scale(1)"
-            : "translate(-50%, -50%) scale(0.88)",
-          background: "rgba(12,10,7,0.97)",
-          border: "1px solid rgba(201,169,110,0.28)",
-          padding: "26px 22px",
-          zIndex: 10,
-          textDecoration: "none",
-          opacity: hovered ? 1 : 0,
-          transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
-          pointerEvents: hovered ? "auto" : "none",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "var(--font-serif), 'Cormorant Garamond', serif",
-            fontSize: "1.4rem",
-            fontWeight: 300,
-            color: "#e2c992",
-            letterSpacing: "0.05em",
-            marginBottom: 10,
-          }}
-        >
+      <Link href={href} style={{
+        position: "absolute", top: "50%", left: "50%", width: 240,
+        transform: hovered ? "translate(-50%, -50%) scale(1)" : "translate(-50%, -50%) scale(0.88)",
+        background: "rgba(12,10,7,0.97)",
+        border: "1px solid rgba(201,169,110,0.28)",
+        padding: "26px 22px", zIndex: 10, textDecoration: "none",
+        opacity: hovered ? 1 : 0,
+        transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
+        pointerEvents: hovered ? "auto" : "none",
+      }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 300, color: "#e2c992", letterSpacing: "0.05em", marginBottom: 10 }}>
           {cardTitle}
         </div>
-        <div
-          style={{
-            fontFamily: "var(--font-sans), 'Manrope', sans-serif",
-            fontSize: "0.78rem",
-            fontWeight: 300,
-            color: "#9a958d",
-            lineHeight: 1.75,
-          }}
-        >
+        <div style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.78rem", fontWeight: 300, color: "#9a958d", lineHeight: 1.75 }}>
           {cardDesc}
         </div>
-        <div
-          style={{
-            marginTop: 16,
-            display: "inline-block",
-            fontFamily: "var(--font-sans), 'Manrope', sans-serif",
-            fontSize: "0.6rem",
-            letterSpacing: "0.25em",
-            textTransform: "uppercase",
-            color: "#c9a96e",
-            borderBottom: "1px solid rgba(201,169,110,0.3)",
-            paddingBottom: 2,
-          }}
-        >
+        <div style={{ marginTop: 16, display: "inline-block", fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#c9a96e", borderBottom: "1px solid rgba(201,169,110,0.3)", paddingBottom: 2 }}>
           {cardLinkText} →
         </div>
       </Link>
@@ -242,56 +174,37 @@ export default function HomePage() {
       field.appendChild(star);
       stars.push(star);
     }
-    return () => { stars.forEach((star) => star.remove()); };
+    return () => { stars.forEach((s) => s.remove()); };
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
-
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getUser();
       if (!error && data.user) {
         setUserEmail(data.user.email ?? null);
-        // Завантажуємо full_name з профілю
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", data.user.id)
-          .single();
+          .from("profiles").select("full_name").eq("id", data.user.id).single();
         setUserName(profile?.full_name ?? null);
       } else {
-        setUserEmail(null);
-        setUserName(null);
+        setUserEmail(null); setUserName(null);
       }
       setAuthLoading(false);
     };
-
     loadUser();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUserEmail(session.user.email ?? null);
-        // Оновлюємо ім'я при зміні сесії
-        const supabase2 = createClient();
-        supabase2
-          .from("profiles")
-          .select("full_name")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            setUserName(profile?.full_name ?? null);
-          });
+        createClient().from("profiles").select("full_name").eq("id", session.user.id).single()
+          .then(({ data: p }) => setUserName(p?.full_name ?? null));
       } else {
-        setUserEmail(null);
-        setUserName(null);
+        setUserEmail(null); setUserName(null);
       }
       setAuthLoading(false);
     });
-
     return () => { subscription.unsubscribe(); };
   }, []);
 
-  // Показуємо ім'я якщо є, інакше email
   const displayName = userName || userEmail;
 
   return (
@@ -302,17 +215,9 @@ export default function HomePage() {
       <header className="relative z-10 w-full">
         <div
           className="w-full flex items-center justify-between"
-          style={{
-            paddingLeft: "clamp(28px, 7vw, 140px)",
-            paddingRight: "clamp(28px, 7vw, 140px)",
-            paddingTop: "28px",
-            paddingBottom: "20px",
-          }}
+          style={{ paddingLeft: "clamp(28px, 7vw, 140px)", paddingRight: "clamp(28px, 7vw, 140px)", paddingTop: "28px", paddingBottom: "20px" }}
         >
-          <Link
-            href="/"
-            className="font-serif text-[2.15rem] md:text-[2.75rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300"
-          >
+          <Link href="/" className="font-serif text-[2.15rem] md:text-[2.75rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)] hover:text-[var(--text)] transition-colors duration-300">
             KAYA
           </Link>
 
@@ -321,31 +226,23 @@ export default function HomePage() {
               <span className="font-sans text-[0.95rem] text-[var(--text-dim)]">...</span>
             ) : userEmail ? (
               <>
-                {/* Ім'я користувача */}
-                <span className="hidden md:inline font-sans text-[0.85rem] text-[var(--text-dim)] max-w-[200px] truncate">
+                <span className="hidden md:inline font-sans text-[0.85rem] text-[var(--text-dim)] max-w-[180px] truncate">
                   {displayName}
                 </span>
-                {/* Кнопка кабінету */}
-                <Link
-                  href="/dashboard"
-                  className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300"
-                >
+                <Link href="/map" className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(201,169,110,0.7)] hover:text-[var(--gold-light)] transition-colors duration-300">
+                  Карта
+                </Link>
+                <Link href="/dashboard" className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300">
                   Кабінет
                 </Link>
                 <LogoutButton />
               </>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  className="font-sans text-[0.92rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300"
-                >
+                <Link href="/login" className="font-sans text-[0.92rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300">
                   Увійти
                 </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center min-h-[48px] px-6 md:px-7 border border-[rgba(201,169,110,0.55)] bg-[rgba(201,169,110,0.04)] font-sans text-[0.9rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.95)] hover:border-[rgba(227,196,136,0.9)] hover:bg-[rgba(201,169,110,0.08)] transition-all duration-300"
-                >
+                <Link href="/register" className="inline-flex items-center justify-center min-h-[48px] px-6 md:px-7 border border-[rgba(201,169,110,0.55)] bg-[rgba(201,169,110,0.04)] font-sans text-[0.9rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.95)] hover:border-[rgba(227,196,136,0.9)] hover:bg-[rgba(201,169,110,0.08)] transition-all duration-300">
                   Реєстрація
                 </Link>
               </>
@@ -354,18 +251,15 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-14">
         <div className="w-full mx-auto text-center" style={{ maxWidth: 980 }}>
-
           <p className="font-sans text-[0.9rem] md:text-[0.95rem] tracking-[0.38em] uppercase text-[var(--gold-dim)] mb-7">
             Освітня платформа
           </p>
-
           <h1 className="font-serif text-[clamp(2.6rem,5.4vw,4.9rem)] font-light leading-[1.12] text-[var(--text)] mb-8 mx-auto">
             Простір, де історія набуває голосу.
           </h1>
-
           <div className="mb-14 text-center">
             <p className="font-sans text-[1.05rem] md:text-[1.18rem] font-light leading-[1.8] text-[var(--text-dim)]">
               KAYA — платформа для вивчення історії з репетиторами.
@@ -376,48 +270,15 @@ export default function HomePage() {
           </div>
 
           {/* WAX SEALS */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 40,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 64,
-            }}
-          >
-            <WaxSeal
-              label="КУРСИ"
-              seed={42.1}
-              href="/courses"
-              cardTitle="Курси"
-              cardDesc="Каталог програм з історії України та світу. Підготовка до НМТ."
-              cardLinkText="Переглянути"
-            />
-            <WaxSeal
-              label="ПРО НАС"
-              seed={87.5}
-              href="/about"
-              cardTitle="Про нас"
-              cardDesc="KAYA — платформа з репетиторами для глибокого вивчення історії."
-              cardLinkText="Дізнатися більше"
-            />
-            <WaxSeal
-              label="КОНТАКТИ"
-              seed={133.9}
-              href="/contacts"
-              cardTitle="Контакти"
-              cardDesc="Зв'яжіться з нами — відповімо на будь-які питання."
-              cardLinkText="Написати"
-            />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 40, alignItems: "center", justifyContent: "center", marginBottom: 64 }}>
+            <WaxSeal label="КУРСИ" seed={42.1} href="/courses" cardTitle="Курси" cardDesc="Каталог програм з історії України та світу. Підготовка до НМТ." cardLinkText="Переглянути" />
+            <WaxSeal label="ПРО НАС" seed={87.5} href="/about" cardTitle="Про нас" cardDesc="KAYA — платформа з репетиторами для глибокого вивчення історії." cardLinkText="Дізнатися більше" />
+            <WaxSeal label="КОНТАКТИ" seed={133.9} href="/contacts" cardTitle="Контакти" cardDesc="Зв'яжіться з нами — відповімо на будь-які питання." cardLinkText="Написати" />
           </div>
 
           {/* CTA */}
           <div className="flex items-center justify-center">
-            <Link
-              href="/register?role=student"
-              className="hero-cta w-full lg:w-[340px] text-center text-[0.98rem] md:text-[1rem] min-h-[60px] flex items-center justify-center"
-            >
+            <Link href="/register?role=student" className="hero-cta w-full lg:w-[340px] text-center text-[0.98rem] md:text-[1rem] min-h-[60px] flex items-center justify-center">
               Я учень — Почати навчання
             </Link>
           </div>
@@ -427,23 +288,13 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="relative z-10 py-6 px-6 border-t border-[rgba(201,169,110,0.08)]">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-serif text-[1.2rem] tracking-[0.18em] text-[var(--text-dim)]">
-            KAYA
-          </span>
+          <span className="font-serif text-[1.2rem] tracking-[0.18em] text-[var(--text-dim)]">KAYA</span>
           <div className="flex items-center gap-6">
-            <Link href="/about" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
-              Про нас
-            </Link>
-            <Link href="/contacts" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
-              Контакти
-            </Link>
-            <Link href="/privacy" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
-              Конфіденційність
-            </Link>
+            <Link href="/about" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">Про нас</Link>
+            <Link href="/contacts" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">Контакти</Link>
+            <Link href="/privacy" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">Конфіденційність</Link>
           </div>
-          <span className="font-sans text-[0.82rem] text-[var(--text-dim)]">
-            © 2026 KAYA LMS
-          </span>
+          <span className="font-sans text-[0.82rem] text-[var(--text-dim)]">© 2026 KAYA LMS</span>
         </div>
       </footer>
     </div>
