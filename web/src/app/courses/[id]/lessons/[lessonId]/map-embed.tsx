@@ -230,7 +230,7 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
 
       {/* КАРТА */}
       <div style={{ flex: 1, position: "relative" }}>
-        <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+        <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: "calc(100vh - 120px)" }} />
 
         {!mapLoaded && (
           <div style={{
