@@ -21,6 +21,7 @@ function WaxSeal({
   cardLinkText: string;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -131,60 +132,85 @@ function WaxSeal({
   }, [label, seed]);
 
   return (
-    <div className="group relative cursor-pointer" style={{ width: 200, height: 200 }}>
+    <div
+      style={{ position: "relative", width: 220, height: 220, cursor: "pointer" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* SEAL */}
       <svg
         ref={svgRef}
         viewBox="0 0 200 200"
         style={{
-          width: 200,
-          height: 200,
+          width: 220,
+          height: 220,
           display: "block",
           overflow: "visible",
           position: "absolute",
           top: 0,
           left: 0,
           transition: "opacity 0.45s ease, transform 0.45s ease",
+          opacity: hovered ? 0 : 1,
+          transform: hovered ? "scale(0.92)" : "scale(1)",
+          pointerEvents: hovered ? "none" : "auto",
         }}
-        className="group-hover:opacity-0 group-hover:scale-95"
       />
+
+      {/* CARD */}
       <Link
         href={href}
         style={{
           position: "absolute",
           top: "50%",
           left: "50%",
-          width: 220,
+          width: 240,
+          transform: hovered
+            ? "translate(-50%, -50%) scale(1)"
+            : "translate(-50%, -50%) scale(0.88)",
           background: "rgba(12,10,7,0.97)",
-          border: "1px solid rgba(201,169,110,0.22)",
-          padding: "24px 20px",
+          border: "1px solid rgba(201,169,110,0.28)",
+          padding: "26px 22px",
           zIndex: 10,
           textDecoration: "none",
-          transform: "translate(-50%, -50%) scale(0.88)",
-          opacity: 0,
+          opacity: hovered ? 1 : 0,
           transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
-          pointerEvents: "none",
+          pointerEvents: hovered ? "auto" : "none",
         }}
-        className="group-hover:opacity-100 group-hover:!scale-100 group-hover:!pointer-events-auto"
       >
         <div
-          className="font-serif font-light text-[1.4rem] mb-2"
-          style={{ color: "#e2c992", letterSpacing: "0.05em" }}
+          style={{
+            fontFamily: "var(--font-serif), 'Cormorant Garamond', serif",
+            fontSize: "1.4rem",
+            fontWeight: 300,
+            color: "#e2c992",
+            letterSpacing: "0.05em",
+            marginBottom: 10,
+          }}
         >
           {cardTitle}
         </div>
         <div
-          className="font-sans font-light text-[0.75rem] leading-[1.75]"
-          style={{ color: "#9a958d" }}
+          style={{
+            fontFamily: "var(--font-sans), 'Manrope', sans-serif",
+            fontSize: "0.78rem",
+            fontWeight: 300,
+            color: "#9a958d",
+            lineHeight: 1.75,
+          }}
         >
           {cardDesc}
         </div>
         <div
-          className="font-sans text-[0.6rem] uppercase mt-4 inline-block"
           style={{
+            marginTop: 16,
+            display: "inline-block",
+            fontFamily: "var(--font-sans), 'Manrope', sans-serif",
+            fontSize: "0.6rem",
+            letterSpacing: "0.25em",
+            textTransform: "uppercase",
             color: "#c9a96e",
             borderBottom: "1px solid rgba(201,169,110,0.3)",
             paddingBottom: 2,
-            letterSpacing: "0.25em",
           }}
         >
           {cardLinkText} →
@@ -313,7 +339,16 @@ export default function HomePage() {
           </div>
 
           {/* WAX SEALS */}
-          <div className="flex flex-wrap gap-10 items-center justify-center mb-16">
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 64,
+            }}
+          >
             <WaxSeal
               label="КУРСИ"
               seed={42.1}
