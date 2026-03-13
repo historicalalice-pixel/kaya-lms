@@ -229,9 +229,7 @@ export default function HomePage() {
                 <span className="hidden md:inline font-sans text-[0.85rem] text-[var(--text-dim)] max-w-[180px] truncate">
                   {displayName}
                 </span>
-                <Link href="/map" className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(201,169,110,0.7)] hover:text-[var(--gold-light)] transition-colors duration-300">
-                  Карта
-                </Link>
+
                 <Link href="/dashboard" className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300">
                   Кабінет
                 </Link>

@@ -34,10 +34,6 @@ export default async function Dashboard() {
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          {/* Посилання на карту */}
-          <Link href="/map" style={{ fontFamily: "var(--font-sans, 'Manrope', sans-serif)", fontSize: "0.72rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(201,169,110,0.7)", textDecoration: "none" }}>
-            Карта
-          </Link>
           <span style={{ fontSize: "0.85rem", color: "var(--text-dim, #9a958d)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {displayName}
           </span>
@@ -165,7 +161,6 @@ export default async function Dashboard() {
         {/* ШВИДКІ ПОСИЛАННЯ */}
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", paddingTop: 8, borderTop: "1px solid rgba(201,169,110,0.08)" }}>
           {[
-            { href: "/map", label: "Інтерактивна карта" },
             { href: "/courses", label: "Каталог курсів" },
             { href: "/about", label: "Про платформу" },
             { href: "/contacts", label: "Зв'язатися з нами" },
