@@ -5,70 +5,239 @@ import Link from "next/link";
 import LogoutButton from "@/app/components/logout-button";
 import { createClient } from "@/lib/supabase/client";
 
+function WaxSeal({
+  label,
+  seed,
+  href,
+  cardTitle,
+  cardDesc,
+  cardLinkText,
+}: {
+  label: string;
+  seed: number;
+  href: string;
+  cardTitle: string;
+  cardDesc: string;
+  cardLinkText: string;
+}) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const ns = "http://www.w3.org/2000/svg";
+
+    function sr(s: number) {
+      const x = Math.sin(s) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function makeBlobPath(cx: number, cy: number, avgR: number, s: number): string {
+      const n = 12;
+      const points: [number, number][] = [];
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const noise = sr(s + i * 17.3);
+        const noise2 = sr(s + i * 5.7 + 3);
+        const bulge = 0.78 + noise * 0.38 + (noise2 > 0.7 ? noise2 * 0.18 : 0);
+        const r = avgR * bulge;
+        points.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
+      }
+      let d = `M ${points[0][0].toFixed(1)},${points[0][1].toFixed(1)}`;
+      for (let i = 0; i < n; i++) {
+        const p0 = points[(i - 1 + n) % n];
+        const p1 = points[i];
+        const p2 = points[(i + 1) % n];
+        const p3 = points[(i + 2) % n];
+        const cp1x = p1[0] + (p2[0] - p0[0]) * 0.25;
+        const cp1y = p1[1] + (p2[1] - p0[1]) * 0.25;
+        const cp2x = p2[0] - (p3[0] - p1[0]) * 0.25;
+        const cp2y = p2[1] - (p3[1] - p1[1]) * 0.25;
+        d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+      }
+      return d + " Z";
+    }
+
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    const defs = document.createElementNS(ns, "defs");
+    const gradId = `g_${label.replace(/\s/g, "_")}_${seed}`;
+    const grad = document.createElementNS(ns, "radialGradient");
+    grad.setAttribute("id", gradId);
+    grad.setAttribute("cx", "50%");
+    grad.setAttribute("cy", "38%");
+    grad.setAttribute("r", "58%");
+    (
+      [
+        ["0%", "#1a1608"],
+        ["45%", "#2e2510"],
+        ["68%", "#5a4418"],
+        ["82%", "#8a6a28"],
+        ["92%", "#c9a96e"],
+        ["97%", "#e2c070"],
+        ["100%", "#a07a30"],
+      ] as [string, string][]
+    ).forEach(([offset, color]) => {
+      const stop = document.createElementNS(ns, "stop");
+      stop.setAttribute("offset", offset);
+      stop.setAttribute("stop-color", color);
+      grad.appendChild(stop);
+    });
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    const blob = document.createElementNS(ns, "path");
+    blob.setAttribute("d", makeBlobPath(100, 100, 88, seed));
+    blob.setAttribute("fill", `url(#${gradId})`);
+    svg.appendChild(blob);
+
+    const inner = document.createElementNS(ns, "path");
+    inner.setAttribute("d", makeBlobPath(100, 100, 66, seed + 99));
+    inner.setAttribute("fill", "#100e08");
+    svg.appendChild(inner);
+
+    const ring = document.createElementNS(ns, "path");
+    ring.setAttribute("d", makeBlobPath(100, 100, 68, seed + 99));
+    ring.setAttribute("fill", "none");
+    ring.setAttribute("stroke", "rgba(201,169,110,0.4)");
+    ring.setAttribute("stroke-width", "1");
+    svg.appendChild(ring);
+
+    const shadow = document.createElementNS(ns, "text");
+    shadow.setAttribute("x", "100");
+    shadow.setAttribute("y", "106");
+    shadow.setAttribute("text-anchor", "middle");
+    shadow.setAttribute("font-family", "Manrope, sans-serif");
+    shadow.setAttribute("font-size", "10");
+    shadow.setAttribute("font-weight", "400");
+    shadow.setAttribute("letter-spacing", "4");
+    shadow.setAttribute("fill", "rgba(0,0,0,0.95)");
+    shadow.setAttribute("transform", "translate(0.9,0.9)");
+    shadow.textContent = label;
+    svg.appendChild(shadow);
+
+    const text = document.createElementNS(ns, "text");
+    text.setAttribute("x", "100");
+    text.setAttribute("y", "106");
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("font-family", "Manrope, sans-serif");
+    text.setAttribute("font-size", "10");
+    text.setAttribute("font-weight", "400");
+    text.setAttribute("letter-spacing", "4");
+    text.setAttribute("fill", "rgba(220,185,110,0.8)");
+    text.textContent = label;
+    svg.appendChild(text);
+  }, [label, seed]);
+
+  return (
+    <div className="group relative cursor-pointer" style={{ width: 200, height: 200 }}>
+      <svg
+        ref={svgRef}
+        viewBox="0 0 200 200"
+        style={{
+          width: 200,
+          height: 200,
+          display: "block",
+          overflow: "visible",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          transition: "opacity 0.45s ease, transform 0.45s ease",
+        }}
+        className="group-hover:opacity-0 group-hover:scale-95"
+      />
+      <Link
+        href={href}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          width: 220,
+          background: "rgba(12,10,7,0.97)",
+          border: "1px solid rgba(201,169,110,0.22)",
+          padding: "24px 20px",
+          zIndex: 10,
+          textDecoration: "none",
+          transform: "translate(-50%, -50%) scale(0.88)",
+          opacity: 0,
+          transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
+          pointerEvents: "none",
+        }}
+        className="group-hover:opacity-100 group-hover:!scale-100 group-hover:!pointer-events-auto"
+      >
+        <div
+          className="font-serif font-light text-[1.4rem] mb-2"
+          style={{ color: "#e2c992", letterSpacing: "0.05em" }}
+        >
+          {cardTitle}
+        </div>
+        <div
+          className="font-sans font-light text-[0.75rem] leading-[1.75]"
+          style={{ color: "#9a958d" }}
+        >
+          {cardDesc}
+        </div>
+        <div
+          className="font-sans text-[0.6rem] uppercase mt-4 inline-block"
+          style={{
+            color: "#c9a96e",
+            borderBottom: "1px solid rgba(201,169,110,0.3)",
+            paddingBottom: 2,
+            letterSpacing: "0.25em",
+          }}
+        >
+          {cardLinkText} →
+        </div>
+      </Link>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const starfieldRef = useRef<HTMLDivElement>(null);
-
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const field = starfieldRef.current;
     if (!field) return;
-
     field.innerHTML = "";
-
     const stars: HTMLDivElement[] = [];
-
     for (let i = 0; i < 150; i++) {
       const star = document.createElement("div");
       star.classList.add("star");
-
       const rand = Math.random();
       if (rand < 0.55) star.classList.add("star--small");
       else if (rand < 0.85) star.classList.add("star--medium");
       else star.classList.add("star--large");
-
       star.style.setProperty("--dur", `${2 + Math.random() * 5}s`);
       star.style.setProperty("--delay", `${Math.random() * 6}s`);
       star.style.left = `${Math.random() * 100}%`;
       star.style.top = `${Math.random() * 100}%`;
-
       field.appendChild(star);
       stars.push(star);
     }
-
-    return () => {
-      stars.forEach((star) => star.remove());
-    };
+    return () => { stars.forEach((star) => star.remove()); };
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
-
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getUser();
-
       if (!error && data.user) {
         setUserEmail(data.user.email ?? null);
       } else {
         setUserEmail(null);
       }
-
       setAuthLoading(false);
     };
-
     loadUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserEmail(session?.user?.email ?? null);
       setAuthLoading(false);
     });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => { subscription.unsubscribe(); };
   }, []);
 
   return (
@@ -95,9 +264,7 @@ export default function HomePage() {
 
           <div className="flex items-center gap-5 md:gap-6">
             {authLoading ? (
-              <span className="font-sans text-[0.95rem] text-[var(--text-dim)]">
-                ...
-              </span>
+              <span className="font-sans text-[0.95rem] text-[var(--text-dim)]">...</span>
             ) : userEmail ? (
               <>
                 <span className="hidden md:inline font-sans text-[0.9rem] text-[var(--text-dim)] max-w-[260px] truncate">
@@ -145,58 +312,41 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* NAVIGATION CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
-            <Link
+          {/* WAX SEALS */}
+          <div className="flex flex-wrap gap-10 items-center justify-center mb-16">
+            <WaxSeal
+              label="КУРСИ"
+              seed={42.1}
               href="/courses"
-              className="kaya-card group p-8 md:p-10 text-center hover:border-[var(--gold-light)] transition-all duration-300"
-            >
-              <h3 className="font-serif text-[1.35rem] md:text-[1.55rem] text-[var(--gold-light)] mb-4">
-                Курси
-              </h3>
-              <p className="font-sans text-[0.98rem] md:text-[1.02rem] leading-[1.8] text-[var(--text-dim)] max-w-[240px] mx-auto">
-                Каталог програм навчання
-              </p>
-            </Link>
-
-            <Link
+              cardTitle="Курси"
+              cardDesc="Каталог програм з історії України та світу. Підготовка до НМТ."
+              cardLinkText="Переглянути"
+            />
+            <WaxSeal
+              label="ПРО НАС"
+              seed={87.5}
               href="/about"
-              className="kaya-card group p-8 md:p-10 text-center hover:border-[var(--gold-light)] transition-all duration-300"
-            >
-              <h3 className="font-serif text-[1.35rem] md:text-[1.55rem] text-[var(--gold-light)] mb-4">
-                Про нас
-              </h3>
-              <p className="font-sans text-[0.98rem] md:text-[1.02rem] leading-[1.8] text-[var(--text-dim)] max-w-[240px] mx-auto">
-                Що таке KAYA
-              </p>
-            </Link>
-
-            <Link
+              cardTitle="Про нас"
+              cardDesc="KAYA — платформа з репетиторами для глибокого вивчення історії."
+              cardLinkText="Дізнатися більше"
+            />
+            <WaxSeal
+              label="КОНТАКТИ"
+              seed={133.9}
               href="/contacts"
-              className="kaya-card group p-8 md:p-10 text-center hover:border-[var(--gold-light)] transition-all duration-300"
-            >
-              <h3 className="font-serif text-[1.35rem] md:text-[1.55rem] text-[var(--gold-light)] mb-4">
-                Контакти
-              </h3>
-              <p className="font-sans text-[0.98rem] md:text-[1.02rem] leading-[1.8] text-[var(--text-dim)] max-w-[240px] mx-auto">
-                Зв'язатися з нами
-              </p>
-            </Link>
+              cardTitle="Контакти"
+              cardDesc="Зв'яжіться з нами — відповімо на будь-які питання."
+              cardLinkText="Написати"
+            />
           </div>
 
-          {/* CTA BUTTONS */}
-          <div className="flex flex-col lg:flex-row gap-5 items-center justify-center">
+          {/* CTA BUTTON */}
+          <div className="flex items-center justify-center">
             <Link
               href="/register?role=student"
               className="hero-cta w-full lg:w-[340px] text-center text-[0.98rem] md:text-[1rem] min-h-[60px] flex items-center justify-center"
             >
               Я учень — Почати навчання
-            </Link>
-            <Link
-              href="/register?role=tutor"
-              className="hero-cta-secondary w-full lg:w-[340px] text-center text-[0.98rem] md:text-[1rem] min-h-[60px] flex items-center justify-center"
-            >
-              Я репетитор — Приєднатися
             </Link>
           </div>
         </div>
@@ -209,22 +359,13 @@ export default function HomePage() {
             KAYA
           </span>
           <div className="flex items-center gap-6">
-            <Link
-              href="/about"
-              className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
-            >
+            <Link href="/about" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
               Про нас
             </Link>
-            <Link
-              href="/contacts"
-              className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
-            >
+            <Link href="/contacts" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
               Контакти
             </Link>
-            <Link
-              href="/privacy"
-              className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors"
-            >
+            <Link href="/privacy" className="font-sans text-[0.82rem] text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors">
               Конфіденційність
             </Link>
           </div>
