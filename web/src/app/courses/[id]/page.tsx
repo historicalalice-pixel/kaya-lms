@@ -3,7 +3,8 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import LogoutButton from "../../components/logout-button";
 
-export default async function CoursePage({ params }: { params: { id: string } }) {
+export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
@@ -11,7 +12,7 @@ export default async function CoursePage({ params }: { params: { id: string } })
   const { data: course } = await supabase
     .from("courses")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!course) notFound();
@@ -19,13 +20,11 @@ export default async function CoursePage({ params }: { params: { id: string } })
   const { data: lessons } = await supabase
     .from("lessons")
     .select("*")
-    .eq("course_id", params.id)
+    .eq("course_id", id)
     .order("order_index");
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0c", display: "flex", flexDirection: "column" }}>
-
-      {/* HEADER */}
       <header style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "20px clamp(20px, 5vw, 80px) 16px",
@@ -51,7 +50,6 @@ export default async function CoursePage({ params }: { params: { id: string } })
         </div>
       </header>
 
-      {/* CONTENT */}
       <main style={{
         flex: 1, padding: "60px clamp(20px, 5vw, 80px)",
         maxWidth: 960, margin: "0 auto", width: "100%",
@@ -68,7 +66,7 @@ export default async function CoursePage({ params }: { params: { id: string } })
 
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {lessons?.map((lesson, i) => (
-            <Link key={lesson.id} href={`/courses/${params.id}/lessons/${lesson.id}`} style={{ textDecoration: "none" }}>
+            <Link key={lesson.id} href={`/courses/${id}/lessons/${lesson.id}`} style={{ textDecoration: "none" }}>
               <div style={{
                 padding: "28px 40px",
                 border: "1px solid rgba(201,169,110,0.08)",
