@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
+type Course = {
+  id: string;
+  title: string;
+  description: string;
+  order_index: number;
+};
+
 export default function CoursesPage() {
   const starfieldRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -11,30 +18,35 @@ export default function CoursesPage() {
   const startXRef = useRef(0);
   const scrollStartRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
 
-  // Визначаємо мобільний пристрій
+  // Завантажуємо курси з Supabase
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    fetch("/api/courses")
+      .then(r => r.json())
+      .then(data => setCourses(data))
+      .catch(() => setCourses([]));
   }, []);
 
+  // Мобільний
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Зірки
   useEffect(() => {
     const field = starfieldRef.current;
     if (!field) return;
-
     for (let i = 0; i < 150; i++) {
       const star = document.createElement("div");
       star.classList.add("star");
-
       const rand = Math.random();
       if (rand < 0.55) star.classList.add("star--small");
       else if (rand < 0.85) star.classList.add("star--medium");
       else star.classList.add("star--large");
-
       star.style.setProperty("--dur", (2 + Math.random() * 5) + "s");
       star.style.setProperty("--delay", (Math.random() * 6) + "s");
       star.style.left = Math.random() * 100 + "%";
@@ -43,88 +55,58 @@ export default function CoursesPage() {
     }
   }, []);
 
-  // Карусель тільки для десктопу
+  // Карусель
   useEffect(() => {
-    if (isMobile) return;
-    
+    if (isMobile || courses.length === 0) return;
     const track = trackRef.current;
     if (!track) return;
 
     let animationId: number;
-
     const cardWidth = 380 + 32;
-    const totalCards = 6;
+    const totalCards = courses.length;
     const resetPoint = cardWidth * totalCards;
 
     const animate = () => {
       if (!isDraggingRef.current) {
         positionRef.current -= 0.15;
-        
-        if (positionRef.current <= -resetPoint) {
-          positionRef.current = 0;
-        }
-        if (positionRef.current > 0) {
-          positionRef.current = -resetPoint + 10;
-        }
-        
+        if (positionRef.current <= -resetPoint) positionRef.current = 0;
+        if (positionRef.current > 0) positionRef.current = -resetPoint + 10;
         track.style.transform = `translateX(${positionRef.current}px)`;
       }
       animationId = requestAnimationFrame(animate);
     };
-
     animate();
 
     const handleMouseDown = (e: MouseEvent) => {
       isDraggingRef.current = true;
       startXRef.current = e.clientX;
       scrollStartRef.current = positionRef.current;
-      track.style.cursor = 'grabbing';
+      track.style.cursor = "grabbing";
     };
-
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
       const diff = e.clientX - startXRef.current;
       positionRef.current = scrollStartRef.current + diff;
-      
-      if (positionRef.current <= -resetPoint) {
-        positionRef.current = 0;
-        scrollStartRef.current = -diff;
-      }
-      if (positionRef.current > 0) {
-        positionRef.current = -resetPoint;
-        scrollStartRef.current = -resetPoint - diff;
-      }
-      
+      if (positionRef.current <= -resetPoint) { positionRef.current = 0; scrollStartRef.current = -diff; }
+      if (positionRef.current > 0) { positionRef.current = -resetPoint; scrollStartRef.current = -resetPoint - diff; }
       track.style.transform = `translateX(${positionRef.current}px)`;
     };
+    const handleMouseUp = () => { isDraggingRef.current = false; track.style.cursor = "grab"; };
 
-    const handleMouseUp = () => {
-      isDraggingRef.current = false;
-      track.style.cursor = 'grab';
-    };
-
-    track.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    track.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       cancelAnimationFrame(animationId);
-      track.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      track.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isMobile]);
+  }, [isMobile, courses]);
 
-  const programs = [
-    { title: "Історія України", desc: "Повний курс від давніх часів до сучасності", modules: 24, level: "Базовий — Поглиблений" },
-    { title: "Всесвітня історія", desc: "Ключові події та процеси світової цивілізації", modules: 20, level: "Базовий — Поглиблений" },
-    { title: "Підготовка до НМТ", desc: "Цілеспрямована підготовка з діагностикою та тестами", modules: 16, level: "Інтенсив" },
-    { title: "Тематичні інтенсиви", desc: "Глибоке занурення в окремі епохи та події", modules: 8, level: "Тематичний" },
-    { title: "Great War Protocol", desc: "Спецкурс: Перша та Друга світові війни", modules: 12, level: "Поглиблений" },
-    { title: "Спецмодулі", desc: "Авторські добірки, нестандартні теми та зв'язки", modules: 6, level: "Різний" },
-  ];
-
-  const duplicatedPrograms = [...programs, ...programs, ...programs];
+  // Дублюємо картки для безкінечної каруселі
+  const duplicatedCourses = [...courses, ...courses, ...courses];
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
@@ -132,15 +114,8 @@ export default function CoursesPage() {
 
       {/* HEADER */}
       <header className="relative z-10 w-full border-b border-[rgba(201,169,110,0.08)]">
-        <div
-          className="w-full flex items-center justify-between px-4 md:px-0"
-          style={{ 
-            paddingLeft: "clamp(16px, 5vw, 80px)", 
-            paddingRight: "clamp(16px, 5vw, 80px)", 
-            paddingTop: "16px", 
-            paddingBottom: "16px" 
-          }}
-        >
+        <div className="w-full flex items-center justify-between"
+          style={{ padding: "16px clamp(16px, 5vw, 80px)" }}>
           <Link href="/home" className="font-serif text-xl md:text-3xl tracking-[0.2em] text-[var(--text)]">
             KAYA
           </Link>
@@ -156,10 +131,9 @@ export default function CoursesPage() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <main className="relative z-10 flex-1 flex flex-col">
-        
-        {/* PAGE HEADER */}
+
         <div className="text-center px-4 pt-6">
           <Link href="/home" className="inline-flex items-center gap-2 text-[var(--text-dim)] hover:text-[var(--gold-light)] transition-colors mb-3">
             <span>←</span>
@@ -170,29 +144,30 @@ export default function CoursesPage() {
           </h1>
         </div>
 
-        {/* MOBILE: Вертикальний список */}
-        {isMobile ? (
+        {/* Завантаження */}
+        {courses.length === 0 && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="font-serif text-[1.1rem] italic" style={{ color: "rgba(201,169,110,0.4)" }}>
+              Завантаження курсів...
+            </p>
+          </div>
+        )}
+
+        {/* MOBILE */}
+        {isMobile && courses.length > 0 && (
           <div className="flex-1 px-4 py-8">
             <div className="flex flex-col gap-4">
-              {programs.map((program, i) => (
-                <div 
-                  key={i} 
-                  className="kaya-card p-5 flex flex-col"
-                >
+              {courses.map((course) => (
+                <div key={course.id} className="kaya-card p-5 flex flex-col">
                   <h3 className="font-serif text-[1.2rem] text-[var(--gold-light)] mb-2">
-                    {program.title}
+                    {course.title}
                   </h3>
                   <p className="font-sans text-[0.85rem] font-light leading-[1.6] text-[var(--text-dim)] mb-4">
-                    {program.desc}
+                    {course.description}
                   </p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="font-sans text-[0.7rem] tracking-[0.05em] text-[var(--text-dim)]">
-                      {program.modules} модулів · {program.level}
-                    </span>
-                    <Link 
-                      href={`/courses/${program.title.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="font-sans text-[0.7rem] tracking-[0.1em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors"
-                    >
+                  <div className="flex items-center justify-end mt-auto">
+                    <Link href={`/courses/${course.id}`}
+                      className="font-sans text-[0.7rem] tracking-[0.1em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors">
                       Детальніше →
                     </Link>
                   </div>
@@ -200,36 +175,33 @@ export default function CoursesPage() {
               ))}
             </div>
           </div>
-        ) : (
-          /* DESKTOP: Карусель */
+        )}
+
+        {/* DESKTOP карусель */}
+        {!isMobile && courses.length > 0 && (
           <div className="flex-1 flex items-center">
             <div className="relative w-full overflow-hidden">
-              <div 
+              <div
                 ref={trackRef}
                 className="flex gap-8 will-change-transform select-none"
-                style={{ paddingLeft: '60px', cursor: 'grab' }}
+                style={{ paddingLeft: "60px", cursor: "grab" }}
               >
-                {duplicatedPrograms.map((program, i) => (
-                  <div 
-                    key={i} 
+                {duplicatedCourses.map((course, i) => (
+                  <div
+                    key={`${course.id}-${i}`}
                     className="kaya-card group p-8 flex flex-col justify-between min-h-[300px] w-[380px] flex-shrink-0 hover:border-[var(--gold-light)] hover:scale-[1.02] transition-all duration-300"
                   >
                     <div>
                       <h3 className="font-serif text-[1.4rem] text-[var(--gold-light)] mb-4">
-                        {program.title}
+                        {course.title}
                       </h3>
                       <p className="font-sans text-[0.95rem] font-light leading-[1.8] text-[var(--text-dim)] mb-8">
-                        {program.desc}
+                        {course.description}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-sans text-[0.8rem] tracking-[0.1em] text-[var(--text-dim)]">
-                        {program.modules} модулів · {program.level}
-                      </span>
-                      <Link 
-                        href={`/courses/${program.title.toLowerCase().replace(/\s+/g, '-')}`}
-                        className="font-sans text-[0.8rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors"
-                      >
+                    <div className="flex items-center justify-end">
+                      <Link href={`/courses/${course.id}`}
+                        className="font-sans text-[0.8rem] tracking-[0.15em] uppercase text-[var(--gold-dim)] hover:text-[var(--gold-light)] transition-colors">
                         Детальніше →
                       </Link>
                     </div>
@@ -240,22 +212,18 @@ export default function CoursesPage() {
           </div>
         )}
 
-        {/* CTA - завжди внизу */}
         <div className="text-center px-4 py-8">
           <Link href="/register" className="hero-cta inline-block text-[0.8rem] md:text-[1rem]">
             Почати навчання
           </Link>
         </div>
-
       </main>
 
       {/* FOOTER */}
-      <footer className="relative z-10 py-4 md:py-6 px-4 md:px-6 border-t border-[rgba(201,169,110,0.08)]">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 md:gap-4">
+      <footer className="relative z-10 py-4 md:py-6 px-4 border-t border-[rgba(201,169,110,0.08)]">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="font-serif text-base md:text-lg tracking-[0.15em] text-[var(--text-dim)]">KAYA</span>
-          <span className="font-sans text-[0.65rem] md:text-[0.75rem] text-[var(--text-dim)]">
-            © 2026 KAYA LMS
-          </span>
+          <span className="font-sans text-[0.65rem] md:text-[0.75rem] text-[var(--text-dim)]">© 2026 KAYA LMS</span>
         </div>
       </footer>
     </div>
