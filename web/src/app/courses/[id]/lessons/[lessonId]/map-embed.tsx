@@ -124,8 +124,16 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [activeEvent, setActiveEvent] = useState<TopicEvent | null>(null);
   const [activeTab, setActiveTab] = useState<"events" | "figures">("events");
+  const [isMobile, setIsMobile] = useState(false);
 
   const topic = TOPICS.find(t => t.id === topicId) || TOPICS[0];
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const selectEvent = (ev: TopicEvent) => {
     setActiveEvent(ev);
@@ -210,14 +218,6 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
         transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
       `;
       el.textContent = String(ev.year);
-      el.addEventListener("mouseenter", () => {
-        el.style.borderColor = "#fff"; el.style.color = "#fff";
-        el.style.boxShadow = `0 0 20px ${topic.color}99`;
-      });
-      el.addEventListener("mouseleave", () => {
-        el.style.borderColor = topic.color; el.style.color = topic.color;
-        el.style.boxShadow = `0 0 14px ${topic.color}55`;
-      });
       el.addEventListener("click", () => selectEvent(ev));
       new mapboxgl.Marker({ element: el, anchor: "center", offset: offsets[index] || [0,0] })
         .setLngLat(ev.coords).addTo(map);
@@ -225,27 +225,107 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded]);
 
+  // ── МОБІЛЬНИЙ LAYOUT: карта зверху, панель знизу ──
+  if (isMobile) {
+    return (
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+        {/* КАРТА — 55% висоти */}
+        <div style={{ flex: "0 0 55%", position: "relative" }}>
+          <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+          {!mapLoaded && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0c" }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", fontStyle: "italic", color: "rgba(201,169,110,0.5)" }}>Завантаження карти...</p>
+            </div>
+          )}
+          {/* Popup події на карті */}
+          {activeEvent && (
+            <div style={{
+              position: "absolute", bottom: 10, left: 10, right: 10,
+              background: "rgba(10,10,12,0.97)",
+              border: `1px solid ${topic.color}44`,
+              padding: "12px 14px", zIndex: 30,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem", letterSpacing: "0.2em", color: topic.color }}>{activeEvent.year} р.</span>
+                <button onClick={closeEvent} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(154,149,141,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0 }}>×</button>
+              </div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.95rem", color: "#e8e4dd", marginBottom: 4 }}>{activeEvent.title}</p>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.7rem", color: "rgba(154,149,141,0.85)", lineHeight: 1.6 }}>{activeEvent.desc}</p>
+            </div>
+          )}
+        </div>
+
+        {/* ПАНЕЛЬ — 45% висоти, скролиться */}
+        <div style={{ flex: "0 0 45%", background: "rgba(10,10,12,0.97)", borderTop: "1px solid rgba(201,169,110,0.15)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Заголовок */}
+          <div style={{ padding: "12px 16px 8px", borderBottom: "1px solid rgba(201,169,110,0.08)", flexShrink: 0 }}>
+            <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.55rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(138,116,68,0.7)", marginBottom: 3 }}>{topic.period}</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", fontWeight: 300, color: "#e8e4dd" }}>{topic.label}</h2>
+          </div>
+
+          {/* Вкладки */}
+          <div style={{ display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)", flexShrink: 0 }}>
+            {(["events", "figures"] as const).map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                flex: 1, padding: "9px",
+                background: "transparent", border: "none",
+                borderBottom: activeTab === tab ? `1px solid ${topic.color}` : "1px solid transparent",
+                cursor: "pointer", fontFamily: "'Manrope', sans-serif",
+                fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase",
+                color: activeTab === tab ? topic.color : "rgba(154,149,141,0.5)",
+              }}>
+                {tab === "events" ? "Хронологія" : "Постаті"}
+              </button>
+            ))}
+          </div>
+
+          {/* Список */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "4px 0" }}>
+            {activeTab === "events" ? (
+              topic.events.map(ev => (
+                <button key={ev.id} onClick={() => selectEvent(ev)} style={{
+                  width: "100%", textAlign: "left", padding: "10px 16px",
+                  background: activeEvent?.id === ev.id ? "rgba(201,169,110,0.05)" : "transparent",
+                  border: "none",
+                  borderLeft: activeEvent?.id === ev.id ? `2px solid ${topic.color}` : "2px solid transparent",
+                  cursor: "pointer",
+                }}>
+                  <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.55rem", letterSpacing: "0.15em", color: topic.color, display: "block", marginBottom: 2 }}>{ev.year} р.</span>
+                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.95rem", fontWeight: 300, color: "#e8e4dd", display: "block", lineHeight: 1.3 }}>{ev.title}</span>
+                </button>
+              ))
+            ) : (
+              topic.figures.map(figure => (
+                <div key={figure.name} style={{ padding: "10px 16px", borderBottom: "1px solid rgba(201,169,110,0.05)" }}>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.95rem", color: "#e8e4dd", marginBottom: 2 }}>{figure.name}</p>
+                  <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.55rem", letterSpacing: "0.1em", color: topic.color, marginBottom: 3 }}>{figure.years}</p>
+                  <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem", color: "rgba(154,149,141,0.7)", lineHeight: 1.5 }}>{figure.role}</p>
+                </div>
+              ))
+            )}
+          </div>
+
+          {!activeEvent && (
+            <div style={{ padding: "8px 16px", borderTop: "1px solid rgba(201,169,110,0.06)", flexShrink: 0 }}>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.55rem", letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6 }}>Натискай на маркери щоб дізнатись більше</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── ДЕСКТОП LAYOUT: карта + бокова панель ──
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", overflow: "hidden" }}>
-
-      {/* КАРТА */}
       <div style={{ flex: 1, position: "relative" }}>
-        <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: "calc(100vh - 120px)" }} />
-
+        <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
         {!mapLoaded && (
-          <div style={{
-            position: "absolute", inset: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "#0a0a0c",
-          }}>
-            <p style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "1.2rem", fontStyle: "italic",
-              color: "rgba(201,169,110,0.5)",
-            }}>Завантаження карти...</p>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0c" }}>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", fontStyle: "italic", color: "rgba(201,169,110,0.5)" }}>Завантаження карти...</p>
           </div>
         )}
-
         {activeEvent && (
           <div style={{
             position: "absolute", bottom: 20, left: "50%",
@@ -257,51 +337,24 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
             boxShadow: "0 8px 50px rgba(0,0,0,0.7)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{
-                fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem",
-                letterSpacing: "0.2em", color: topic.color,
-              }}>{activeEvent.year} р.</span>
-              <button onClick={closeEvent} style={{
-                background: "none", border: "none", cursor: "pointer",
-                color: "rgba(154,149,141,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0,
-              }}>×</button>
+              <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem", letterSpacing: "0.2em", color: topic.color }}>{activeEvent.year} р.</span>
+              <button onClick={closeEvent} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(154,149,141,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0 }}>×</button>
             </div>
-            <p style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "1.05rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 8,
-            }}>{activeEvent.title}</p>
-            <p style={{
-              fontFamily: "'Manrope', sans-serif",
-              fontSize: "0.74rem", color: "rgba(154,149,141,0.85)", lineHeight: 1.75,
-            }}>{activeEvent.desc}</p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 8 }}>{activeEvent.title}</p>
+            <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.74rem", color: "rgba(154,149,141,0.85)", lineHeight: 1.75 }}>{activeEvent.desc}</p>
           </div>
         )}
       </div>
 
-      {/* БОКОВА ПАНЕЛЬ */}
-      <div style={{
-        width: 280, flexShrink: 0,
-        background: "rgba(10,10,12,0.97)",
-        borderLeft: "1px solid rgba(201,169,110,0.1)",
-        display: "flex", flexDirection: "column", overflow: "hidden",
-      }}>
+      <div style={{ width: 280, flexShrink: 0, background: "rgba(10,10,12,0.97)", borderLeft: "1px solid rgba(201,169,110,0.1)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ padding: "20px 20px 14px", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
-          <p style={{
-            fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem",
-            letterSpacing: "0.3em", textTransform: "uppercase",
-            color: "rgba(138,116,68,0.7)", marginBottom: 6,
-          }}>{topic.period}</p>
-          <h2 style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: "1.3rem", fontWeight: 300, color: "#e8e4dd", lineHeight: 1.2,
-          }}>{topic.label}</h2>
+          <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(138,116,68,0.7)", marginBottom: 6 }}>{topic.period}</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: "#e8e4dd", lineHeight: 1.2 }}>{topic.label}</h2>
         </div>
-
         <div style={{ display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
           {(["events", "figures"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
-              flex: 1, padding: "10px",
-              background: "transparent", border: "none",
+              flex: 1, padding: "10px", background: "transparent", border: "none",
               borderBottom: activeTab === tab ? `1px solid ${topic.color}` : "1px solid transparent",
               cursor: "pointer", fontFamily: "'Manrope', sans-serif",
               fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase",
@@ -312,7 +365,6 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
             </button>
           ))}
         </div>
-
         <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
           {activeTab === "events" ? (
             topic.events.map(ev => (
@@ -323,44 +375,23 @@ export default function MapEmbed({ topicId }: { topicId: string }) {
                 borderLeft: activeEvent?.id === ev.id ? `2px solid ${topic.color}` : "2px solid transparent",
                 cursor: "pointer", transition: "all 0.2s",
               }}>
-                <span style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem",
-                  letterSpacing: "0.15em", color: topic.color, display: "block", marginBottom: 4,
-                }}>{ev.year} р.</span>
-                <span style={{
-                  fontFamily: "'Cormorant Garamond', serif", fontSize: "0.95rem",
-                  fontWeight: 300, color: "#e8e4dd", display: "block", lineHeight: 1.3,
-                }}>{ev.title}</span>
+                <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem", letterSpacing: "0.15em", color: topic.color, display: "block", marginBottom: 4 }}>{ev.year} р.</span>
+                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.95rem", fontWeight: 300, color: "#e8e4dd", display: "block", lineHeight: 1.3 }}>{ev.title}</span>
               </button>
             ))
           ) : (
             topic.figures.map(figure => (
-              <div key={figure.name} style={{
-                padding: "13px 20px", borderBottom: "1px solid rgba(201,169,110,0.05)",
-              }}>
-                <p style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "1rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 4,
-                }}>{figure.name}</p>
-                <p style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem",
-                  letterSpacing: "0.1em", color: topic.color, marginBottom: 4,
-                }}>{figure.years}</p>
-                <p style={{
-                  fontFamily: "'Manrope', sans-serif", fontSize: "0.68rem",
-                  color: "rgba(154,149,141,0.7)", lineHeight: 1.5,
-                }}>{figure.role}</p>
+              <div key={figure.name} style={{ padding: "13px 20px", borderBottom: "1px solid rgba(201,169,110,0.05)" }}>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 4 }}>{figure.name}</p>
+                <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem", letterSpacing: "0.1em", color: topic.color, marginBottom: 4 }}>{figure.years}</p>
+                <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.68rem", color: "rgba(154,149,141,0.7)", lineHeight: 1.5 }}>{figure.role}</p>
               </div>
             ))
           )}
         </div>
-
         {!activeEvent && (
           <div style={{ padding: "10px 20px", borderTop: "1px solid rgba(201,169,110,0.06)" }}>
-            <p style={{
-              fontFamily: "'Manrope', sans-serif", fontSize: "0.56rem",
-              letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6,
-            }}>Натискай на маркери щоб дізнатись більше</p>
+            <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.56rem", letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6 }}>Натискай на маркери щоб дізнатись більше</p>
           </div>
         )}
       </div>
