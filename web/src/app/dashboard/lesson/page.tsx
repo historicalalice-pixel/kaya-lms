@@ -76,11 +76,9 @@ export default function LessonPage() {
   const borderFaint = "rgba(201,169,110,0.06)";
 
   useEffect(() => {
-    if (activeTab === "map") {
-      const t = setTimeout(() => setMapReady(true), 80);
-      return () => clearTimeout(t);
-    }
-  }, [activeTab]);
+    const t = setTimeout(() => setMapReady(true), 80);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!mapReady) return;
@@ -164,7 +162,7 @@ export default function LessonPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0c", color: textColor, fontFamily: "'Manrope', sans-serif", display: "flex" }}>
+    <div style={{ height: "100vh", background: "#0a0a0c", color: textColor, fontFamily: "'Manrope', sans-serif", display: "flex", overflow: "hidden" }}>
 
       {/* SIDEBAR */}
       <aside style={{ width: 220, flexShrink: 0, borderRight: "1px solid rgba(201,169,110,0.1)", display: "flex", flexDirection: "column", padding: "28px 0", position: "sticky", top: 0, height: "100vh", overflow: "hidden", background: "rgba(10,10,12,0.98)" }}>
@@ -228,7 +226,7 @@ export default function LessonPage() {
         </div>
 
         {/* CONTENT */}
-        <div style={{ flex: 1, overflow: activeTab === "map" ? "hidden" : "auto" }}>
+        <div style={{ flex: 1, overflow: activeTab === "map" ? "hidden" : "auto", display: activeTab === "map" ? "flex" : "block", flexDirection: "column" }}>
 
           {/* ТЕКСТ */}
           {activeTab === "text" && (
@@ -253,9 +251,8 @@ export default function LessonPage() {
             </div>
           )}
 
-          {/* КАРТА — точно як /map */}
-          {activeTab === "map" && (
-            <div style={{ flex: 1, display: "flex", overflow: "hidden", height: "100%" }}>
+          {/* КАРТА — завжди в DOM, просто ховаємо */}
+          <div style={{ flex: 1, display: activeTab === "map" ? "flex" : "none", overflow: "hidden" }}>
               <div style={{ flex: 1, position: "relative" }}>
                 <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: 400 }} />
                 {!mapLoaded && (
@@ -307,7 +304,6 @@ export default function LessonPage() {
                 )}
               </div>
             </div>
-          )}
 
           {/* КЛЮЧОВІ ДАТИ */}
           {activeTab === "dates" && (
