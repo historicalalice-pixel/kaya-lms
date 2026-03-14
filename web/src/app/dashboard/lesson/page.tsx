@@ -64,7 +64,6 @@ export default function LessonPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
 
   const topic = LESSON.topic;
 
@@ -75,70 +74,76 @@ export default function LessonPage() {
   const textDim = "rgba(154,149,141,0.7)";
   const borderFaint = "rgba(201,169,110,0.06)";
 
+  // Ініціалізація карти при завантаженні сторінки
   useEffect(() => {
-    const t = setTimeout(() => setMapReady(true), 80);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current || !mapRef.current) return;
+
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css";
+      document.head.appendChild(link);
+
+      const script = document.createElement("script");
+      script.src = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js";
+      script.onload = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapboxgl = (window as any).mapboxgl;
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        const map = new mapboxgl.Map({
+          container: mapRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: topic.center,
+          zoom: topic.zoom,
+          attributionControl: false,
+        });
+        mapInstanceRef.current = map;
+        map.on("load", () => {
+          map.addSource("territory", { type: "geojson", data: topic.territory });
+          map.addLayer({ id: "territory-fill", type: "fill", source: "territory", paint: { "fill-color": topic.color, "fill-opacity": 0.08 } });
+          map.addLayer({ id: "territory-line", type: "line", source: "territory", paint: { "line-color": topic.color, "line-width": 1.5, "line-opacity": 0.5 } });
+          const offsets: [number, number][] = [[0,0],[-22,-18],[20,-12],[0,0]];
+          topic.events.forEach((ev, index) => {
+            const el = document.createElement("div");
+            el.className = "kaya-marker";
+            const offset = offsets[index] || [0,0];
+            el.style.cssText = `
+              width:30px;height:30px;border-radius:50%;
+              background:rgba(10,10,12,0.95);
+              border:1.5px solid ${topic.color};
+              display:flex;align-items:center;justify-content:center;
+              cursor:pointer;
+              font-family:'Manrope',sans-serif;
+              font-size:8.5px;color:${topic.color};font-weight:600;
+              box-shadow:0 0 14px ${topic.color}55;
+              transition:all 0.2s;
+              margin-left:${offset[0]}px;margin-top:${offset[1]}px;
+            `;
+            el.textContent = String(ev.year);
+            el.addEventListener("mouseenter", () => { el.style.background = `${topic.color}22`; el.style.transform = "scale(1.15)"; });
+            el.addEventListener("mouseleave", () => { el.style.background = "rgba(10,10,12,0.95)"; el.style.transform = "scale(1)"; });
+            el.addEventListener("click", () => {
+              setActiveEvent(ev.id);
+              map.flyTo({ center: ev.coords, zoom: 7, duration: 1000 });
+            });
+            new mapboxgl.Marker({ element: el }).setLngLat(ev.coords).addTo(map);
+          });
+          setMapLoaded(true);
+        });
+      };
+      document.head.appendChild(script);
+    }, 100);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!mapReady) return;
-    if (mapInstanceRef.current) return;
-    if (!mapRef.current) return;
-
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css";
-    document.head.appendChild(link);
-
-    const script = document.createElement("script");
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js";
-    script.onload = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mapboxgl = (window as any).mapboxgl;
-      mapboxgl.accessToken = MAPBOX_TOKEN;
-      const map = new mapboxgl.Map({
-        container: mapRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: topic.center,
-        zoom: topic.zoom,
-        attributionControl: false,
-      });
-      mapInstanceRef.current = map;
-      map.on("load", () => {
-        map.addSource("territory", { type: "geojson", data: topic.territory });
-        map.addLayer({ id: "territory-fill", type: "fill", source: "territory", paint: { "fill-color": topic.color, "fill-opacity": 0.08 } });
-        map.addLayer({ id: "territory-line", type: "line", source: "territory", paint: { "line-color": topic.color, "line-width": 1.5, "line-opacity": 0.5 } });
-        const offsets: [number, number][] = [[0,0],[-22,-18],[20,-12],[0,0]];
-        topic.events.forEach((ev, index) => {
-          const el = document.createElement("div");
-          el.className = "kaya-marker";
-          const offset = offsets[index] || [0,0];
-          el.style.cssText = `
-            width:30px;height:30px;border-radius:50%;
-            background:rgba(10,10,12,0.95);
-            border:1.5px solid ${topic.color};
-            display:flex;align-items:center;justify-content:center;
-            cursor:pointer;
-            font-family:'Manrope',sans-serif;
-            font-size:8.5px;color:${topic.color};font-weight:600;
-            box-shadow:0 0 14px ${topic.color}55;
-            transition:all 0.2s;
-            margin-left:${offset[0]}px;margin-top:${offset[1]}px;
-          `;
-          el.textContent = String(ev.year);
-          el.addEventListener("mouseenter", () => { el.style.background = `${topic.color}22`; el.style.transform = "scale(1.15)"; });
-          el.addEventListener("mouseleave", () => { el.style.background = "rgba(10,10,12,0.95)"; el.style.transform = "scale(1)"; });
-          el.addEventListener("click", () => {
-            setActiveEvent(ev.id);
-            map.flyTo({ center: ev.coords, zoom: 7, duration: 1000 });
-          });
-          new mapboxgl.Marker({ element: el }).setLngLat(ev.coords).addTo(map);
-        });
-        setMapLoaded(true);
-      });
-    };
-    document.head.appendChild(script);
-  }, [mapReady, topic]);
+  // Resize карти коли переключаємось на вкладку map
+  const handleTabChange = (key: Tab) => {
+    setActiveTab(key);
+    if (key === "map" && mapInstanceRef.current) {
+      setTimeout(() => mapInstanceRef.current.resize(), 50);
+    }
+  };
 
   useEffect(() => {
     if (!mapInstanceRef.current || activeEvent === null) return;
@@ -165,7 +170,7 @@ export default function LessonPage() {
     <div style={{ height: "100vh", background: "#0a0a0c", color: textColor, fontFamily: "'Manrope', sans-serif", display: "flex", overflow: "hidden" }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width: 220, flexShrink: 0, borderRight: "1px solid rgba(201,169,110,0.1)", display: "flex", flexDirection: "column", padding: "28px 0", position: "sticky", top: 0, height: "100vh", overflow: "hidden", background: "rgba(10,10,12,0.98)" }}>
+      <aside style={{ width: 220, flexShrink: 0, borderRight: "1px solid rgba(201,169,110,0.1)", display: "flex", flexDirection: "column", padding: "28px 0", height: "100vh", overflow: "hidden", background: "rgba(10,10,12,0.98)" }}>
         <Link href="/home" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.8rem", fontWeight: 300, letterSpacing: "0.3em", color: "rgba(245,239,230,0.9)", textDecoration: "none", padding: "0 24px 20px", display: "block", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
           KAYA
         </Link>
@@ -218,155 +223,160 @@ export default function LessonPage() {
           </div>
           <div style={{ display: "flex", marginTop: 18 }}>
             {tabs.map(({ key, label }) => (
-              <button key={key} onClick={() => setActiveTab(key)} style={{ padding: "10px 22px", background: "transparent", border: "none", borderBottom: activeTab === key ? `2px solid ${goldDim}` : "2px solid transparent", cursor: "pointer", fontSize: "0.62rem", letterSpacing: "0.18em", textTransform: "uppercase", color: activeTab === key ? goldLight : "rgba(154,149,141,0.4)", transition: "all 0.2s" }}>
+              <button key={key} onClick={() => handleTabChange(key)} style={{ padding: "10px 22px", background: "transparent", border: "none", borderBottom: activeTab === key ? `2px solid ${goldDim}` : "2px solid transparent", cursor: "pointer", fontSize: "0.62rem", letterSpacing: "0.18em", textTransform: "uppercase", color: activeTab === key ? goldLight : "rgba(154,149,141,0.4)", transition: "all 0.2s" }}>
                 {label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* CONTENT */}
-        <div style={{ flex: 1, overflow: activeTab === "map" ? "hidden" : "auto", display: activeTab === "map" ? "flex" : "block", flexDirection: "column" }}>
+        {/* CONTENT WRAPPER */}
+        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
 
-          {/* ТЕКСТ */}
-          {activeTab === "text" && (
-            <div style={{ maxWidth: 740, margin: "0 auto", padding: "40px 32px" }}>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: goldLight, marginBottom: 14 }}>Передумови хрещення</h2>
-              <p style={{ fontSize: "0.9rem", color: "rgba(232,228,221,0.78)", lineHeight: 1.9, marginBottom: 16 }}>
-                У 988 році князь Володимир Великий прийняв рішення, яке назавжди змінило долю Київської Русі. Хрещення у водах Дніпра стало не лише релігійним актом — це був свідомий геополітичний вибір, що відкрив Русі шлях до великих цивілізацій Середземномор&apos;я.
-              </p>
-              <blockquote style={{ borderLeft: "2px solid rgba(201,169,110,0.3)", paddingLeft: 20, margin: "24px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(226,201,146,0.6)", lineHeight: 1.75 }}>
-                «І звелів хрестити людей у Дніпрі, і хто не хотів того, противився наказу...»
-                <span style={{ display: "block", marginTop: 6, fontSize: "0.72rem", color: "rgba(138,116,68,0.6)", fontStyle: "normal", letterSpacing: "0.1em" }}>— Повість минулих літ</span>
-              </blockquote>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: goldLight, marginBottom: 14, marginTop: 32 }}>Наслідки для держави</h2>
-              <p style={{ fontSize: "0.9rem", color: "rgba(232,228,221,0.78)", lineHeight: 1.9, marginBottom: 16 }}>
-                Прийняття православ&apos;я відкрило Русі двері до візантійської культури, освіти та мистецтва. Церква стала важливим інститутом держави — вела літописи, відкривала школи, формувала право.
-              </p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 48, paddingTop: 24, borderTop: `1px solid ${borderFaint}` }}>
-                <Link href="/dashboard/lesson" style={{ padding: "11px 24px", border: "1px solid rgba(201,169,110,0.15)", color: "rgba(154,149,141,0.55)", textDecoration: "none", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>← Попередній урок</Link>
-                <button onClick={() => setActiveTab("test")} style={{ padding: "11px 24px", border: "1px solid rgba(201,169,110,0.2)", background: "transparent", color: "rgba(138,116,68,0.7)", cursor: "pointer", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>Пройти тест</button>
-                <Link href="/dashboard/lesson" style={{ padding: "11px 28px", border: "1px solid rgba(201,169,110,0.4)", background: "rgba(201,169,110,0.06)", color: goldLight, textDecoration: "none", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>Наступний урок →</Link>
-              </div>
+          {/* КАРТА — завжди в DOM, resize при переключенні */}
+          <div style={{ flex: 1, display: activeTab === "map" ? "flex" : "none" }}>
+            <div style={{ flex: 1, position: "relative" }}>
+              <div ref={mapRef} style={{ position: "absolute", inset: 0 }} />
+              {!mapLoaded && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0c", zIndex: 10 }}>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", fontStyle: "italic", color: "rgba(201,169,110,0.5)" }}>Завантаження карти...</p>
+                </div>
+              )}
+              {currentEvent && mapLoaded && (
+                <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", width: "min(380px, calc(100% - 32px))", background: "rgba(10,10,12,0.97)", border: `1px solid ${gold}44`, padding: "18px 22px", zIndex: 30, boxShadow: "0 8px 50px rgba(0,0,0,0.7)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", color: gold }}>{currentEvent.year} р.</span>
+                    <button onClick={() => setActiveEvent(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(154,149,141,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0 }}>×</button>
+                  </div>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontWeight: 300, color: "#e8e4dd", marginBottom: 8 }}>{currentEvent.title}</p>
+                  <p style={{ fontSize: "0.74rem", color: "rgba(154,149,141,0.85)", lineHeight: 1.75 }}>{currentEvent.desc}</p>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* КАРТА — завжди в DOM, просто ховаємо */}
-          <div style={{ flex: 1, display: activeTab === "map" ? "flex" : "none", overflow: "hidden" }}>
-              <div style={{ flex: 1, position: "relative" }}>
-                <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: 400 }} />
-                {!mapLoaded && (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0c", zIndex: 10 }}>
-                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", fontStyle: "italic", color: "rgba(201,169,110,0.5)" }}>Завантаження карти...</p>
-                  </div>
-                )}
-                {currentEvent && mapLoaded && (
-                  <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", width: "min(380px, calc(100% - 32px))", background: "rgba(10,10,12,0.97)", border: `1px solid ${gold}44`, padding: "18px 22px", zIndex: 30, boxShadow: "0 8px 50px rgba(0,0,0,0.7)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.65rem", letterSpacing: "0.2em", color: gold }}>{currentEvent.year} р.</span>
-                      <button onClick={() => setActiveEvent(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(154,149,141,0.5)", fontSize: "1.1rem", lineHeight: 1, padding: 0 }}>×</button>
-                    </div>
-                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontWeight: 300, color: "#e8e4dd", marginBottom: 8 }}>{currentEvent.title}</p>
-                    <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.74rem", color: "rgba(154,149,141,0.85)", lineHeight: 1.75 }}>{currentEvent.desc}</p>
-                  </div>
-                )}
+            {/* Панель справа */}
+            <div style={{ width: 320, flexShrink: 0, background: "rgba(10,10,12,0.97)", borderLeft: "1px solid rgba(201,169,110,0.1)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
+                <p style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(138,116,68,0.7)", marginBottom: 8 }}>{topic.period}</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 300, color: "#e8e4dd", lineHeight: 1.2 }}>{topic.label}</h2>
               </div>
-              <div style={{ width: 320, flexShrink: 0, background: "rgba(10,10,12,0.97)", borderLeft: "1px solid rgba(201,169,110,0.1)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(201,169,110,0.08)" }}>
-                  <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(138,116,68,0.7)", marginBottom: 8 }}>{topic.period}</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 300, color: "#e8e4dd", lineHeight: 1.2 }}>{topic.label}</h2>
-                </div>
-                <div style={{ display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)", marginTop: 8 }}>
-                  {(["events", "figures"] as const).map((tab) => (
-                    <button key={tab} onClick={() => setMapSideTab(tab)} style={{ flex: 1, padding: "10px", background: "transparent", border: "none", borderBottom: mapSideTab === tab ? `1px solid ${gold}` : "1px solid transparent", cursor: "pointer", fontFamily: "'Manrope', sans-serif", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase", color: mapSideTab === tab ? gold : "rgba(154,149,141,0.5)", transition: "all 0.2s" }}>
-                      {tab === "events" ? "Хронологія" : "Постаті"}
-                    </button>
-                  ))}
-                </div>
-                <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
-                  {mapSideTab === "events" ? topic.events.map(ev => (
-                    <button key={ev.id} onClick={() => setActiveEvent(ev.id)} style={{ width: "100%", textAlign: "left", padding: "13px 22px", background: activeEvent === ev.id ? "rgba(201,169,110,0.05)" : "transparent", border: "none", borderLeft: activeEvent === ev.id ? `2px solid ${gold}` : "2px solid transparent", cursor: "pointer", transition: "all 0.2s" }}>
-                      <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem", letterSpacing: "0.15em", color: gold, display: "block", marginBottom: 4 }}>{ev.year} р.</span>
-                      <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.98rem", fontWeight: 300, color: "#e8e4dd", display: "block", lineHeight: 1.3 }}>{ev.title}</span>
-                    </button>
-                  )) : topic.figures.map(fig => (
-                    <div key={fig.name} style={{ padding: "13px 22px", borderBottom: "1px solid rgba(201,169,110,0.05)" }}>
-                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.02rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 4 }}>{fig.name}</p>
-                      <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.6rem", letterSpacing: "0.1em", color: gold, marginBottom: 4 }}>{fig.years}</p>
-                      <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.7rem", color: "rgba(154,149,141,0.7)", lineHeight: 1.5 }}>{fig.role}</p>
-                    </div>
-                  ))}
-                </div>
-                {!currentEvent && (
-                  <div style={{ padding: "10px 22px", borderTop: "1px solid rgba(201,169,110,0.06)" }}>
-                    <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: "0.58rem", letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6 }}>Натискай на маркери на карті щоб дізнатись більше</p>
-                  </div>
-                )}
+              <div style={{ display: "flex", borderBottom: "1px solid rgba(201,169,110,0.08)", marginTop: 8 }}>
+                {(["events", "figures"] as const).map((tab) => (
+                  <button key={tab} onClick={() => setMapSideTab(tab)} style={{ flex: 1, padding: "10px", background: "transparent", border: "none", borderBottom: mapSideTab === tab ? `1px solid ${gold}` : "1px solid transparent", cursor: "pointer", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase", color: mapSideTab === tab ? gold : "rgba(154,149,141,0.5)", transition: "all 0.2s" }}>
+                    {tab === "events" ? "Хронологія" : "Постаті"}
+                  </button>
+                ))}
               </div>
-            </div>
-
-          {/* КЛЮЧОВІ ДАТИ */}
-          {activeTab === "dates" && (
-            <div style={{ maxWidth: 740, margin: "0 auto", padding: "40px 32px" }}>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: goldLight, marginBottom: 24 }}>Ключові дати та правителі</h2>
-              {topic.keyDates.map((d, i) => (
-                <div key={i} style={{ display: "flex", borderBottom: `1px solid ${borderFaint}`, padding: "16px 0" }}>
-                  <div style={{ width: 120, flexShrink: 0, paddingRight: 24 }}>
-                    <span style={{ fontSize: "0.7rem", letterSpacing: "0.1em", color: goldDim }}>{d.year}</span>
-                  </div>
-                  <div style={{ borderLeft: "1px solid rgba(201,169,110,0.15)", paddingLeft: 24, flex: 1 }}>
-                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontWeight: 300, color: textColor, marginBottom: 4 }}>{d.name}</p>
-                    <p style={{ fontSize: "0.78rem", color: textDim, lineHeight: 1.65 }}>{d.note}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ПОСТАТІ */}
-          {activeTab === "figures" && (
-            <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                {topic.figures.map(fig => (
-                  <div key={fig.name} style={{ border: "1px solid rgba(201,169,110,0.12)", background: "rgba(201,169,110,0.02)", padding: "24px 26px" }}>
-                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.25rem", fontWeight: 300, color: textColor, marginBottom: 4 }}>{fig.name}</p>
-                    <p style={{ fontSize: "0.6rem", letterSpacing: "0.15em", color: goldDim, marginBottom: 12 }}>{fig.years}</p>
-                    <div style={{ height: 1, background: "rgba(201,169,110,0.08)", marginBottom: 12 }} />
-                    <p style={{ fontSize: "0.82rem", color: textDim, lineHeight: 1.65 }}>{fig.role}</p>
+              <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
+                {mapSideTab === "events" ? topic.events.map(ev => (
+                  <button key={ev.id} onClick={() => setActiveEvent(ev.id)} style={{ width: "100%", textAlign: "left", padding: "13px 22px", background: activeEvent === ev.id ? "rgba(201,169,110,0.05)" : "transparent", border: "none", borderLeft: activeEvent === ev.id ? `2px solid ${gold}` : "2px solid transparent", cursor: "pointer", transition: "all 0.2s" }}>
+                    <span style={{ fontSize: "0.6rem", letterSpacing: "0.15em", color: gold, display: "block", marginBottom: 4 }}>{ev.year} р.</span>
+                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.98rem", fontWeight: 300, color: "#e8e4dd", display: "block", lineHeight: 1.3 }}>{ev.title}</span>
+                  </button>
+                )) : topic.figures.map(fig => (
+                  <div key={fig.name} style={{ padding: "13px 22px", borderBottom: "1px solid rgba(201,169,110,0.05)" }}>
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.02rem", fontWeight: 400, color: "#e8e4dd", marginBottom: 4 }}>{fig.name}</p>
+                    <p style={{ fontSize: "0.6rem", letterSpacing: "0.1em", color: gold, marginBottom: 4 }}>{fig.years}</p>
+                    <p style={{ fontSize: "0.7rem", color: "rgba(154,149,141,0.7)", lineHeight: 1.5 }}>{fig.role}</p>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* ТЕСТ */}
-          {activeTab === "test" && (
-            <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 32px" }}>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(226,201,146,0.55)", marginBottom: 32, lineHeight: 1.6 }}>
-                Перевір своє розуміння теми. {testQuestions.length} запитання — 5 хвилин.
-              </p>
-              {testQuestions.map((q, qi) => (
-                <div key={qi} style={{ marginBottom: 36 }}>
-                  <p style={{ fontSize: "0.58rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(138,116,68,0.6)", marginBottom: 8 }}>Запитання {qi + 1} з {testQuestions.length}</p>
-                  <p style={{ fontSize: "0.92rem", color: textColor, marginBottom: 16, lineHeight: 1.6 }}>{q.q}</p>
-                  {q.options.map((opt, oi) => {
-                    const isSelected = selectedAnswers[qi] === oi;
-                    return (
-                      <div key={oi} onClick={() => setSelectedAnswers(prev => ({ ...prev, [qi]: oi }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", marginBottom: 8, border: `1px solid ${isSelected ? "rgba(201,169,110,0.4)" : "rgba(201,169,110,0.1)"}`, background: isSelected ? "rgba(201,169,110,0.06)" : "transparent", cursor: "pointer", transition: "all 0.2s" }}>
-                        <div style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${isSelected ? goldDim : "rgba(201,169,110,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: isSelected ? "rgba(201,169,110,0.15)" : "transparent" }}>
-                          {isSelected && <div style={{ width: 6, height: 6, borderRadius: "50%", background: goldDim }} />}
-                        </div>
-                        <span style={{ fontSize: "0.85rem", color: isSelected ? goldLight : "rgba(232,228,221,0.65)" }}>{opt}</span>
-                      </div>
-                    );
-                  })}
+              {!currentEvent && (
+                <div style={{ padding: "10px 22px", borderTop: "1px solid rgba(201,169,110,0.06)" }}>
+                  <p style={{ fontSize: "0.58rem", letterSpacing: "0.1em", color: "rgba(154,149,141,0.3)", lineHeight: 1.6 }}>Натискай на маркери на карті щоб дізнатись більше</p>
                 </div>
-              ))}
-              <button style={{ padding: "13px 32px", border: "1px solid rgba(201,169,110,0.4)", background: "rgba(201,169,110,0.06)", color: goldLight, cursor: "pointer", fontSize: "0.65rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>
-                Здати тест →
-              </button>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* ІНШІ ВКЛАДКИ — скрол */}
+          <div style={{ flex: 1, overflowY: "auto", display: activeTab === "map" ? "none" : "block" }}>
+
+            {/* ТЕКСТ */}
+            {activeTab === "text" && (
+              <div style={{ maxWidth: 740, margin: "0 auto", padding: "40px 32px" }}>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: goldLight, marginBottom: 14 }}>Передумови хрещення</h2>
+                <p style={{ fontSize: "0.9rem", color: "rgba(232,228,221,0.78)", lineHeight: 1.9, marginBottom: 16 }}>
+                  У 988 році князь Володимир Великий прийняв рішення, яке назавжди змінило долю Київської Русі. Хрещення у водах Дніпра стало не лише релігійним актом — це був свідомий геополітичний вибір, що відкрив Русі шлях до великих цивілізацій Середземномор&apos;я.
+                </p>
+                <blockquote style={{ borderLeft: "2px solid rgba(201,169,110,0.3)", paddingLeft: 20, margin: "24px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(226,201,146,0.6)", lineHeight: 1.75 }}>
+                  «І звелів хрестити людей у Дніпрі, і хто не хотів того, противився наказу...»
+                  <span style={{ display: "block", marginTop: 6, fontSize: "0.72rem", color: "rgba(138,116,68,0.6)", fontStyle: "normal", letterSpacing: "0.1em" }}>— Повість минулих літ</span>
+                </blockquote>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: goldLight, marginBottom: 14, marginTop: 32 }}>Наслідки для держави</h2>
+                <p style={{ fontSize: "0.9rem", color: "rgba(232,228,221,0.78)", lineHeight: 1.9, marginBottom: 16 }}>
+                  Прийняття православ&apos;я відкрило Русі двері до візантійської культури, освіти та мистецтва. Церква стала важливим інститутом держави — вела літописи, відкривала школи, формувала право.
+                </p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 48, paddingTop: 24, borderTop: `1px solid ${borderFaint}` }}>
+                  <Link href="/dashboard/lesson" style={{ padding: "11px 24px", border: "1px solid rgba(201,169,110,0.15)", color: "rgba(154,149,141,0.55)", textDecoration: "none", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>← Попередній урок</Link>
+                  <button onClick={() => handleTabChange("test")} style={{ padding: "11px 24px", border: "1px solid rgba(201,169,110,0.2)", background: "transparent", color: "rgba(138,116,68,0.7)", cursor: "pointer", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>Пройти тест</button>
+                  <Link href="/dashboard/lesson" style={{ padding: "11px 28px", border: "1px solid rgba(201,169,110,0.4)", background: "rgba(201,169,110,0.06)", color: goldLight, textDecoration: "none", fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>Наступний урок →</Link>
+                </div>
+              </div>
+            )}
+
+            {/* КЛЮЧОВІ ДАТИ */}
+            {activeTab === "dates" && (
+              <div style={{ maxWidth: 740, margin: "0 auto", padding: "40px 32px" }}>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.3rem", fontWeight: 300, color: goldLight, marginBottom: 24 }}>Ключові дати та правителі</h2>
+                {topic.keyDates.map((d, i) => (
+                  <div key={i} style={{ display: "flex", borderBottom: `1px solid ${borderFaint}`, padding: "16px 0" }}>
+                    <div style={{ width: 120, flexShrink: 0, paddingRight: 24 }}>
+                      <span style={{ fontSize: "0.7rem", letterSpacing: "0.1em", color: goldDim }}>{d.year}</span>
+                    </div>
+                    <div style={{ borderLeft: "1px solid rgba(201,169,110,0.15)", paddingLeft: 24, flex: 1 }}>
+                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontWeight: 300, color: textColor, marginBottom: 4 }}>{d.name}</p>
+                      <p style={{ fontSize: "0.78rem", color: textDim, lineHeight: 1.65 }}>{d.note}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ПОСТАТІ */}
+            {activeTab === "figures" && (
+              <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  {topic.figures.map(fig => (
+                    <div key={fig.name} style={{ border: "1px solid rgba(201,169,110,0.12)", background: "rgba(201,169,110,0.02)", padding: "24px 26px" }}>
+                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.25rem", fontWeight: 300, color: textColor, marginBottom: 4 }}>{fig.name}</p>
+                      <p style={{ fontSize: "0.6rem", letterSpacing: "0.15em", color: goldDim, marginBottom: 12 }}>{fig.years}</p>
+                      <div style={{ height: 1, background: "rgba(201,169,110,0.08)", marginBottom: 12 }} />
+                      <p style={{ fontSize: "0.82rem", color: textDim, lineHeight: 1.65 }}>{fig.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ТЕСТ */}
+            {activeTab === "test" && (
+              <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 32px" }}>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(226,201,146,0.55)", marginBottom: 32, lineHeight: 1.6 }}>
+                  Перевір своє розуміння теми. {testQuestions.length} запитання — 5 хвилин.
+                </p>
+                {testQuestions.map((q, qi) => (
+                  <div key={qi} style={{ marginBottom: 36 }}>
+                    <p style={{ fontSize: "0.58rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(138,116,68,0.6)", marginBottom: 8 }}>Запитання {qi + 1} з {testQuestions.length}</p>
+                    <p style={{ fontSize: "0.92rem", color: textColor, marginBottom: 16, lineHeight: 1.6 }}>{q.q}</p>
+                    {q.options.map((opt, oi) => {
+                      const isSelected = selectedAnswers[qi] === oi;
+                      return (
+                        <div key={oi} onClick={() => setSelectedAnswers(prev => ({ ...prev, [qi]: oi }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 16px", marginBottom: 8, border: `1px solid ${isSelected ? "rgba(201,169,110,0.4)" : "rgba(201,169,110,0.1)"}`, background: isSelected ? "rgba(201,169,110,0.06)" : "transparent", cursor: "pointer", transition: "all 0.2s" }}>
+                          <div style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${isSelected ? goldDim : "rgba(201,169,110,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: isSelected ? "rgba(201,169,110,0.15)" : "transparent" }}>
+                            {isSelected && <div style={{ width: 6, height: 6, borderRadius: "50%", background: goldDim }} />}
+                          </div>
+                          <span style={{ fontSize: "0.85rem", color: isSelected ? goldLight : "rgba(232,228,221,0.65)" }}>{opt}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+                <button style={{ padding: "13px 32px", border: "1px solid rgba(201,169,110,0.4)", background: "rgba(201,169,110,0.06)", color: goldLight, cursor: "pointer", fontSize: "0.65rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>
+                  Здати тест →
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
