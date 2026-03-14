@@ -53,17 +53,26 @@ export default function LessonPage() {
   const [activeTab, setActiveTab] = useState<Tab>("text");
   const [mapTab, setMapTab] = useState<MapTab>("events");
   const [activeEvent, setActiveEvent] = useState<number | null>(2);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
 
   const topic = LESSON.topic;
 
+  // Чекаємо поки map div з'явиться в DOM
+  useEffect(() => {
+    if (activeTab === "map") {
+      const t = setTimeout(() => setMapReady(true), 80);
+      return () => clearTimeout(t);
+    }
+  }, [activeTab]);
+
   // Ініціалізація карти
   useEffect(() => {
-    if (activeTab !== "map") return;
+    if (!mapReady) return;
     if (mapInstanceRef.current) return;
     if (!mapRef.current) return;
 
@@ -113,7 +122,7 @@ export default function LessonPage() {
       });
     };
     document.head.appendChild(script);
-  }, [activeTab, topic]);
+  }, [mapReady, topic]);
 
   // Fly to event
   useEffect(() => {
@@ -273,7 +282,7 @@ export default function LessonPage() {
 
           {/* ===== КАРТА ===== */}
           {activeTab === "map" && (
-            <div style={{ display: "flex", height: "calc(100vh - 220px)", minHeight: 480 }}>
+            <div style={{ display: "flex", height: "calc(100vh - 210px)", minHeight: 500 }}>
               {/* Карта */}
               <div style={{ flex: 1, position: "relative" }}>
                 <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
@@ -358,20 +367,23 @@ export default function LessonPage() {
                     Запитання {qi + 1} з {testQuestions.length}
                   </p>
                   <p style={{ fontSize: "0.92rem", color: "#e8e4dd", marginBottom: 16, lineHeight: 1.6 }}>{q.q}</p>
-                  {q.options.map((opt, oi) => (
-                    <div key={oi} onClick={() => setSelectedAnswer(oi)} style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "11px 16px", marginBottom: 8,
-                      border: `1px solid ${selectedAnswer === oi ? "rgba(201,169,110,0.4)" : "rgba(201,169,110,0.1)"}`,
-                      background: selectedAnswer === oi ? "rgba(201,169,110,0.06)" : "transparent",
-                      cursor: "pointer", transition: "all 0.2s",
-                    }}>
-                      <div style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${selectedAnswer === oi ? "#8a7444" : "rgba(201,169,110,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: selectedAnswer === oi ? "rgba(201,169,110,0.15)" : "transparent" }}>
-                        {selectedAnswer === oi && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#8a7444" }} />}
+                  {q.options.map((opt, oi) => {
+                    const isSelected = selectedAnswers[qi] === oi;
+                    return (
+                      <div key={oi} onClick={() => setSelectedAnswers(prev => ({ ...prev, [qi]: oi }))} style={{
+                        display: "flex", alignItems: "center", gap: 12,
+                        padding: "11px 16px", marginBottom: 8,
+                        border: `1px solid ${isSelected ? "rgba(201,169,110,0.4)" : "rgba(201,169,110,0.1)"}`,
+                        background: isSelected ? "rgba(201,169,110,0.06)" : "transparent",
+                        cursor: "pointer", transition: "all 0.2s",
+                      }}>
+                        <div style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${isSelected ? "#8a7444" : "rgba(201,169,110,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: isSelected ? "rgba(201,169,110,0.15)" : "transparent" }}>
+                          {isSelected && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#8a7444" }} />}
+                        </div>
+                        <span style={{ fontSize: "0.85rem", color: isSelected ? "#e2c992" : "rgba(232,228,221,0.65)" }}>{opt}</span>
                       </div>
-                      <span style={{ fontSize: "0.85rem", color: selectedAnswer === oi ? "#e2c992" : "rgba(232,228,221,0.65)" }}>{opt}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ))}
               <div style={{ paddingTop: 8 }}>
