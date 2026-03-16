@@ -1,176 +1,456 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+"use client";
+
 import Link from "next/link";
-import LogoutButton from "../components/logout-button";
-import OnboardingForm from "./onboarding-form";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-export default async function Dashboard() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+type NavigationItem = {
+  label: string;
+  href?: string;
+  badge?: string;
+  isActive?: boolean;
+  isSoon?: boolean;
+};
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, full_name, phone, grade, telegram, onboarding_completed")
-    .eq("id", user.id)
-    .single();
+type StatItem = {
+  label: string;
+  value: string;
+  hint: string;
+};
 
-  const displayName = profile?.full_name || user.email;
-  const needsOnboarding = !profile?.onboarding_completed;
+const primaryNavigation: NavigationItem[] = [
+  { label: "Dashboard", href: "/dashboard", isActive: true },
+  { label: "Курси", href: "/courses" },
+  { label: "Карта", href: "/map" },
+  { label: "Підтримка", href: "/contacts" },
+  { label: "Тести", badge: "Скоро", isSoon: true },
+  { label: "Розклад", badge: "Скоро", isSoon: true },
+];
 
+const secondaryNavigation: NavigationItem[] = [
+  { label: "Профіль", badge: "Скоро", isSoon: true },
+  { label: "Повідомлення", badge: "Скоро", isSoon: true },
+];
+
+const stats: StatItem[] = [
+  { label: "Прогрес", value: "0%", hint: "Ще не обрано курс" },
+  { label: "Завершено уроків", value: "0", hint: "Після старту тут буде динаміка" },
+  { label: "Середній бал", value: "—", hint: "З&apos;явиться після тестів" },
+  { label: "Активні завдання", value: "0", hint: "Нових дедлайнів поки немає" },
+];
+
+function DashboardNav({
+  items,
+  onNavigate,
+}: {
+  items: NavigationItem[];
+  onNavigate?: () => void;
+}) {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg, #0a0a0c)", color: "var(--text, #e8e4dd)", fontFamily: "var(--font-sans, 'Manrope', sans-serif)" }}>
-      {needsOnboarding && <OnboardingForm userId={user.id} />}
+    <div className="space-y-2">
+      {items.map((item) => {
+        if (item.href) {
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={onNavigate}
+              className={[
+                "flex items-center justify-between rounded-2xl border px-4 py-3 transition-colors",
+                item.isActive
+                  ? "border-[rgba(201,169,110,0.34)] bg-[rgba(201,169,110,0.10)] text-[var(--gold-light)]"
+                  : "border-transparent bg-[rgba(255,255,255,0.02)] text-[rgba(232,228,221,0.78)] hover:border-[rgba(201,169,110,0.18)] hover:text-[var(--text)]",
+              ].join(" ")}
+            >
+              <span className="text-[0.92rem]">{item.label}</span>
+              {item.badge ? (
+                <span className="rounded-full border border-[rgba(201,169,110,0.22)] px-2 py-1 text-[0.62rem] uppercase tracking-[0.18em] text-[var(--gold-dim)]">
+                  {item.badge}
+                </span>
+              ) : (
+                <span className="text-[0.9rem] text-[rgba(201,169,110,0.55)]">→</span>
+              )}
+            </Link>
+          );
+        }
 
-      {/* HEADER */}
-      <header style={{
-        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-        paddingLeft: "clamp(28px, 7vw, 140px)", paddingRight: "clamp(28px, 7vw, 140px)",
-        paddingTop: 28, paddingBottom: 20,
-        borderBottom: "1px solid rgba(201,169,110,0.08)",
-      }}>
-        <Link href="/home" style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "clamp(1.8rem, 3vw, 2.4rem)", letterSpacing: "0.24em", color: "rgba(245,239,230,0.94)", textDecoration: "none", fontWeight: 300 }}>
+        return (
+          <div
+            key={item.label}
+            className="flex items-center justify-between rounded-2xl border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-[rgba(232,228,221,0.52)]"
+          >
+            <span className="text-[0.92rem]">{item.label}</span>
+            <span className="rounded-full border border-[rgba(201,169,110,0.18)] px-2 py-1 text-[0.62rem] uppercase tracking-[0.18em] text-[var(--gold-dim)]">
+              {item.badge ?? (item.isSoon ? "Скоро" : "")}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SidebarContent({
+  displayName,
+  onNavigate,
+  onLogout,
+  isSigningOut,
+}: {
+  displayName: string;
+  onNavigate?: () => void;
+  onLogout: () => void;
+  isSigningOut: boolean;
+}) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b border-[rgba(201,169,110,0.12)] px-5 py-5 sm:px-6">
+        <Link
+          href="/home"
+          onClick={onNavigate}
+          className="font-serif text-[2rem] tracking-[0.24em] text-[rgba(245,239,230,0.94)]"
+        >
           KAYA
         </Link>
+        <p className="mt-2 text-[0.68rem] uppercase tracking-[0.34em] text-[rgba(138,116,68,0.78)]">
+          Навчальний кабінет
+        </p>
+      </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <span style={{ fontSize: "0.85rem", color: "var(--text-dim, #9a958d)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {displayName}
-          </span>
-          <LogoutButton />
+      <div className="flex-1 space-y-8 overflow-y-auto px-4 py-5 sm:px-5">
+        <section className="space-y-3">
+          <p className="text-[0.68rem] uppercase tracking-[0.32em] text-[rgba(138,116,68,0.62)]">
+            Основне
+          </p>
+          <DashboardNav items={primaryNavigation} onNavigate={onNavigate} />
+        </section>
+
+        <section className="space-y-3">
+          <p className="text-[0.68rem] uppercase tracking-[0.32em] text-[rgba(138,116,68,0.62)]">
+            Особисте
+          </p>
+          <DashboardNav items={secondaryNavigation} onNavigate={onNavigate} />
+        </section>
+      </div>
+
+      <div className="border-t border-[rgba(201,169,110,0.10)] px-4 py-4 sm:px-5">
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-[rgba(201,169,110,0.10)] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] bg-[rgba(201,169,110,0.08)] font-serif text-[1.15rem] text-[var(--gold-light)]">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-[0.94rem] text-[var(--text)]">{displayName}</p>
+            <p className="mt-1 text-[0.68rem] uppercase tracking-[0.22em] text-[rgba(138,116,68,0.74)]">
+              Учень
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onLogout}
+          disabled={isSigningOut}
+          className="flex w-full items-center justify-center rounded-2xl border border-[rgba(201,169,110,0.18)] px-4 py-3 text-[0.78rem] uppercase tracking-[0.22em] text-[rgba(232,228,221,0.74)] transition-colors hover:border-[rgba(201,169,110,0.34)] hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSigningOut ? "Вихід..." : "Вийти"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const starfieldRef = useRef<HTMLDivElement>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("Учень");
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  useEffect(() => {
+    const field = starfieldRef.current;
+    if (!field) return;
+
+    field.innerHTML = "";
+    const stars: HTMLDivElement[] = [];
+
+    for (let i = 0; i < 120; i += 1) {
+      const star = document.createElement("div");
+      star.classList.add("star");
+
+      const randomSize = Math.random();
+      if (randomSize < 0.55) star.classList.add("star--small");
+      else if (randomSize < 0.85) star.classList.add("star--medium");
+      else star.classList.add("star--large");
+
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.setProperty("--dur", `${2 + Math.random() * 5}s`);
+      star.style.setProperty("--delay", `${Math.random() * 6}s`);
+
+      field.appendChild(star);
+      stars.push(star);
+    }
+
+    return () => {
+      stars.forEach((star) => star.remove());
+    };
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const loadUser = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        router.replace("/login");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
+      const fallbackName = user.email?.split("@")[0] ?? "Учень";
+      setDisplayName(profile?.full_name?.trim() || fallbackName);
+      setIsLoadingUser(false);
+    };
+
+    loadUser();
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      setIsSigningOut(true);
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const heroSubtitle = useMemo(() => {
+    if (isLoadingUser) {
+      return "Завантажуємо твій кабінет";
+    }
+
+    return "Твій шлях у KAYA починається з першого обраного курсу";
+  }, [isLoadingUser]);
+
+  return (
+    <div className="relative min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <div ref={starfieldRef} className="starfield" aria-hidden="true" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[320px]"
+        style={{
+          background:
+            "radial-gradient(circle at top, rgba(201,169,110,0.10), transparent 58%)",
+        }}
+      />
+
+      <header className="sticky top-0 z-40 border-b border-[rgba(201,169,110,0.10)] bg-[rgba(10,10,12,0.94)] backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+          <Link
+            href="/home"
+            className="font-serif text-[1.7rem] tracking-[0.22em] text-[rgba(245,239,230,0.94)]"
+          >
+            KAYA
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="rounded-xl border border-[rgba(201,169,110,0.18)] px-3 py-2 text-[0.72rem] uppercase tracking-[0.18em] text-[var(--gold-light)]"
+          >
+            Меню
+          </button>
         </div>
       </header>
 
-      {/* MAIN */}
-      <main style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(32px, 5vw, 64px) clamp(20px, 5vw, 40px)", display: "flex", flexDirection: "column", gap: 40 }}>
-
-        {/* ВІТАННЯ */}
-        <div>
-          <p style={{ fontSize: "0.7rem", letterSpacing: "0.35em", textTransform: "uppercase", color: "var(--gold-dim, #8a7444)", marginBottom: 16 }}>
-            Навчальний кабінет
-          </p>
-          <h1 style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 300, color: "var(--text, #e8e4dd)", marginBottom: 12, lineHeight: 1.2 }}>
-            Вітаємо, {profile?.full_name || displayName}
-          </h1>
-          <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.05rem", fontStyle: "italic", fontWeight: 300, color: "var(--gold-light, #e2c992)", opacity: 0.7 }}>
-            Твій шлях крізь час починається тут.
-          </p>
-        </div>
-
-        {/* СТАТИСТИКА */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
-          {[
-            { label: "Активний курс", value: "Немає" },
-            { label: "Завершено уроків", value: "0" },
-            { label: "Загальний прогрес", value: "0%" },
-          ].map((item) => (
-            <div key={item.label} style={{ border: "1px solid rgba(201,169,110,0.12)", background: "rgba(201,169,110,0.02)", padding: "24px 28px" }}>
-              <p style={{ fontSize: "0.68rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-dim, #9a958d)", marginBottom: 12 }}>
-                {item.label}
-              </p>
-              <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.8rem", fontWeight: 300, color: "var(--gold-light, #e2c992)" }}>
-                {item.value}
-              </p>
-              <div style={{ marginTop: 14, height: 1, background: "rgba(201,169,110,0.1)" }} />
-            </div>
-          ))}
-        </div>
-
-        {/* НАСТУПНИЙ УРОК */}
-        <div style={{ border: "1px solid rgba(201,169,110,0.15)", background: "rgba(201,169,110,0.02)", padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
-          <div>
-            <p style={{ fontSize: "0.68rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold-dim, #8a7444)", marginBottom: 10 }}>
-              Наступний урок
-            </p>
-            <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.3rem", fontWeight: 300, color: "var(--text, #e8e4dd)" }}>
-              Курс ще не обрано
-            </p>
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl md:px-6 lg:px-8">
+        <aside className="hidden w-[290px] shrink-0 py-6 md:block lg:w-[320px]">
+          <div className="sticky top-6 h-[calc(100vh-48px)] overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,12,0.92)] backdrop-blur">
+            <SidebarContent
+              displayName={displayName}
+              onLogout={handleLogout}
+              isSigningOut={isSigningOut}
+            />
           </div>
-          <Link href="/courses" style={{ display: "inline-block", padding: "14px 32px", border: "1px solid rgba(201,169,110,0.4)", color: "var(--gold-light, #e2c992)", textDecoration: "none", fontSize: "0.68rem", letterSpacing: "0.25em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            Обрати курс →
-          </Link>
-        </div>
+        </aside>
 
-        {/* МОЇ КУРСИ */}
-        <div>
-          <p style={{ fontSize: "0.68rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold-dim, #8a7444)", marginBottom: 20 }}>
-            Мої курси
-          </p>
-          <div style={{ border: "1px solid rgba(201,169,110,0.1)", background: "rgba(201,169,110,0.015)", padding: "40px 32px", textAlign: "center" }}>
-            <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.1rem", fontWeight: 300, fontStyle: "italic", color: "var(--text-dim, #9a958d)", marginBottom: 20 }}>
-              Ти ще не записаний на жоден курс
-            </p>
-            <Link href="/courses" style={{ display: "inline-block", padding: "12px 28px", border: "1px solid rgba(201,169,110,0.35)", color: "var(--gold-light, #e2c992)", textDecoration: "none", fontSize: "0.65rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>
-              Переглянути каталог
-            </Link>
-          </div>
-        </div>
-
-        {/* ДОМАШНІ ЗАВДАННЯ */}
-        <div>
-          <p style={{ fontSize: "0.68rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold-dim, #8a7444)", marginBottom: 20 }}>
-            Домашні завдання
-          </p>
-          <div style={{ border: "1px solid rgba(201,169,110,0.1)", background: "rgba(201,169,110,0.015)", padding: "32px" }}>
-            <div style={{ padding: "24px 0", borderBottom: "1px solid rgba(201,169,110,0.08)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-              <div>
-                <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.1rem", fontWeight: 300, color: "var(--text, #e8e4dd)", marginBottom: 6 }}>
-                  Завдань поки немає
+        <main className="min-w-0 flex-1 px-4 pb-8 pt-6 sm:px-6 sm:pb-10 sm:pt-8 md:pl-8 md:pr-0 lg:pl-10">
+          <section className="rounded-[28px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.03)] p-5 sm:p-7 lg:p-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="mb-3 text-[0.72rem] uppercase tracking-[0.32em] text-[rgba(138,116,68,0.84)]">
+                  Навчальний кабінет
                 </p>
-                <p style={{ fontSize: "0.72rem", color: "var(--text-dim, #9a958d)" }}>
-                  Нові завдання з&apos;являться після запису на курс
+                <h1 className="font-serif text-[2.2rem] leading-none text-[rgba(245,239,230,0.96)] sm:text-[2.8rem] lg:text-[3.4rem]">
+                  Вітаємо, {displayName}
+                </h1>
+                <p className="mt-4 max-w-2xl text-[0.98rem] leading-7 text-[rgba(232,228,221,0.72)] sm:text-[1.02rem]">
+                  {heroSubtitle}
                 </p>
               </div>
-              <span style={{ fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-dim, #9a958d)", border: "1px solid rgba(201,169,110,0.15)", padding: "4px 12px", whiteSpace: "nowrap" }}>
-                Очікується
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* ОЦІНКИ ТА КОМЕНТАРІ */}
-        <div>
-          <p style={{ fontSize: "0.68rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold-dim, #8a7444)", marginBottom: 20 }}>
-            Оцінки та коментарі вчителя
-          </p>
-          <div style={{ border: "1px solid rgba(201,169,110,0.1)", background: "rgba(201,169,110,0.015)", padding: "32px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 20, paddingBottom: 20, borderBottom: "1px solid rgba(201,169,110,0.08)", flexWrap: "wrap" }}>
-              <div style={{ width: 64, height: 64, border: "1px solid rgba(201,169,110,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.8rem", fontWeight: 300, color: "var(--gold-dim, #8a7444)" }}>—</span>
-              </div>
-              <div>
-                <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1.05rem", fontWeight: 300, color: "var(--text-dim, #9a958d)", fontStyle: "italic", marginBottom: 6 }}>
-                  Оцінок поки немає
-                </p>
-                <p style={{ fontSize: "0.7rem", color: "rgba(154,149,141,0.6)" }}>
-                  Вчитель залишить оцінку та коментар після перевірки ДЗ
-                </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/courses"
+                  className="inline-flex min-h-[50px] items-center justify-center rounded-2xl border border-[rgba(201,169,110,0.38)] px-5 text-[0.78rem] uppercase tracking-[0.22em] text-[var(--gold-light)] transition-colors hover:border-[rgba(201,169,110,0.58)] hover:text-[var(--text)]"
+                >
+                  Обрати курс
+                </Link>
+                <Link
+                  href="/map"
+                  className="inline-flex min-h-[50px] items-center justify-center rounded-2xl border border-[rgba(201,169,110,0.14)] px-5 text-[0.78rem] uppercase tracking-[0.22em] text-[rgba(232,228,221,0.74)] transition-colors hover:border-[rgba(201,169,110,0.30)] hover:text-[var(--text)]"
+                >
+                  Відкрити карту
+                </Link>
               </div>
             </div>
-            <div style={{ paddingTop: 20 }}>
-              <p style={{ fontSize: "0.65rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(138,116,68,0.6)", marginBottom: 10 }}>
-                Коментар вчителя
-              </p>
-              <p style={{ fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)", fontSize: "1rem", fontWeight: 300, fontStyle: "italic", color: "rgba(154,149,141,0.5)", lineHeight: 1.7 }}>
-                Коментарі з&apos;являться тут після перевірки робіт
-              </p>
+          </section>
+
+          <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {stats.map((item) => (
+              <article
+                key={item.label}
+                className="rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.025)] p-5 sm:p-6"
+              >
+                <p className="text-[0.7rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
+                  {item.label}
+                </p>
+                <p className="mt-4 font-serif text-[2.4rem] leading-none text-[var(--gold-light)] sm:text-[2.8rem]">
+                  {item.value}
+                </p>
+                <p className="mt-3 text-[0.9rem] leading-6 text-[rgba(232,228,221,0.58)]">
+                  {item.hint}
+                </p>
+              </article>
+            ))}
+          </section>
+
+          <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+            <div className="space-y-4">
+              <article className="rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.025)] p-5 sm:p-6">
+                <p className="text-[0.72rem] uppercase tracking-[0.26em] text-[rgba(138,116,68,0.82)]">
+                  Продовжити навчання
+                </p>
+                <h2 className="mt-4 font-serif text-[1.8rem] leading-tight text-[rgba(245,239,230,0.96)] sm:text-[2.1rem]">
+                  Поки що курс не обрано
+                </h2>
+                <p className="mt-3 max-w-2xl text-[0.98rem] leading-7 text-[rgba(232,228,221,0.68)]">
+                  Почни з каталогу курсів. На телефоні й планшеті цей блок уже оптимізований, тому навігація не зламається навіть на вузькому екрані.
+                </p>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    href="/courses"
+                    className="inline-flex min-h-[48px] items-center justify-center rounded-2xl border border-[rgba(201,169,110,0.36)] px-5 text-[0.78rem] uppercase tracking-[0.22em] text-[var(--gold-light)] transition-colors hover:border-[rgba(201,169,110,0.58)] hover:text-[var(--text)]"
+                  >
+                    Перейти до курсів
+                  </Link>
+                  <Link
+                    href="/contacts"
+                    className="inline-flex min-h-[48px] items-center justify-center rounded-2xl border border-[rgba(201,169,110,0.14)] px-5 text-[0.78rem] uppercase tracking-[0.22em] text-[rgba(232,228,221,0.72)] transition-colors hover:border-[rgba(201,169,110,0.30)] hover:text-[var(--text)]"
+                  >
+                    Поставити запитання
+                  </Link>
+                </div>
+              </article>
+
+              <article className="rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.025)] p-5 sm:p-6">
+                <p className="text-[0.72rem] uppercase tracking-[0.26em] text-[rgba(138,116,68,0.82)]">
+                  Рекомендовані кроки
+                </p>
+                <div className="mt-5 space-y-3">
+                  {[
+                    "Обери перший курс у каталозі.",
+                    "Перевір карту, щоб краще побачити логіку платформи.",
+                    "Запиши, які блоки потрібні в особистому кабінеті далі.",
+                  ].map((step, index) => (
+                    <div
+                      key={step}
+                      className="flex items-start gap-3 rounded-2xl border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-4 py-4"
+                    >
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] text-[0.82rem] text-[var(--gold-light)]">
+                        {index + 1}
+                      </div>
+                      <p className="pt-1 text-[0.96rem] leading-7 text-[rgba(232,228,221,0.72)]">
+                        {step}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </article>
             </div>
+
+            <div className="space-y-4">
+              <article className="rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.025)] p-5 sm:p-6">
+                <p className="text-[0.72rem] uppercase tracking-[0.26em] text-[rgba(138,116,68,0.82)]">
+                  Остання активність
+                </p>
+                <div className="mt-5 rounded-2xl border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-4 py-4">
+                  <p className="text-[0.9rem] uppercase tracking-[0.18em] text-[rgba(138,116,68,0.80)]">
+                    Щойно
+                  </p>
+                  <p className="mt-3 text-[0.98rem] leading-7 text-[rgba(232,228,221,0.74)]">
+                    Акаунт готовий до роботи. Далі варто підключити реальні дані прогресу, запису на курс і домашніх завдань.
+                  </p>
+                </div>
+              </article>
+
+              <article className="rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.025)] p-5 sm:p-6">
+                <p className="text-[0.72rem] uppercase tracking-[0.26em] text-[rgba(138,116,68,0.82)]">
+                  Швидкі переходи
+                </p>
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  {[
+                    { href: "/courses", label: "Каталог курсів" },
+                    { href: "/map", label: "Карта подій" },
+                    { href: "/contacts", label: "Підтримка" },
+                  ].map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex min-h-[52px] items-center justify-between rounded-2xl border border-[rgba(201,169,110,0.10)] bg-[rgba(255,255,255,0.02)] px-4 text-[0.82rem] uppercase tracking-[0.18em] text-[rgba(232,228,221,0.76)] transition-colors hover:border-[rgba(201,169,110,0.28)] hover:text-[var(--text)]"
+                    >
+                      <span>{link.label}</span>
+                      <span className="text-[var(--gold-light)]">→</span>
+                    </Link>
+                  ))}
+                </div>
+              </article>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      {mobileNavOpen ? (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            aria-label="Закрити меню"
+            onClick={() => setMobileNavOpen(false)}
+            className="absolute inset-0 bg-black/70"
+          />
+          <div className="absolute right-0 top-0 h-full w-[88vw] max-w-[360px] border-l border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,12,0.98)] backdrop-blur">
+            <SidebarContent
+              displayName={displayName}
+              onNavigate={() => setMobileNavOpen(false)}
+              onLogout={handleLogout}
+              isSigningOut={isSigningOut}
+            />
           </div>
         </div>
-
-        {/* ШВИДКІ ПОСИЛАННЯ */}
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap", paddingTop: 8, borderTop: "1px solid rgba(201,169,110,0.08)" }}>
-          {[
-            { href: "/courses", label: "Каталог курсів" },
-            { href: "/about", label: "Про платформу" },
-            { href: "/contacts", label: "Зв'язатися з нами" },
-          ].map((link) => (
-            <Link key={link.href} href={link.href} style={{ fontSize: "0.7rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-dim, #9a958d)", textDecoration: "none" }}>
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      </main>
+      ) : null}
     </div>
   );
 }
