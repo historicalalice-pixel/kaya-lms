@@ -151,11 +151,63 @@ function WaxSeal({
   }, [label, seed, compact]);
 
   const boxSize =
-    size === "mobileMenu" ? "min(240px, 68vw)" : "min(220px, 80vw)";
+    size === "mobileMenu" ? "min(200px, 60vw)" : "min(220px, 80vw)";
   const overlayWidth =
     size === "mobileMenu" ? "min(250px, 76vw)" : "min(240px, 85vw)";
   const bottomOffset = size === "mobileMenu" ? "15%" : "18%";
 
+  // Touch: показуємо печатку + підпис знизу, клік веде на сторінку
+  if (isTouchDevice) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        style={{
+          position: "relative",
+          display: "block",
+          width: boxSize,
+          height: boxSize,
+          textDecoration: "none",
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          ref={svgRef}
+          viewBox="0 0 200 200"
+          width="100%"
+          height="100%"
+          style={{
+            display: "block",
+            overflow: "visible",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: bottomOffset,
+            left: 0,
+            right: 0,
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize:
+              size === "mobileMenu"
+                ? "clamp(1rem, 4vw, 1.2rem)"
+                : "clamp(0.95rem, 3.5vw, 1.1rem)",
+            fontWeight: 300,
+            color: "#c9a96e",
+            letterSpacing: "0.05em",
+            textAlign: "center",
+          }}
+        >
+          {cardTitle} →
+        </div>
+      </Link>
+    );
+  }
+
+  // Desktop: hover-карточка
   return (
     <div
       style={{
@@ -164,133 +216,86 @@ function WaxSeal({
         height: boxSize,
         cursor: "pointer",
       }}
-      onMouseEnter={() => !isTouchDevice && setHovered(true)}
-      onMouseLeave={() => !isTouchDevice && setHovered(false)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {isTouchDevice ? (
-        <Link
-          href={href}
-          onClick={onClick}
+      <svg
+        ref={svgRef}
+        viewBox="0 0 200 200"
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          overflow: "visible",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          transition: "opacity 0.45s ease, transform 0.45s ease",
+          opacity: hovered ? 0 : 1,
+          transform: hovered ? "scale(0.92)" : "scale(1)",
+          pointerEvents: hovered ? "none" : "auto",
+        }}
+      />
+      <Link
+        href={href}
+        onClick={onClick}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          width: overlayWidth,
+          transform: hovered
+            ? "translate(-50%, -50%) scale(1)"
+            : "translate(-50%, -50%) scale(0.88)",
+          background: "rgba(12,10,7,0.97)",
+          border: "1px solid rgba(201,169,110,0.28)",
+          padding: size === "mobileMenu" ? "18px 16px" : "22px 18px",
+          zIndex: 10,
+          textDecoration: "none",
+          opacity: hovered ? 1 : 0,
+          transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
+          pointerEvents: hovered ? "auto" : "none",
+        }}
+      >
+        <div
           style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textDecoration: "none",
-            zIndex: 5,
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: size === "mobileMenu" ? "1.25rem" : "1.4rem",
+            fontWeight: 300,
+            color: "#e2c992",
+            letterSpacing: "0.05em",
+            marginBottom: 10,
           }}
         >
-          <svg
-            ref={svgRef}
-            viewBox="0 0 200 200"
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              overflow: "visible",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: bottomOffset,
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize:
-                size === "mobileMenu"
-                  ? "clamp(1rem, 4vw, 1.2rem)"
-                  : "clamp(0.95rem, 3.5vw, 1.1rem)",
-              fontWeight: 300,
-              color: "#c9a96e",
-              letterSpacing: "0.05em",
-              textAlign: "center",
-            }}
-          >
-            {cardTitle} →
-          </div>
-        </Link>
-      ) : (
-        <>
-          <svg
-            ref={svgRef}
-            viewBox="0 0 200 200"
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              overflow: "visible",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              transition: "opacity 0.45s ease, transform 0.45s ease",
-              opacity: hovered ? 0 : 1,
-              transform: hovered ? "scale(0.92)" : "scale(1)",
-              pointerEvents: hovered ? "none" : "auto",
-            }}
-          />
-          <Link
-            href={href}
-            onClick={onClick}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: overlayWidth,
-              transform: hovered
-                ? "translate(-50%, -50%) scale(1)"
-                : "translate(-50%, -50%) scale(0.88)",
-              background: "rgba(12,10,7,0.97)",
-              border: "1px solid rgba(201,169,110,0.28)",
-              padding: size === "mobileMenu" ? "18px 16px" : "22px 18px",
-              zIndex: 10,
-              textDecoration: "none",
-              opacity: hovered ? 1 : 0,
-              transition: "all 0.45s cubic-bezier(0.4,0,0.2,1)",
-              pointerEvents: hovered ? "auto" : "none",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: size === "mobileMenu" ? "1.25rem" : "1.4rem",
-                fontWeight: 300,
-                color: "#e2c992",
-                letterSpacing: "0.05em",
-                marginBottom: 10,
-              }}
-            >
-              {cardTitle}
-            </div>
-            <div
-              style={{
-                fontFamily: "'Manrope', sans-serif",
-                fontSize: size === "mobileMenu" ? "0.74rem" : "0.78rem",
-                fontWeight: 300,
-                color: "#9a958d",
-                lineHeight: 1.75,
-              }}
-            >
-              {cardDesc}
-            </div>
-            <div
-              style={{
-                marginTop: 16,
-                display: "inline-block",
-                fontFamily: "'Manrope', sans-serif",
-                fontSize: "0.6rem",
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "#c9a96e",
-                borderBottom: "1px solid rgba(201,169,110,0.3)",
-                paddingBottom: 2,
-              }}
-            >
-              {cardLinkText} →
-            </div>
-          </Link>
-        </>
-      )}
+          {cardTitle}
+        </div>
+        <div
+          style={{
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: size === "mobileMenu" ? "0.74rem" : "0.78rem",
+            fontWeight: 300,
+            color: "#9a958d",
+            lineHeight: 1.75,
+          }}
+        >
+          {cardDesc}
+        </div>
+        <div
+          style={{
+            marginTop: 16,
+            display: "inline-block",
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: "0.6rem",
+            letterSpacing: "0.25em",
+            textTransform: "uppercase",
+            color: "#c9a96e",
+            borderBottom: "1px solid rgba(201,169,110,0.3)",
+            paddingBottom: 2,
+          }}
+        >
+          {cardLinkText} →
+        </div>
+      </Link>
     </div>
   );
 }
@@ -496,6 +501,7 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Mobile full-screen menu */}
       <div
         style={{
           position: "fixed",
