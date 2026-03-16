@@ -147,7 +147,7 @@ function WaxSeal({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Печатка — завжди видима на touch, зникає на hover на desktop */}
+      {/* Печатка SVG */}
       <svg
         ref={svgRef}
         viewBox="0 0 200 200"
@@ -163,30 +163,7 @@ function WaxSeal({
         className={hovered ? "seal-hovered" : "seal-default"}
       />
 
-      {/* Підпис під печаткою — завжди на touch */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "16%",
-          left: 0,
-          right: 0,
-          textAlign: "center",
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: size === "mobileMenu"
-            ? "clamp(1rem, 4vw, 1.2rem)"
-            : "clamp(0.95rem, 3.5vw, 1.1rem)",
-          fontWeight: 300,
-          color: "#c9a96e",
-          letterSpacing: "0.05em",
-          pointerEvents: "none",
-          transition: "opacity 0.3s ease",
-        }}
-        className={hovered ? "seal-label-hovered" : "seal-label-default"}
-      >
-        {cardTitle} →
-      </div>
-
-      {/* Hover-карточка — тільки на desktop при наведенні */}
+      {/* Hover-карточка — тільки desktop */}
       <Link
         href={href}
         onClick={onClick}
@@ -230,19 +207,14 @@ function WaxSeal({
       />
 
       <style>{`
-        /* Desktop з hover-підтримкою */
         @media (hover: hover) {
           .seal-hovered { opacity: 0 !important; transform: scale(0.92) !important; pointer-events: none !important; }
           .seal-default { opacity: 1; transform: scale(1); }
-          .seal-label-hovered { opacity: 0 !important; }
-          .seal-label-default { opacity: 1; }
           .seal-card { display: block !important; }
           .seal-touch-link { display: none !important; }
         }
-        /* Touch-пристрої без hover */
         @media (hover: none) {
           .seal-hovered, .seal-default { opacity: 1 !important; transform: scale(1) !important; pointer-events: none !important; }
-          .seal-label-hovered, .seal-label-default { opacity: 1 !important; }
           .seal-card { display: none !important; }
           .seal-touch-link { display: block !important; }
         }
