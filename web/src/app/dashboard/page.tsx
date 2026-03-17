@@ -45,14 +45,14 @@ const stats: StatItem[] = [
     hint: "З'явиться після старту першого курсу",
   },
   {
+    label: "Скритий бал",
+    value: "0",
+    hint: "Нових дедлайнів поки немає",
+  },
+  {
     label: "Уроків завершено",
     value: "0",
     hint: "Тут буде видно твій темп навчання",
-  },
-  {
-    label: "Середній бал",
-    value: "—",
-    hint: "З'явиться після перших тестів",
   },
   {
     label: "Активні завдання",
@@ -69,16 +69,16 @@ const bottomTiles: BottomTile[] = [
     description: "Обери свій перший курс і побудуй навчальний маршрут у KAYA.",
   },
   {
-    href: "/home",
+    href: "/map",
     eyebrow: "Навігація",
-    title: "Як працює KAYA",
+    title: "Карта подій",
     description: "Переглянь головну сторінку платформи й зрозумій логіку простору та навчання.",
   },
   {
     href: "/home",
     eyebrow: "Простір",
-    title: "Головна KAYA",
-    description: "Повернись до основного простору платформи та навігації.",
+    title: "Як працює KAYA",
+    description: "Переглянь головну сторінку платформи й зрозумій логіку простору та навчання.",
   },
 ];
 
@@ -286,7 +286,7 @@ function BottomFeatureTile({ tile }: { tile: BottomTile }) {
   return (
     <Link
       href={tile.href}
-      className="group relative overflow-hidden rounded-[30px] border border-[rgba(214,180,118,0.10)] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(214,180,118,0.22)] hover:shadow-[0_20px_42px_rgba(0,0,0,0.24)] sm:p-7"
+      className="group relative flex h-full overflow-hidden rounded-[30px] border border-[rgba(214,180,118,0.10)] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(214,180,118,0.22)] hover:shadow-[0_20px_42px_rgba(0,0,0,0.24)] sm:p-7"
       style={{
         background:
           "linear-gradient(180deg, rgba(24,22,22,0.54), rgba(10,11,13,0.56))",
@@ -309,7 +309,7 @@ function BottomFeatureTile({ tile }: { tile: BottomTile }) {
         className="absolute right-8 top-8 h-8 w-8 rounded-full border border-[rgba(214,180,118,0.18)] opacity-70 transition-all duration-300 group-hover:rotate-6"
       />
 
-      <div className="relative z-10 flex min-h-[220px] flex-col">
+      <div className="relative z-10 flex min-h-[220px] w-full flex-col">
         <p className="text-[0.66rem] uppercase tracking-[0.2em] text-[rgba(171,140,84,0.82)]">
           {tile.eyebrow}
         </p>
@@ -408,7 +408,6 @@ export default function DashboardPage() {
     if (isLoadingUser) {
       return "Завантажуємо твій навчальний простір.";
     }
-
     return "Тут збиратиметься твій особистий шлях у KAYA: курси, прогрес, результати та наступні кроки.";
   }, [isLoadingUser]);
 
@@ -437,6 +436,7 @@ export default function DashboardPage() {
         }}
       />
 
+      {/* Mobile header */}
       <header className="sticky top-0 z-40 border-b border-[rgba(214,180,118,0.08)] bg-[rgba(10,10,12,0.94)] backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-[1380px] items-center justify-between px-4 py-4 sm:px-6">
           <Link
@@ -445,7 +445,6 @@ export default function DashboardPage() {
           >
             KAYA
           </Link>
-
           <button
             type="button"
             onClick={() => setMobileNavOpen(true)}
@@ -457,6 +456,8 @@ export default function DashboardPage() {
       </header>
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-[1380px] gap-8 md:px-8 lg:gap-10 lg:px-10">
+
+        {/* Sidebar */}
         <aside className="hidden w-[260px] shrink-0 py-8 md:block">
           <div className="sticky top-8 h-[calc(100vh-64px)] overflow-hidden rounded-[30px] border border-[rgba(214,180,118,0.10)] bg-[rgba(10,10,12,0.88)] shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur">
             <SidebarContent
@@ -469,6 +470,8 @@ export default function DashboardPage() {
 
         <main className="min-w-0 flex-1 px-4 pb-12 pt-8 sm:px-6 sm:pb-14 sm:pt-10 md:px-0 lg:pb-16 lg:pt-12">
           <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+
+            {/* ── Рядок 1: Hero (7 кол) + Stats (5 кол) ── */}
             <article
               className="relative overflow-hidden rounded-[34px] border border-[rgba(214,180,118,0.12)] px-6 py-7 sm:px-8 sm:py-8 lg:px-10 lg:py-10 xl:col-span-7"
               style={{
@@ -484,31 +487,25 @@ export default function DashboardPage() {
                     "radial-gradient(circle at 26% 10%, rgba(214,180,118,0.10), transparent 26%), radial-gradient(circle at 82% 18%, rgba(214,180,118,0.14), transparent 26%), radial-gradient(circle at 50% 100%, rgba(214,180,118,0.06), transparent 36%)",
                 }}
               />
-
               <div className="relative z-10 max-w-4xl">
                 <p className="text-[0.7rem] uppercase tracking-[0.24em] text-[rgba(171,140,84,0.84)]">
                   Навчальний кабінет
                 </p>
-
                 <h1 className="mt-5 font-serif text-[2.5rem] leading-[0.95] text-[rgba(245,239,229,0.98)] sm:text-[3rem] xl:text-[3.45rem]">
                   Вітаємо, {displayName}
                 </h1>
-
                 <p className="mt-6 max-w-[44rem] text-[1rem] leading-8 text-[rgba(236,231,222,0.76)] sm:text-[1.05rem]">
                   {heroSubtitle}
                 </p>
               </div>
-
               <div className="relative z-10 mt-8 flex flex-col gap-3 sm:flex-row">
                 <GlowButton href="/courses" variant="primary">
                   Обрати курс
                 </GlowButton>
-
                 <GlowButton href="/home" variant="secondary">
                   Як працює KAYA
                 </GlowButton>
               </div>
-
               <div className="relative z-10 mt-8 inline-flex items-center gap-3 rounded-full border border-[rgba(214,180,118,0.12)] bg-[rgba(255,255,255,0.02)] px-4 py-2.5 text-[0.76rem] uppercase tracking-[0.16em] text-[rgba(232,228,221,0.68)]">
                 <span className="h-2 w-2 rounded-full bg-[rgba(238,210,152,0.96)]" />
                 Твій простір для навчання вже готовий
@@ -521,8 +518,9 @@ export default function DashboardPage() {
               ))}
             </div>
 
+            {/* ── Рядок 2: три рівні колонки (4+4+4) ── */}
             <article
-              className="relative overflow-hidden rounded-[32px] border border-[rgba(214,180,118,0.12)] p-6 sm:p-7 lg:p-8 xl:col-span-5"
+              className="relative overflow-hidden rounded-[32px] border border-[rgba(214,180,118,0.12)] p-6 sm:p-7 lg:p-8 xl:col-span-4"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(47,34,23,0.54), rgba(16,15,17,0.56))",
@@ -540,30 +538,23 @@ export default function DashboardPage() {
                 <p className="text-[0.7rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.84)]">
                   Продовжити навчання
                 </p>
-
-                <h2 className="mt-4 font-serif text-[2rem] leading-tight text-[rgba(245,239,229,0.98)] sm:text-[2.35rem]">
+                <h2 className="mt-4 font-serif text-[2rem] leading-tight text-[rgba(245,239,229,0.98)] sm:text-[2.2rem]">
                   Поки що курс не обрано
                 </h2>
-
-                <p className="mt-4 max-w-[32rem] text-[1rem] leading-8 text-[rgba(236,231,222,0.74)]">
+                <p className="mt-4 text-[1rem] leading-8 text-[rgba(236,231,222,0.74)]">
                   Почни з каталогу курсів. Після вибору тут з'являться найближчий урок,
                   домашні завдання, результати тестів і твій прогрес.
                 </p>
-
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <GlowButton href="/courses" variant="primary">
                     Перейти до курсів
-                  </GlowButton>
-
-                  <GlowButton href="/home" variant="secondary">
-                    Як працює KAYA
                   </GlowButton>
                 </div>
               </div>
             </article>
 
             <article
-              className="relative overflow-hidden rounded-[32px] border border-[rgba(214,180,118,0.10)] p-6 sm:p-7 lg:p-8 xl:col-span-3"
+              className="relative overflow-hidden rounded-[32px] border border-[rgba(214,180,118,0.10)] p-6 sm:p-7 lg:p-8 xl:col-span-4"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(33,28,23,0.52), rgba(12,13,15,0.56))",
@@ -581,11 +572,9 @@ export default function DashboardPage() {
                 <p className="text-[0.7rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.84)]">
                   Наступний крок
                 </p>
-
                 <p className="mt-5 text-[1.02rem] leading-8 text-[rgba(236,231,222,0.82)]">
                   Обери свій перший курс і активуй маршрут навчання.
                 </p>
-
                 <div className="mt-10">
                   <GlowButton href="/courses" variant="secondary">
                     Відкрити
@@ -613,16 +602,13 @@ export default function DashboardPage() {
                 <p className="text-[0.7rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.84)]">
                   Остання активність
                 </p>
-
                 <p className="mt-3 text-[0.72rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.78)]">
                   Щойно
                 </p>
-
                 <p className="mt-4 text-[1rem] leading-8 text-[rgba(236,231,222,0.78)]">
                   Твій акаунт готовий. Після старту курсу тут з'являтиметься історія
                   навчання, активні завдання й результати.
                 </p>
-
                 <div className="mt-8">
                   <p className="text-[0.78rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.72)]">
                     Стан
@@ -631,17 +617,24 @@ export default function DashboardPage() {
                     Простір налаштований. Можна починати.
                   </p>
                 </div>
+                <div className="mt-8">
+                  <GlowButton href="/courses" variant="secondary">
+                    Відкрити
+                  </GlowButton>
+                </div>
               </div>
             </article>
 
+            {/* ── Рядок 3: три нижні тайли (4+4+4) ── */}
             {bottomTiles.map((tile) => (
               <div key={tile.title} className="xl:col-span-4">
                 <BottomFeatureTile tile={tile} />
               </div>
             ))}
 
+            {/* ── Рядок 4: Рекомендовані кроки — вся ширина ── */}
             <article
-              className="rounded-[32px] border border-[rgba(214,180,118,0.10)] p-6 sm:p-7 lg:p-8 xl:col-span-6"
+              className="rounded-[32px] border border-[rgba(214,180,118,0.10)] p-6 sm:p-7 lg:p-8 xl:col-span-12"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(28,24,22,0.46), rgba(12,13,15,0.56))",
@@ -650,8 +643,7 @@ export default function DashboardPage() {
               <p className="text-[0.7rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.84)]">
                 Рекомендовані кроки
               </p>
-
-              <div className="mt-6 grid grid-cols-1 gap-3">
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {onboardingSteps.map((step, index) => (
                   <div
                     key={step}
@@ -667,10 +659,12 @@ export default function DashboardPage() {
                 ))}
               </div>
             </article>
+
           </section>
         </main>
       </div>
 
+      {/* Mobile drawer */}
       {mobileNavOpen ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
