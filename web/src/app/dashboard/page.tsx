@@ -324,8 +324,8 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1500px] gap-6 md:px-6 lg:gap-8 lg:px-8 xl:gap-10">
-        <aside className="hidden w-[272px] shrink-0 py-6 md:block xl:w-[288px]">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1320px] gap-8 md:px-8 lg:gap-10 lg:px-10 xl:gap-12">
+        <aside className="hidden w-[248px] shrink-0 py-8 md:block xl:w-[260px]">
           <div className="sticky top-6 h-[calc(100vh-48px)] overflow-hidden rounded-[30px] border border-[rgba(201,169,110,0.10)] bg-[rgba(10,10,12,0.88)] shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur">
             <SidebarContent
               displayName={displayName}
@@ -335,9 +335,9 @@ export default function DashboardPage() {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 px-4 pb-8 pt-6 sm:px-6 sm:pb-10 sm:pt-8 md:px-0 md:pr-2 lg:pb-12 lg:pt-10">
+        <main className="min-w-0 flex-1 px-4 pb-12 pt-8 sm:px-6 sm:pb-14 sm:pt-10 md:px-0 md:pr-2 lg:pb-16 lg:pt-12">
           <section className="rounded-[30px] border border-[rgba(201,169,110,0.10)] bg-[linear-gradient(180deg,rgba(201,169,110,0.055),rgba(255,255,255,0.012))] px-5 py-6 sm:px-7 sm:py-8 lg:px-9 lg:py-9">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex flex-col gap-10">
               <div className="max-w-3xl">
                 <p className="mb-4 text-[0.68rem] uppercase tracking-[0.32em] text-[rgba(138,116,68,0.82)]">
                   Навчальний кабінет
@@ -367,13 +367,13 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-4">
             {stats.map((item) => (
               <StatCard key={item.label} item={item} />
             ))}
           </section>
 
-          <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
+         <section className="mt-8 grid grid-cols-1 gap-5">
             <div className="space-y-4">
               <article className="overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] bg-[linear-gradient(180deg,rgba(201,169,110,0.07),rgba(255,255,255,0.016))] p-5 sm:p-6 lg:p-7">
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
