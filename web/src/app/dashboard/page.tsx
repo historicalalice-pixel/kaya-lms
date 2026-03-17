@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type NavigationItem = {
   label: string;
   href?: string;
   badge?: string;
-  isActive?: boolean;
 };
 
 type StatItem = {
@@ -52,12 +51,12 @@ function Rings({ size = 48, offset = 10 }: { size?: number; offset?: number }) {
     <>
       <div
         aria-hidden="true"
-        className="absolute rounded-full border border-[rgba(201,169,110,0.13)] transition-all duration-300 group-hover:scale-110 group-hover:border-[rgba(201,169,110,0.24)]"
+        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.12)] transition-all duration-300 group-hover:scale-110 group-hover:border-[rgba(201,169,110,0.22)]"
         style={{ right: offset, top: offset, width: size, height: size }}
       />
       <div
         aria-hidden="true"
-        className="absolute rounded-full border border-[rgba(201,169,110,0.10)] opacity-70 transition-all duration-300 group-hover:scale-110 group-hover:border-[rgba(201,169,110,0.20)]"
+        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.09)] opacity-70 transition-all duration-300 group-hover:scale-110 group-hover:border-[rgba(201,169,110,0.18)]"
         style={{ right: innerOffset, top: innerOffset, width: inner, height: inner }}
       />
     </>
@@ -71,29 +70,29 @@ function HoverGlow() {
       className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       style={{
         background:
-          "radial-gradient(ellipse 60% 52% at 50% 42%, rgba(180,130,60,0.11), transparent 72%)",
+          "radial-gradient(ellipse 60% 52% at 50% 42%, rgba(180,130,60,0.10), transparent 72%)",
       }}
     />
   );
 }
 
-function DotLink({ href, children }: { href: string; children: React.ReactNode }) {
+function DotLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.16em] text-[rgba(226,201,146,0.84)] transition-colors duration-200 hover:text-[rgba(226,201,146,1)]"
+      className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.14em] text-[rgba(226,201,146,0.86)] transition-colors duration-200 hover:text-[rgba(226,201,146,1)]"
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.75)]" />
+      <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.74)]" />
       {children}
     </Link>
   );
 }
 
-function OutlineButton({ href, children }: { href: string; children: React.ReactNode }) {
+function OutlineButton({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
       href={href}
-      className="group/btn relative inline-flex min-h-[44px] items-center justify-center overflow-hidden rounded-[15px] border border-[rgba(201,169,110,0.28)] px-4 sm:px-5 text-[0.74rem] uppercase tracking-[0.14em] text-[rgba(201,169,110,0.92)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgba(201,169,110,0.52)] hover:text-[rgba(226,201,146,1)]"
+      className="group/btn relative inline-flex min-h-[44px] items-center justify-center overflow-hidden rounded-[15px] border border-[rgba(201,169,110,0.28)] px-4 sm:px-5 text-[0.74rem] uppercase tracking-[0.12em] text-[rgba(201,169,110,0.92)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgba(201,169,110,0.50)] hover:text-[rgba(226,201,146,1)]"
       style={{ background: "rgba(255,255,255,0.025)" }}
     >
       <span
@@ -118,17 +117,23 @@ function DashboardNav({
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const isItemActive = (href?: string) => {
+    if (!href) return false;
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname.startsWith(href);
+  };
+
   return (
     <div className="space-y-1">
       {items.map((item) => {
-        const isActive = item.href ? pathname === item.href : Boolean(item.isActive);
+        const isActive = isItemActive(item.href);
 
         const baseClass =
-          "flex items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-[0.9rem] transition-all duration-200";
+          "flex items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-[0.92rem] transition-all duration-200";
         const activeClass =
           "border border-[rgba(201,169,110,0.14)] bg-[linear-gradient(90deg,rgba(201,169,110,0.11),rgba(201,169,110,0.02))] text-[rgba(240,232,218,0.96)]";
         const inactiveClass =
-          "border border-transparent text-[rgba(214,204,190,0.64)] hover:border-[rgba(201,169,110,0.08)] hover:bg-[rgba(255,255,255,0.02)] hover:text-[rgba(226,201,146,0.92)]";
+          "border border-transparent text-[rgba(214,204,190,0.66)] hover:border-[rgba(201,169,110,0.08)] hover:bg-[rgba(255,255,255,0.02)] hover:text-[rgba(226,201,146,0.92)]";
 
         const content = (
           <>
@@ -142,7 +147,7 @@ function DashboardNav({
             </span>
 
             {item.badge && (
-              <span className="shrink-0 rounded-full border border-[rgba(201,169,110,0.18)] px-2 py-0.5 text-[0.58rem] uppercase tracking-[0.12em] text-[rgba(201,169,110,0.62)]">
+              <span className="shrink-0 rounded-full border border-[rgba(201,169,110,0.18)] px-2 py-0.5 text-[0.58rem] uppercase tracking-[0.10em] text-[rgba(201,169,110,0.62)]">
                 {item.badge}
               </span>
             )}
@@ -191,12 +196,12 @@ function SidebarContent({
         <Link
           href="/home"
           onClick={onNavigate}
-          className="font-serif text-[1.85rem] tracking-[0.18em] text-[rgba(240,232,218,0.96)]"
+          className="font-serif text-[1.85rem] tracking-[0.16em] text-[rgba(240,232,218,0.96)]"
         >
           KAYA
         </Link>
 
-        <p className="mt-2 text-[0.58rem] uppercase tracking-[0.26em] leading-relaxed text-[rgba(171,140,84,0.56)]">
+        <p className="mt-2 text-[0.60rem] uppercase leading-relaxed tracking-[0.22em] text-[rgba(171,140,84,0.56)]">
           Навчальний
           <br />
           кабінет
@@ -205,14 +210,14 @@ function SidebarContent({
 
       <div className="space-y-6 px-4 py-4 sm:px-5">
         <section>
-          <p className="mb-2 px-3 text-[0.58rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.40)]">
+          <p className="mb-2 px-3 text-[0.62rem] uppercase tracking-[0.18em] text-[rgba(171,140,84,0.42)]">
             Основне
           </p>
           <DashboardNav items={primaryNavigation} pathname={pathname} onNavigate={onNavigate} />
         </section>
 
         <section>
-          <p className="mb-2 px-3 text-[0.58rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.40)]">
+          <p className="mb-2 px-3 text-[0.62rem] uppercase tracking-[0.18em] text-[rgba(171,140,84,0.42)]">
             Особисте
           </p>
           <DashboardNav items={secondaryNavigation} pathname={pathname} onNavigate={onNavigate} />
@@ -227,7 +232,7 @@ function SidebarContent({
 
           <div className="min-w-0">
             <p className="truncate text-[0.92rem] text-[rgba(240,232,218,0.92)]">{displayName}</p>
-            <p className="text-[0.60rem] uppercase tracking-[0.18em] text-[rgba(171,140,84,0.64)]">
+            <p className="text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.64)]">
               Учень
             </p>
           </div>
@@ -237,7 +242,7 @@ function SidebarContent({
           type="button"
           onClick={onLogout}
           disabled={isSigningOut}
-          className="flex w-full items-center justify-center gap-2 rounded-[12px] px-3 py-2.5 text-[0.70rem] uppercase tracking-[0.18em] text-[rgba(210,200,185,0.54)] transition-colors duration-200 hover:bg-[rgba(255,255,255,0.02)] hover:text-[rgba(226,201,146,0.84)] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-[12px] px-3 py-2.5 text-[0.72rem] uppercase tracking-[0.14em] text-[rgba(210,200,185,0.54)] transition-colors duration-200 hover:bg-[rgba(255,255,255,0.02)] hover:text-[rgba(226,201,146,0.84)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSigningOut ? "Вихід..." : "Вийти"} <span>→</span>
         </button>
@@ -249,7 +254,7 @@ function SidebarContent({
 function StatTile({ item }: { item: StatItem }) {
   return (
     <article
-      className="group relative min-h-[148px] overflow-hidden rounded-[24px] border border-[rgba(201,169,110,0.12)] p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.22)]"
+      className="group relative min-h-[156px] overflow-hidden rounded-[24px] border border-[rgba(201,169,110,0.12)] p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.22)]"
       style={{
         background: "linear-gradient(150deg, rgba(34,26,18,0.72), rgba(10,10,14,0.80))",
       }}
@@ -258,16 +263,88 @@ function StatTile({ item }: { item: StatItem }) {
       <Rings size={34} offset={9} />
 
       <div className="relative z-10">
-        <p className="text-[0.60rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.68)]">
+        <p className="text-[0.66rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.72)]">
           {item.label}
         </p>
-        <p className="mt-3 font-serif text-[1.9rem] leading-none text-[rgba(226,201,146,0.98)] sm:text-[2.1rem]">
+
+        <p className="mt-3 pb-1 font-serif text-[1.95rem] leading-[1.08] tracking-[-0.01em] text-[rgba(226,201,146,0.98)] sm:text-[2.15rem]">
           {item.value}
         </p>
-        <p className="mt-3 max-w-[22ch] text-[0.84rem] leading-6 text-[rgba(210,200,185,0.56)]">
+
+        <p className="mt-2 max-w-[24ch] text-[0.88rem] leading-6 text-[rgba(220,210,196,0.68)]">
           {item.hint}
         </p>
       </div>
+    </article>
+  );
+}
+
+type CardProps = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children?: ReactNode;
+  href?: string;
+  footer?: ReactNode;
+  background: string;
+  titleClassName?: string;
+  minHeightClassName?: string;
+};
+
+function InfoCard({
+  eyebrow,
+  title,
+  description,
+  children,
+  href,
+  footer,
+  background,
+  titleClassName,
+  minHeightClassName = "min-h-[220px]",
+}: CardProps) {
+  const content = (
+    <>
+      <HoverGlow />
+      <Rings size={48} offset={10} />
+
+      <div className="relative z-10 flex h-full flex-col">
+        <p className="text-[0.66rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.74)]">
+          {eyebrow}
+        </p>
+
+        <h2
+          className={[
+            "mt-3 pb-1 font-serif text-[1.9rem] leading-[1.08] tracking-[-0.015em] text-[rgba(240,232,218,0.96)] sm:text-[2.1rem]",
+            titleClassName ?? "",
+          ].join(" ")}
+        >
+          {title}
+        </h2>
+
+        <p className="mt-3 max-w-[44rem] text-[0.98rem] leading-7 text-[rgba(220,210,196,0.76)]">
+          {description}
+        </p>
+
+        {children}
+
+        {footer ? <div className="mt-auto pt-7">{footer}</div> : null}
+      </div>
+    </>
+  );
+
+  const classes = `group relative overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:p-7 ${minHeightClassName}`;
+
+  if (href) {
+    return (
+      <Link href={href} className={classes} style={{ background }}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <article className={classes} style={{ background }}>
+      {content}
     </article>
   );
 }
@@ -307,7 +384,7 @@ export default function DashboardPage() {
       stars.push(star);
     }
 
-    return () => stars.forEach((s) => s.remove());
+    return () => stars.forEach((star) => star.remove());
   }, []);
 
   useEffect(() => {
@@ -375,7 +452,7 @@ export default function DashboardPage() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link
             href="/home"
-            className="font-serif text-[1.6rem] tracking-[0.20em] text-[rgba(240,232,218,0.94)]"
+            className="font-serif text-[1.6rem] tracking-[0.18em] text-[rgba(240,232,218,0.94)]"
           >
             KAYA
           </Link>
@@ -383,7 +460,7 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setMobileNavOpen(true)}
-            className="rounded-[12px] border border-[rgba(201,169,110,0.22)] px-3 py-2 text-[0.70rem] uppercase tracking-[0.16em] text-[rgba(201,169,110,0.90)]"
+            className="rounded-[12px] border border-[rgba(201,169,110,0.22)] px-3 py-2 text-[0.70rem] uppercase tracking-[0.14em] text-[rgba(201,169,110,0.90)]"
           >
             Меню
           </button>
@@ -407,7 +484,7 @@ export default function DashboardPage() {
             <div className="space-y-6 lg:space-y-8">
               <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.45fr)_minmax(420px,0.95fr)]">
                 <article
-                  className="group relative min-h-[272px] overflow-hidden rounded-[30px] border border-[rgba(201,169,110,0.14)] px-6 py-6 shadow-[0_14px_40px_rgba(0,0,0,0.24)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:px-7 sm:py-7 lg:px-8 lg:py-8"
+                  className="group relative min-h-[290px] overflow-hidden rounded-[30px] border border-[rgba(201,169,110,0.14)] px-6 py-7 shadow-[0_14px_40px_rgba(0,0,0,0.24)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:px-7 sm:py-8 lg:px-8 lg:py-9"
                   style={{
                     background: "linear-gradient(150deg, rgba(54,38,22,0.74), rgba(14,12,16,0.84))",
                   }}
@@ -425,22 +502,22 @@ export default function DashboardPage() {
                   />
 
                   <div className="relative z-10">
-                    <p className="text-[0.60rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.72)]">
+                    <p className="text-[0.66rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.74)]">
                       Навчальний кабінет
                     </p>
 
-                    <h1 className="mt-4 max-w-[12ch] font-serif text-[2.35rem] leading-[0.96] text-[rgba(240,232,218,0.98)] sm:text-[2.9rem] xl:text-[3.2rem]">
+                    <h1 className="mt-4 max-w-[10ch] pb-1 font-serif text-[clamp(2.55rem,4.2vw,4.25rem)] leading-[1.02] tracking-[-0.02em] text-[rgba(240,232,218,0.98)]">
                       Вітаємо, {displayName}
                     </h1>
 
-                    <p className="mt-4 max-w-2xl text-[0.96rem] leading-7 text-[rgba(220,210,196,0.74)] sm:mt-5 sm:text-[1rem] sm:leading-8">
+                    <p className="mt-4 max-w-2xl text-[0.98rem] leading-8 text-[rgba(220,210,196,0.78)] sm:mt-5 sm:text-[1rem]">
                       {heroSubtitle}
                     </p>
 
                     <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 sm:mt-7">
                       <Link
                         href="/courses"
-                        className="inline-flex items-center gap-2 border-b border-[rgba(201,169,110,0.28)] pb-0.5 text-[0.74rem] uppercase tracking-[0.14em] text-[rgba(226,201,146,0.90)] transition-colors duration-200 hover:border-[rgba(201,169,110,0.58)] hover:text-[rgba(226,201,146,1)]"
+                        className="inline-flex items-center gap-2 border-b border-[rgba(201,169,110,0.28)] pb-0.5 text-[0.74rem] uppercase tracking-[0.12em] text-[rgba(226,201,146,0.90)] transition-colors duration-200 hover:border-[rgba(201,169,110,0.58)] hover:text-[rgba(226,201,146,1)]"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.75)]" />
                         Продовжити навчання
@@ -448,14 +525,14 @@ export default function DashboardPage() {
 
                       <Link
                         href="/dashboard/progress"
-                        className="inline-flex items-center gap-2 border-b border-[rgba(201,169,110,0.28)] pb-0.5 text-[0.74rem] uppercase tracking-[0.14em] text-[rgba(226,201,146,0.90)] transition-colors duration-200 hover:border-[rgba(201,169,110,0.58)] hover:text-[rgba(226,201,146,1)]"
+                        className="inline-flex items-center gap-2 border-b border-[rgba(201,169,110,0.28)] pb-0.5 text-[0.74rem] uppercase tracking-[0.12em] text-[rgba(226,201,146,0.90)] transition-colors duration-200 hover:border-[rgba(201,169,110,0.58)] hover:text-[rgba(226,201,146,1)]"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.75)]" />
                         Мій прогрес
                       </Link>
                     </div>
 
-                    <div className="mt-6 inline-flex items-center gap-2 text-[0.66rem] uppercase tracking-[0.12em] text-[rgba(210,200,185,0.50)]">
+                    <div className="mt-6 inline-flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.10em] text-[rgba(210,200,185,0.52)]">
                       <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.70)]" />
                       Твій простір для навчання вже готовий
                     </div>
@@ -470,98 +547,46 @@ export default function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <article
-                  className="group relative min-h-[220px] overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:p-7"
-                  style={{
-                    background: "linear-gradient(150deg, rgba(42,30,18,0.70), rgba(12,11,15,0.80))",
-                  }}
+                <InfoCard
+                  eyebrow="Продовжити навчання"
+                  title="Поки що курс не обрано"
+                  description="Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок і домашні завдання."
+                  background="linear-gradient(150deg, rgba(42,30,18,0.70), rgba(12,11,15,0.80))"
+                  titleClassName="max-w-[12ch] text-[clamp(1.9rem,2.35vw,2.55rem)]"
+                  footer={<OutlineButton href="/courses">Перейти до курсів</OutlineButton>}
+                />
+
+                <InfoCard
+                  eyebrow="Розклад"
+                  title="Найближче заняття"
+                  description="Після старту курсу тут з'явиться дата й час твого наступного уроку з куратором."
+                  background="linear-gradient(150deg, rgba(34,28,20,0.68), rgba(12,12,15,0.78))"
+                  titleClassName="max-w-[11ch] text-[clamp(1.9rem,2.35vw,2.55rem)]"
+                  footer={<DotLink href="/dashboard">Переглянути розклад</DotLink>}
                 >
-                  <HoverGlow />
-                  <Rings size={48} offset={10} />
-
-                  <div className="relative z-10">
-                    <p className="text-[0.60rem] uppercase tracking-[0.20em] text-[rgba(171,140,84,0.70)]">
-                      Продовжити навчання
+                  <div className="mt-5">
+                    <p className="text-[0.66rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.62)]">
+                      Статус
                     </p>
-
-                    <h2 className="mt-3 max-w-[14ch] font-serif text-[1.95rem] leading-tight text-[rgba(240,232,218,0.96)] sm:text-[2.15rem]">
-                      Поки що курс не обрано
-                    </h2>
-
-                    <p className="mt-3 max-w-[38rem] text-[0.94rem] leading-7 text-[rgba(210,200,185,0.68)]">
-                      Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок і домашні завдання.
+                    <p className="mt-1 text-[0.90rem] leading-6 text-[rgba(220,210,196,0.62)]">
+                      Занять поки не заплановано.
                     </p>
-
-                    <div className="mt-6">
-                      <OutlineButton href="/courses">Перейти до курсів</OutlineButton>
-                    </div>
                   </div>
-                </article>
-
-                <article
-                  className="group relative min-h-[220px] overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:p-7"
-                  style={{
-                    background: "linear-gradient(150deg, rgba(34,28,20,0.68), rgba(12,12,15,0.78))",
-                  }}
-                >
-                  <HoverGlow />
-                  <Rings size={48} offset={10} />
-
-                  <div className="relative z-10">
-                    <p className="text-[0.60rem] uppercase tracking-[0.20em] text-[rgba(171,140,84,0.70)]">
-                      Розклад
-                    </p>
-
-                    <h2 className="mt-3 max-w-[14ch] font-serif text-[1.95rem] leading-tight text-[rgba(240,232,218,0.96)] sm:text-[2.15rem]">
-                      Найближче заняття
-                    </h2>
-
-                    <p className="mt-3 max-w-[38rem] text-[0.94rem] leading-7 text-[rgba(210,200,185,0.68)]">
-                      Після старту курсу тут з'явиться дата й час твого наступного уроку з куратором.
-                    </p>
-
-                    <div className="mt-5">
-                      <p className="text-[0.60rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.60)]">
-                        Статус
-                      </p>
-                      <p className="mt-1 text-[0.88rem] leading-6 text-[rgba(210,200,185,0.56)]">
-                        Занять поки не заплановано.
-                      </p>
-                    </div>
-
-                    <div className="mt-6">
-                      <DotLink href="/dashboard">Переглянути розклад</DotLink>
-                    </div>
-                  </div>
-                </article>
+                </InfoCard>
               </div>
 
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <Link
+                <InfoCard
                   href="/courses"
-                  className="group relative flex min-h-[200px] flex-col overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:p-7"
-                  style={{
-                    background: "linear-gradient(150deg, rgba(36,28,18,0.68), rgba(12,11,14,0.78))",
-                  }}
-                >
-                  <HoverGlow />
-                  <Rings size={48} offset={10} />
-
-                  <div className="relative z-10 flex flex-1 flex-col">
-                    <p className="text-[0.60rem] uppercase tracking-[0.20em] text-[rgba(171,140,84,0.70)]">
-                      Навчання
-                    </p>
-
-                    <h3 className="mt-3 font-serif text-[1.8rem] leading-tight text-[rgba(240,232,218,0.96)] sm:text-[1.95rem]">
-                      Каталог курсів
-                    </h3>
-
-                    <p className="mt-3 max-w-[38rem] text-[0.92rem] leading-7 text-[rgba(210,200,185,0.66)]">
-                      Обери свій перший курс з історії України або світу і побудуй власний маршрут навчання.
-                    </p>
-
-                    <div className="mt-auto flex items-center justify-between pt-7">
-                      <span className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.16em] text-[rgba(226,201,146,0.88)]">
+                  eyebrow="Навчання"
+                  title="Каталог курсів"
+                  description="Обери свій перший курс з історії України або світу і побудуй власний маршрут навчання."
+                  background="linear-gradient(150deg, rgba(36,28,18,0.68), rgba(12,11,14,0.78))"
+                  minHeightClassName="min-h-[205px]"
+                  titleClassName="text-[clamp(1.75rem,2vw,2.2rem)]"
+                  footer={
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.12em] text-[rgba(226,201,146,0.88)]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.75)]" />
                         Відкрити
                       </span>
@@ -570,34 +595,20 @@ export default function DashboardPage() {
                         →
                       </span>
                     </div>
-                  </div>
-                </Link>
+                  }
+                />
 
-                <Link
+                <InfoCard
                   href="/dashboard/progress"
-                  className="group relative flex min-h-[200px] flex-col overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(201,169,110,0.24)] sm:p-7"
-                  style={{
-                    background: "linear-gradient(150deg, rgba(34,27,18,0.66), rgba(12,11,14,0.78))",
-                  }}
-                >
-                  <HoverGlow />
-                  <Rings size={48} offset={10} />
-
-                  <div className="relative z-10 flex flex-1 flex-col">
-                    <p className="text-[0.60rem] uppercase tracking-[0.20em] text-[rgba(171,140,84,0.70)]">
-                      Аналітика
-                    </p>
-
-                    <h3 className="mt-3 font-serif text-[1.8rem] leading-tight text-[rgba(240,232,218,0.96)] sm:text-[1.95rem]">
-                      Мій прогрес
-                    </h3>
-
-                    <p className="mt-3 max-w-[38rem] text-[0.92rem] leading-7 text-[rgba(210,200,185,0.66)]">
-                      Детальна статистика навчання: бали за тести, пройдені теми, активність по днях.
-                    </p>
-
-                    <div className="mt-auto flex items-center justify-between pt-7">
-                      <span className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.16em] text-[rgba(226,201,146,0.88)]">
+                  eyebrow="Аналітика"
+                  title="Мій прогрес"
+                  description="Детальна статистика навчання: бали за тести, пройдені теми, активність по днях."
+                  background="linear-gradient(150deg, rgba(34,27,18,0.66), rgba(12,11,14,0.78))"
+                  minHeightClassName="min-h-[205px]"
+                  titleClassName="text-[clamp(1.75rem,2vw,2.2rem)]"
+                  footer={
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.12em] text-[rgba(226,201,146,0.88)]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.75)]" />
                         Відкрити
                       </span>
@@ -606,8 +617,8 @@ export default function DashboardPage() {
                         →
                       </span>
                     </div>
-                  </div>
-                </Link>
+                  }
+                />
               </div>
 
               <article
@@ -620,7 +631,7 @@ export default function DashboardPage() {
                 <Rings size={48} offset={10} />
 
                 <div className="relative z-10">
-                  <p className="text-[0.60rem] uppercase tracking-[0.20em] text-[rgba(171,140,84,0.70)]">
+                  <p className="text-[0.66rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.74)]">
                     Рекомендовані кроки
                   </p>
 
@@ -634,7 +645,7 @@ export default function DashboardPage() {
                           {index + 1}
                         </div>
 
-                        <p className="pt-0.5 text-[0.90rem] leading-6 text-[rgba(210,200,185,0.68)]">
+                        <p className="pt-0.5 text-[0.92rem] leading-6 text-[rgba(220,210,196,0.68)]">
                           {step}
                         </p>
                       </div>
@@ -661,7 +672,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
-                className="rounded-[12px] border border-[rgba(201,169,110,0.18)] bg-[rgba(8,8,10,0.82)] px-3 py-2 text-[0.68rem] uppercase tracking-[0.14em] text-[rgba(201,169,110,0.84)] backdrop-blur"
+                className="rounded-[12px] border border-[rgba(201,169,110,0.18)] bg-[rgba(8,8,10,0.82)] px-3 py-2 text-[0.68rem] uppercase tracking-[0.12em] text-[rgba(201,169,110,0.84)] backdrop-blur"
               >
                 Закрити
               </button>
