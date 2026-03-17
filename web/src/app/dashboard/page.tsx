@@ -38,20 +38,20 @@ const onboardingSteps = [
   "Після старту тут з'являться уроки, результати й завдання.",
 ];
 
-function Rings({ size = 42, offset = 10 }: { size?: number; offset?: number }) {
-  const inner = Math.round(size * 0.52);
+function Rings({ size = 36, offset = 10 }: { size?: number; offset?: number }) {
+  const inner = Math.round(size * 0.54);
   const innerOffset = offset + Math.round((size - inner) / 2);
 
   return (
     <>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.11)] transition-all duration-300 group-hover:scale-105 group-hover:border-[rgba(201,169,110,0.18)]"
+        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.10)] transition-all duration-300 group-hover:scale-105 group-hover:border-[rgba(201,169,110,0.16)]"
         style={{ right: offset, top: offset, width: size, height: size }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.08)] opacity-80 transition-all duration-300 group-hover:scale-105 group-hover:border-[rgba(201,169,110,0.14)]"
+        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.07)] opacity-80 transition-all duration-300 group-hover:scale-105 group-hover:border-[rgba(201,169,110,0.12)]"
         style={{ right: innerOffset, top: innerOffset, width: inner, height: inner }}
       />
     </>
@@ -65,7 +65,7 @@ function HoverGlow() {
       className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       style={{
         background:
-          "radial-gradient(ellipse 58% 52% at 50% 40%, rgba(180,130,60,0.08), transparent 72%)",
+          "radial-gradient(ellipse 56% 48% at 50% 40%, rgba(180,130,60,0.07), transparent 72%)",
       }}
     />
   );
@@ -75,7 +75,7 @@ function OutlineButton({ href, children }: { href: string; children: ReactNode }
   return (
     <Link
       href={href}
-      className="inline-flex min-h-[40px] items-center justify-center rounded-[14px] border border-[rgba(201,169,110,0.26)] px-4 text-[0.72rem] uppercase tracking-[0.12em] text-[rgba(226,201,146,0.92)] transition-all duration-200 hover:border-[rgba(201,169,110,0.46)] hover:bg-[rgba(255,255,255,0.02)]"
+      className="inline-flex min-h-[38px] items-center justify-center rounded-[13px] border border-[rgba(201,169,110,0.24)] px-4 text-[0.70rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.92)] transition-all duration-200 hover:border-[rgba(201,169,110,0.42)] hover:bg-[rgba(255,255,255,0.02)]"
     >
       {children}
     </Link>
@@ -86,11 +86,46 @@ function TextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.12em] text-[rgba(226,201,146,0.86)] transition-colors duration-200 hover:text-[rgba(226,201,146,1)]"
+      className="inline-flex items-center gap-2 text-[0.70rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.86)] transition-colors duration-200 hover:text-[rgba(226,201,146,1)]"
     >
       <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.74)]" />
       {children}
     </Link>
+  );
+}
+
+function NavIcon({ kind }: { kind: "profile" | "message" }) {
+  if (kind === "profile") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-[15px] w-[15px]"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 21a8 8 0 0 0-16 0" />
+        <circle cx="12" cy="8" r="4" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-[15px] w-[15px]"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+    </svg>
   );
 }
 
@@ -163,6 +198,56 @@ function DashboardNav({
   );
 }
 
+function SidebarQuickAction({
+  label,
+  kind,
+  href,
+  badge,
+  onNavigate,
+}: {
+  label: string;
+  kind: "profile" | "message";
+  href?: string;
+  badge?: string;
+  onNavigate?: () => void;
+}) {
+  const classes =
+    "flex items-center justify-between gap-3 rounded-[16px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3 text-[0.84rem] text-[rgba(240,232,218,0.88)] transition-colors duration-200";
+
+  const content = (
+    <>
+      <span className="flex items-center gap-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(201,169,110,0.20)] bg-[rgba(201,169,110,0.08)] text-[rgba(226,201,146,0.82)]">
+          <NavIcon kind={kind} />
+        </span>
+        <span>{label}</span>
+      </span>
+
+      {badge ? (
+        <span className="rounded-full border border-[rgba(201,169,110,0.18)] px-2 py-0.5 text-[0.56rem] uppercase tracking-[0.08em] text-[rgba(201,169,110,0.62)]">
+          {badge}
+        </span>
+      ) : (
+        <span className="text-[0.9rem] text-[rgba(201,169,110,0.62)]">→</span>
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        onClick={onNavigate}
+        className={`${classes} hover:border-[rgba(201,169,110,0.16)] hover:bg-[rgba(255,255,255,0.03)]`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={classes}>{content}</div>;
+}
+
 function SidebarContent({
   displayName,
   pathname,
@@ -182,7 +267,7 @@ function SidebarContent({
         <Link
           href="/home"
           onClick={onNavigate}
-          className="font-serif text-[1.7rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.96)]"
+          className="font-serif text-[1.68rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.96)]"
         >
           KAYA
         </Link>
@@ -204,33 +289,28 @@ function SidebarContent({
       </div>
 
       <div className="border-t border-[rgba(201,169,110,0.08)] px-4 pb-5 pt-4 sm:px-5">
-        <div className="mb-3">
-          <div className="flex items-center justify-between rounded-[16px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-2.5">
-            <span className="text-[0.84rem] text-[rgba(240,232,218,0.88)]">Повідомлення</span>
-            <span className="rounded-full border border-[rgba(201,169,110,0.18)] px-2 py-0.5 text-[0.56rem] uppercase tracking-[0.08em] text-[rgba(201,169,110,0.62)]">
-              Скоро
-            </span>
-          </div>
-        </div>
-
-        <Link
-          href="/dashboard/profile"
-          onClick={onNavigate}
-          className="mb-3 flex items-center gap-3 rounded-[18px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3 transition-colors duration-200 hover:border-[rgba(201,169,110,0.16)] hover:bg-[rgba(255,255,255,0.03)]"
-        >
+        <div className="mb-3 flex items-center gap-3 rounded-[18px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-3 py-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.28)] bg-[rgba(201,169,110,0.10)] font-serif text-[1rem] text-[rgba(226,201,146,0.96)]">
             {displayName.charAt(0).toUpperCase()}
           </div>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <p className="truncate text-[0.92rem] text-[rgba(240,232,218,0.92)]">{displayName}</p>
             <p className="text-[0.62rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.64)]">
               Учень
             </p>
           </div>
+        </div>
 
-          <span className="text-[0.9rem] text-[rgba(201,169,110,0.62)]">→</span>
-        </Link>
+        <div className="mb-3 grid grid-cols-2 gap-2.5">
+          <SidebarQuickAction label="Повідомлення" kind="message" badge="Скоро" />
+          <SidebarQuickAction
+            label="Профіль"
+            kind="profile"
+            href="/dashboard/profile"
+            onNavigate={onNavigate}
+          />
+        </div>
 
         <button
           type="button"
@@ -248,24 +328,24 @@ function SidebarContent({
 function StatTile({ item }: { item: StatItem }) {
   return (
     <article
-      className="group relative min-h-[132px] overflow-hidden rounded-[24px] border border-[rgba(201,169,110,0.11)] px-4 py-4 sm:px-5 sm:py-5 transition-all duration-300 hover:border-[rgba(201,169,110,0.20)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.18)]"
+      className="group relative min-h-[118px] overflow-hidden rounded-[22px] border border-[rgba(201,169,110,0.11)] px-4 py-4 transition-all duration-300 hover:border-[rgba(201,169,110,0.18)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.16)]"
       style={{
         background: "linear-gradient(150deg, rgba(32,24,18,0.72), rgba(10,10,14,0.80))",
       }}
     >
       <HoverGlow />
-      <Rings size={30} offset={8} />
+      <Rings size={28} offset={8} />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center text-center">
-        <p className="text-[0.64rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.72)]">
+        <p className="text-[0.62rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.72)]">
           {item.label}
         </p>
 
-        <p className="mt-2 font-serif text-[1.75rem] leading-[1.18] text-[rgba(226,201,146,0.98)] sm:text-[1.9rem]">
+        <p className="mt-2 font-serif text-[1.58rem] leading-[1.2] text-[rgba(226,201,146,0.98)] sm:text-[1.72rem]">
           {item.value}
         </p>
 
-        <p className="mt-2 max-w-[18ch] text-[0.84rem] leading-6 text-[rgba(220,210,196,0.66)]">
+        <p className="mt-2 max-w-[17ch] text-[0.82rem] leading-6 text-[rgba(220,210,196,0.66)]">
           {item.hint}
         </p>
       </div>
@@ -294,39 +374,39 @@ function InfoCard({
   footer,
   background,
   titleClassName,
-  minHeightClassName = "min-h-[180px]",
+  minHeightClassName = "min-h-[156px]",
 }: CardProps) {
   const content = (
     <>
       <HoverGlow />
-      <Rings size={42} offset={10} />
+      <Rings size={36} offset={10} />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center text-center">
-        <p className="text-[0.64rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.74)]">
+        <p className="text-[0.62rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.74)]">
           {eyebrow}
         </p>
 
         <h2
           className={[
-            "mt-2 max-w-[13ch] font-serif text-[1.62rem] leading-[1.18] text-[rgba(240,232,218,0.96)] sm:text-[1.84rem]",
+            "mt-2 max-w-[12ch] font-serif text-[1.42rem] leading-[1.22] text-[rgba(240,232,218,0.96)] sm:text-[1.56rem]",
             titleClassName ?? "",
           ].join(" ")}
         >
           {title}
         </h2>
 
-        <p className="mt-3 max-w-[34ch] text-[0.92rem] leading-7 text-[rgba(220,210,196,0.74)]">
+        <p className="mt-3 max-w-[32ch] text-[0.88rem] leading-7 text-[rgba(220,210,196,0.74)]">
           {description}
         </p>
 
         {children}
 
-        {footer ? <div className="mt-5">{footer}</div> : null}
+        {footer ? <div className="mt-4">{footer}</div> : null}
       </div>
     </>
   );
 
-  const classes = `group relative overflow-hidden rounded-[26px] border border-[rgba(201,169,110,0.11)] px-5 py-5 shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition-all duration-300 hover:border-[rgba(201,169,110,0.20)] sm:px-6 sm:py-6 ${minHeightClassName}`;
+  const classes = `group relative overflow-hidden rounded-[24px] border border-[rgba(201,169,110,0.11)] px-5 py-5 shadow-[0_10px_24px_rgba(0,0,0,0.16)] transition-all duration-300 hover:border-[rgba(201,169,110,0.18)] ${minHeightClassName}`;
 
   if (href) {
     return (
@@ -435,18 +515,18 @@ export default function DashboardPage() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[420px]"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[380px]"
         style={{
           background:
-            "radial-gradient(ellipse 72% 48% at 58% 0%, rgba(180,130,60,0.14), transparent 72%)",
+            "radial-gradient(ellipse 68% 46% at 58% 0%, rgba(180,130,60,0.12), transparent 72%)",
         }}
       />
 
       <header className="sticky top-0 z-40 border-b border-[rgba(201,169,110,0.08)] bg-[rgba(10,10,12,0.94)] backdrop-blur xl:hidden">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-[1500px] items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link
             href="/home"
-            className="font-serif text-[1.5rem] leading-none tracking-[0.16em] text-[rgba(240,232,218,0.94)]"
+            className="font-serif text-[1.46rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.94)]"
           >
             KAYA
           </Link>
@@ -454,15 +534,15 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setMobileNavOpen(true)}
-            className="rounded-[12px] border border-[rgba(201,169,110,0.22)] px-3 py-2 text-[0.70rem] uppercase tracking-[0.12em] text-[rgba(201,169,110,0.90)]"
+            className="rounded-[12px] border border-[rgba(201,169,110,0.22)] px-3 py-2 text-[0.70rem] uppercase tracking-[0.10em] text-[rgba(201,169,110,0.90)]"
           >
             Меню
           </button>
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto max-w-[1540px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8 xl:px-10">
-        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[286px_minmax(0,1fr)] xl:gap-6">
+      <div className="relative z-10 mx-auto max-w-[1500px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7 xl:px-10">
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[280px_minmax(0,1fr)] xl:gap-6">
           <aside className="hidden xl:block">
             <div className="sticky top-6">
               <SidebarContent
@@ -476,44 +556,44 @@ export default function DashboardPage() {
 
           <main className="min-w-0">
             <div className="space-y-5">
-              <div className="grid grid-cols-1 gap-5 2xl:grid-cols-[minmax(0,1.28fr)_minmax(380px,0.9fr)]">
+              <div className="grid grid-cols-1 gap-5 2xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.88fr)]">
                 <article
-                  className="group relative min-h-[248px] overflow-hidden rounded-[28px] border border-[rgba(201,169,110,0.12)] px-5 py-6 shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition-all duration-300 hover:border-[rgba(201,169,110,0.20)] sm:px-6 sm:py-7"
+                  className="group relative min-h-[214px] overflow-hidden rounded-[26px] border border-[rgba(201,169,110,0.12)] px-5 py-5 shadow-[0_10px_24px_rgba(0,0,0,0.16)] transition-all duration-300 hover:border-[rgba(201,169,110,0.18)]"
                   style={{
                     background: "linear-gradient(150deg, rgba(50,36,22,0.72), rgba(14,12,16,0.84))",
                   }}
                 >
                   <HoverGlow />
-                  <Rings size={50} offset={12} />
+                  <Rings size={42} offset={12} />
 
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-[-28px] top-[-36px] h-[160px] w-[200px]"
+                    className="pointer-events-none absolute left-[-24px] top-[-30px] h-[136px] w-[170px]"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(180,130,60,0.10), transparent 66%)",
+                        "radial-gradient(circle, rgba(180,130,60,0.09), transparent 66%)",
                     }}
                   />
 
                   <div className="relative z-10 flex h-full flex-col items-center justify-center text-center">
-                    <p className="text-[0.64rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.74)]">
+                    <p className="text-[0.62rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.74)]">
                       Навчальний кабінет
                     </p>
 
-                    <h1 className="mt-2 max-w-[8ch] font-serif text-[2.2rem] leading-[1.14] text-[rgba(240,232,218,0.98)] sm:text-[2.6rem] xl:text-[3rem]">
+                    <h1 className="mt-2 max-w-[8ch] font-serif text-[2rem] leading-[1.18] text-[rgba(240,232,218,0.98)] sm:text-[2.25rem] xl:text-[2.55rem]">
                       Вітаємо, {displayName}
                     </h1>
 
-                    <p className="mt-3 max-w-[34ch] text-[0.96rem] leading-8 text-[rgba(220,210,196,0.78)]">
+                    <p className="mt-3 max-w-[31ch] text-[0.92rem] leading-8 text-[rgba(220,210,196,0.78)]">
                       {heroSubtitle}
                     </p>
 
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
                       <TextLink href="/courses">Продовжити навчання</TextLink>
                       <TextLink href="/dashboard/progress">Мій прогрес</TextLink>
                     </div>
 
-                    <div className="mt-4 inline-flex items-center gap-2 text-[0.66rem] uppercase tracking-[0.10em] text-[rgba(210,200,185,0.52)]">
+                    <div className="mt-3 inline-flex items-center gap-2 text-[0.64rem] uppercase tracking-[0.08em] text-[rgba(210,200,185,0.52)]">
                       <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.70)]" />
                       Твій простір для навчання вже готовий
                     </div>
@@ -545,11 +625,11 @@ export default function DashboardPage() {
                   titleClassName="max-w-[9ch]"
                   footer={<TextLink href="/dashboard">Переглянути розклад</TextLink>}
                 >
-                  <div className="mt-4 text-center">
-                    <p className="text-[0.64rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.62)]">
+                  <div className="mt-3 text-center">
+                    <p className="text-[0.62rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.62)]">
                       Статус
                     </p>
-                    <p className="mt-1 text-[0.88rem] leading-6 text-[rgba(220,210,196,0.62)]">
+                    <p className="mt-1 text-[0.84rem] leading-6 text-[rgba(220,210,196,0.62)]">
                       Занять поки не заплановано.
                     </p>
                   </div>
@@ -563,8 +643,8 @@ export default function DashboardPage() {
                   title="Каталог курсів"
                   description="Обери свій перший курс з історії України або світу і побудуй власний маршрут навчання."
                   background="linear-gradient(150deg, rgba(36,28,18,0.68), rgba(12,11,14,0.78))"
-                  minHeightClassName="min-h-[170px]"
-                  titleClassName="max-w-[11ch] text-[1.55rem] sm:text-[1.72rem]"
+                  minHeightClassName="min-h-[148px]"
+                  titleClassName="max-w-[10ch] text-[1.34rem] sm:text-[1.46rem]"
                   footer={<TextLink href="/courses">Відкрити</TextLink>}
                 />
 
@@ -574,37 +654,37 @@ export default function DashboardPage() {
                   title="Мій прогрес"
                   description="Детальна статистика навчання: бали за тести, пройдені теми, активність по днях."
                   background="linear-gradient(150deg, rgba(34,27,18,0.66), rgba(12,11,14,0.78))"
-                  minHeightClassName="min-h-[170px]"
-                  titleClassName="max-w-[10ch] text-[1.55rem] sm:text-[1.72rem]"
+                  minHeightClassName="min-h-[148px]"
+                  titleClassName="max-w-[10ch] text-[1.34rem] sm:text-[1.46rem]"
                   footer={<TextLink href="/dashboard/progress">Відкрити</TextLink>}
                 />
               </div>
 
               <article
-                className="group relative overflow-hidden rounded-[26px] border border-[rgba(201,169,110,0.10)] px-5 py-5 shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition-all duration-300 hover:border-[rgba(201,169,110,0.18)] sm:px-6 sm:py-6"
+                className="group relative overflow-hidden rounded-[24px] border border-[rgba(201,169,110,0.10)] px-5 py-5 shadow-[0_10px_24px_rgba(0,0,0,0.16)] transition-all duration-300 hover:border-[rgba(201,169,110,0.16)]"
                 style={{
                   background: "linear-gradient(150deg, rgba(28,24,18,0.58), rgba(12,12,15,0.68))",
                 }}
               >
                 <HoverGlow />
-                <Rings size={42} offset={10} />
+                <Rings size={36} offset={10} />
 
                 <div className="relative z-10 text-center">
-                  <p className="text-[0.64rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.74)]">
+                  <p className="text-[0.62rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.74)]">
                     Рекомендовані кроки
                   </p>
 
-                  <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                     {onboardingSteps.map((step, index) => (
                       <div
                         key={step}
-                        className="flex min-h-[92px] flex-col items-center justify-center gap-3 rounded-[18px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.016)] px-4 py-4 text-center"
+                        className="flex min-h-[82px] flex-col items-center justify-center gap-2.5 rounded-[16px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.016)] px-4 py-4 text-center"
                       >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] text-[0.78rem] text-[rgba(201,169,110,0.88)]">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] text-[0.76rem] text-[rgba(201,169,110,0.88)]">
                           {index + 1}
                         </div>
 
-                        <p className="text-[0.90rem] leading-6 text-[rgba(220,210,196,0.68)]">
+                        <p className="text-[0.86rem] leading-6 text-[rgba(220,210,196,0.68)]">
                           {step}
                         </p>
                       </div>
@@ -631,7 +711,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
-                className="rounded-[12px] border border-[rgba(201,169,110,0.18)] bg-[rgba(8,8,10,0.82)] px-3 py-2 text-[0.68rem] uppercase tracking-[0.12em] text-[rgba(201,169,110,0.84)] backdrop-blur"
+                className="rounded-[12px] border border-[rgba(201,169,110,0.18)] bg-[rgba(8,8,10,0.82)] px-3 py-2 text-[0.68rem] uppercase tracking-[0.10em] text-[rgba(201,169,110,0.84)] backdrop-blur"
               >
                 Закрити
               </button>
