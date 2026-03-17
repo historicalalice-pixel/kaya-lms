@@ -37,26 +37,27 @@ const stats: StatItem[] = [
   { label: "Активні завдання", value: "0", hint: "Нових дедлайнів поки немає" },
 ];
 
-const onboardingSteps = [
+const recommendedSteps = [
   "Обери перший курс у каталозі.",
   "Переглянь, як побудований простір KAYA.",
   "Після старту тут з'являться уроки, результати й завдання.",
 ];
 
-function Rings({ size = 38, offset = 10 }: { size?: number; offset?: number }) {
+function Rings({ size = 40, offset = 10 }: { size?: number; offset?: number }) {
   const inner = Math.round(size * 0.54);
   const innerOffset = offset + Math.round((size - inner) / 2);
+
   return (
     <>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.11)] transition-all duration-300 group-hover:scale-105 group-hover:border-[rgba(201,169,110,0.18)]"
-        style={{ right: offset, top: offset, width: size, height: size }}
+        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.10)] transition-all duration-200 group-hover:scale-[1.05] group-hover:border-[rgba(201,169,110,0.16)]"
+        style={{ top: offset, right: offset, width: size, height: size }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.07)] transition-all duration-300 group-hover:scale-105 group-hover:border-[rgba(201,169,110,0.12)]"
-        style={{ right: innerOffset, top: innerOffset, width: inner, height: inner }}
+        className="pointer-events-none absolute rounded-full border border-[rgba(201,169,110,0.07)] transition-all duration-200 group-hover:scale-[1.05] group-hover:border-[rgba(201,169,110,0.12)]"
+        style={{ top: innerOffset, right: innerOffset, width: inner, height: inner }}
       />
     </>
   );
@@ -66,12 +67,62 @@ function HoverGlow() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       style={{
         background:
-          "radial-gradient(ellipse 60% 50% at 30% 40%, rgba(180,120,40,0.08), transparent 70%)",
+          "radial-gradient(ellipse at 50% 40%, rgba(180,130,60,0.07), transparent 72%)",
       }}
     />
+  );
+}
+
+function ActionButton({
+  href,
+  children,
+  variant = "outline",
+}: {
+  href: string;
+  children: ReactNode;
+  variant?: "outline" | "ghost";
+}) {
+  if (variant === "ghost") {
+    return (
+      <Link
+        href={href}
+        className="inline-flex min-h-[36px] items-center justify-center rounded-[12px] border border-[rgba(201,169,110,0.18)] px-[18px] text-[0.68rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.86)] transition-all duration-200 hover:border-[rgba(201,169,110,0.30)] hover:bg-[rgba(201,169,110,0.04)] hover:text-[rgba(226,201,146,1)]"
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="inline-flex min-h-[36px] items-center justify-center rounded-[12px] border border-[rgba(201,169,110,0.28)] bg-[rgba(201,169,110,0.06)] px-[18px] text-[0.68rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.92)] transition-all duration-200 hover:border-[rgba(201,169,110,0.42)] hover:bg-[rgba(201,169,110,0.09)]"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function TextAction({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.88)] transition-colors duration-200 hover:text-[rgba(226,201,146,1)]"
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.74)]" />
+      {children}
+    </Link>
+  );
+}
+
+function NavSectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="mb-2 px-4 text-[0.52rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.35)]">
+      {children}
+    </p>
   );
 }
 
@@ -94,47 +145,43 @@ function SidebarNav({
     <div className="space-y-0.5">
       {items.map((item) => {
         const active = isActive(item.href);
-        const base =
-          "flex items-center justify-between gap-2 rounded-[10px] px-3 py-1.5 text-[0.80rem] transition-all duration-150";
-        const activeStyle = "text-[rgba(240,232,218,0.94)]";
-        const inactiveStyle =
-          "text-[rgba(214,204,190,0.55)] hover:text-[rgba(226,201,146,0.82)]";
 
         const content = (
           <>
             <span className="flex min-w-0 items-center gap-2">
               <span
-                className="shrink-0 rounded-full transition-all duration-150"
-                style={{
-                  width: "2px",
-                  height: "14px",
-                  background: active ? "rgba(201,169,110,0.84)" : "transparent",
-                }}
+                className={`h-4 w-[2px] shrink-0 rounded-full ${
+                  active ? "bg-[rgba(201,169,110,0.84)]" : "bg-transparent"
+                }`}
               />
               <span className="truncate">{item.label}</span>
             </span>
-            {item.badge && (
-              <span className="shrink-0 rounded-full border border-[rgba(201,169,110,0.18)] px-1.5 py-0.5 text-[0.50rem] uppercase tracking-[0.08em] text-[rgba(201,169,110,0.58)]">
+
+            {item.badge ? (
+              <span className="shrink-0 rounded-full border border-[rgba(201,169,110,0.18)] px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.06em] text-[rgba(201,169,110,0.62)]">
                 {item.badge}
               </span>
-            )}
+            ) : null}
           </>
         );
 
+        const className = [
+          "flex items-center justify-between gap-2 rounded-[12px] px-4 py-[7px] text-[0.82rem] transition-all duration-200",
+          active
+            ? "bg-[linear-gradient(90deg,rgba(201,169,110,0.10),rgba(201,169,110,0.02))] text-[rgba(240,232,218,0.96)]"
+            : "text-[rgba(214,204,190,0.60)] hover:bg-[rgba(255,255,255,0.02)] hover:text-[rgba(226,201,146,0.90)]",
+        ].join(" ");
+
         if (item.href) {
           return (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={onNavigate}
-              className={`${base} ${active ? activeStyle : inactiveStyle}`}
-            >
+            <Link key={item.label} href={item.href} onClick={onNavigate} className={className}>
               {content}
             </Link>
           );
         }
+
         return (
-          <div key={item.label} className={`${base} ${inactiveStyle} cursor-default`}>
+          <div key={item.label} className={className}>
             {content}
           </div>
         );
@@ -143,7 +190,36 @@ function SidebarNav({
   );
 }
 
-function SidebarInner({
+function ProfileBadge({
+  displayName,
+  onNavigate,
+}: {
+  displayName: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href="/dashboard/profile"
+      onClick={onNavigate}
+      className="block rounded-[16px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.02)] px-4 py-4 transition-colors duration-200 hover:border-[rgba(201,169,110,0.16)] hover:bg-[rgba(255,255,255,0.03)]"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.28)] bg-[rgba(201,169,110,0.10)] font-serif text-[0.96rem] text-[rgba(226,201,146,0.96)]">
+          {displayName.charAt(0).toUpperCase()}
+        </div>
+
+        <div className="min-w-0">
+          <p className="truncate text-[0.82rem] text-[rgba(240,232,218,0.92)]">{displayName}</p>
+          <p className="text-[0.56rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.64)]">
+            Учень
+          </p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function SidebarContent({
   displayName,
   pathname,
   onNavigate,
@@ -157,172 +233,169 @@ function SidebarInner({
   isSigningOut: boolean;
 }) {
   return (
-    <div
-      className="flex h-full flex-col justify-between"
-      style={{ padding: "24px 0" }}
-    >
-      {/* Top */}
+    <div className="flex h-full min-h-screen flex-col justify-between border-r border-[rgba(201,169,110,0.08)] bg-[rgba(8,8,10,0.90)] px-0 py-6">
       <div>
-        <div style={{ padding: "0 16px", marginBottom: "28px" }}>
+        <div className="px-4">
           <Link
             href="/home"
             onClick={onNavigate}
-            className="block font-serif text-[1.38rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.96)]"
+            className="font-serif text-[1.4rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.96)]"
           >
             KAYA
           </Link>
-          <p className="mt-2 text-[0.50rem] uppercase leading-relaxed tracking-[0.18em] text-[rgba(171,140,84,0.48)]">
-            Навчальний
+
+          <p className="mt-3 text-[0.52rem] uppercase leading-[1.6] tracking-[0.14em] text-[rgba(171,140,84,0.40)]">
+            НАВЧАЛЬНИЙ
             <br />
-            кабінет
+            КАБІНЕТ
           </p>
         </div>
 
-        <div style={{ padding: "0 8px", marginBottom: "20px" }}>
-          <p className="mb-1.5 px-3 text-[0.50rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.36)]">
-            Основне
-          </p>
+        <div className="mt-6">
+          <NavSectionLabel>ОСНОВНЕ</NavSectionLabel>
           <SidebarNav items={primaryNavigation} pathname={pathname} onNavigate={onNavigate} />
         </div>
 
-        <div style={{ padding: "0 8px" }}>
-          <p className="mb-1.5 px-3 text-[0.50rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.36)]">
-            Особисте
-          </p>
+        <div className="mt-4">
+          <NavSectionLabel>ОСОБИСТЕ</NavSectionLabel>
           <SidebarNav items={personalNavigation} pathname={pathname} onNavigate={onNavigate} />
         </div>
       </div>
 
-      {/* Bottom */}
-      <div style={{ padding: "0 16px" }}>
-        <div className="mb-3 flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.28)] bg-[rgba(201,169,110,0.10)] font-serif text-[0.92rem] text-[rgba(226,201,146,0.96)]">
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-[0.80rem] text-[rgba(240,232,218,0.88)]">{displayName}</p>
-            <p className="text-[0.52rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.56)]">
-              Учень
-            </p>
-          </div>
-        </div>
+      <div className="px-4">
+        <ProfileBadge displayName={displayName} onNavigate={onNavigate} />
+
         <button
           type="button"
           onClick={onLogout}
           disabled={isSigningOut}
-          className="text-[0.62rem] uppercase tracking-[0.12em] text-[rgba(210,200,185,0.42)] transition-colors duration-150 hover:text-[rgba(226,201,146,0.72)] disabled:opacity-40"
+          className="mt-3 flex w-full items-center justify-center gap-2 text-[0.66rem] uppercase tracking-[0.10em] text-[rgba(210,200,185,0.50)] transition-colors duration-200 hover:text-[rgba(226,201,146,0.84)] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSigningOut ? "Вихід..." : "Вийти →"}
+          {isSigningOut ? "Вихід..." : "Вийти"} <span>→</span>
         </button>
       </div>
     </div>
   );
 }
 
-function StatTile({ item }: { item: StatItem }) {
+function CardShell({
+  children,
+  background,
+  className = "",
+}: {
+  children: ReactNode;
+  background: string;
+  className?: string;
+}) {
   return (
     <article
-      className="group relative overflow-hidden rounded-[18px] border border-[rgba(201,169,110,0.11)] p-4 transition-all duration-300 hover:border-[rgba(201,169,110,0.20)]"
-      style={{
-        background: "linear-gradient(150deg, rgba(30,22,14,0.82), rgba(10,10,14,0.88))",
-      }}
+      className={`group relative overflow-hidden rounded-[20px] border border-[rgba(201,169,110,0.12)] ${className}`}
+      style={{ background }}
     >
       <HoverGlow />
-      <div className="relative z-10">
-        <p className="text-[0.54rem] uppercase tracking-[0.12em] text-[rgba(171,140,84,0.65)]">
+      <Rings />
+      {children}
+    </article>
+  );
+}
+
+function StatTile({ item }: { item: StatItem }) {
+  return (
+    <CardShell
+      background="linear-gradient(150deg, rgba(30,22,14,0.80), rgba(10,10,14,0.85))"
+      className="min-h-[118px] px-[18px] py-4"
+    >
+      <div className="relative z-10 text-left">
+        <p className="text-[0.56rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.65)]">
           {item.label}
         </p>
-        <p className="mt-2 font-serif text-[1.52rem] leading-none text-[rgba(226,201,146,0.96)]">
+        <p className="mt-1.5 font-serif text-[1.6rem] leading-none text-[rgba(226,201,146,0.96)]">
           {item.value}
         </p>
-        <p className="mt-2 text-[0.72rem] leading-5 text-[rgba(220,210,196,0.52)]">
+        <p className="mt-2 text-[0.74rem] leading-[1.5] text-[rgba(220,210,196,0.55)]">
           {item.hint}
         </p>
       </div>
-    </article>
+    </CardShell>
   );
 }
 
-type CardProps = {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  children?: ReactNode;
-  href?: string;
-  footer?: ReactNode;
-  background?: string;
-  rings?: boolean;
-  className?: string;
-};
-
-function Card({
+function InfoCard({
   eyebrow,
   title,
   description,
+  button,
   children,
-  href,
-  footer,
-  background = "linear-gradient(150deg, rgba(38,28,16,0.80), rgba(12,10,14,0.88))",
-  rings = true,
-  className = "",
-}: CardProps) {
-  const inner = (
-    <>
-      <HoverGlow />
-      {rings && <Rings />}
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  button?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <CardShell
+      background="linear-gradient(150deg, rgba(40,28,16,0.78), rgba(12,10,14,0.86))"
+      className="min-h-[182px] px-[26px] py-6"
+    >
       <div className="relative z-10">
-        <p className="text-[0.54rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.68)]">
+        <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.70)]">
           {eyebrow}
         </p>
-        <h2 className="mt-2 font-serif text-[1.42rem] leading-[1.22] text-[rgba(240,232,218,0.96)]">
+
+        <h3 className="mt-2 font-serif text-[1.6rem] leading-[1.2] text-[rgba(240,232,218,0.96)]">
           {title}
-        </h2>
-        {description && (
-          <p className="mt-2 text-[0.82rem] leading-6 text-[rgba(220,210,196,0.65)]">
+        </h3>
+
+        <p className="mt-3 max-w-[44ch] text-[0.84rem] leading-[1.7] text-[rgba(220,210,196,0.68)]">
+          {description}
+        </p>
+
+        {children}
+
+        {button ? <div className="mt-4">{button}</div> : null}
+      </div>
+    </CardShell>
+  );
+}
+
+function FeatureCard({
+  eyebrow,
+  title,
+  description,
+  action,
+  href,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  action: string;
+  href: string;
+}) {
+  return (
+    <Link href={href} className="block">
+      <CardShell
+        background="linear-gradient(150deg, rgba(40,28,16,0.78), rgba(12,10,14,0.86))"
+        className="min-h-[176px] px-[26px] py-6 transition-transform duration-200 hover:-translate-y-[1px]"
+      >
+        <div className="relative z-10">
+          <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.70)]">
+            {eyebrow}
+          </p>
+
+          <h3 className="mt-2 font-serif text-[1.5rem] leading-[1.2] text-[rgba(240,232,218,0.96)]">
+            {title}
+          </h3>
+
+          <p className="mt-3 max-w-[42ch] text-[0.84rem] leading-[1.7] text-[rgba(220,210,196,0.68)]">
             {description}
           </p>
-        )}
-        {children}
-        {footer && <div className="mt-3">{footer}</div>}
-      </div>
-    </>
-  );
 
-  const base = `group relative overflow-hidden rounded-[20px] border border-[rgba(201,169,110,0.11)] p-5 transition-all duration-300 hover:border-[rgba(201,169,110,0.20)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.18)] ${className}`;
-
-  if (href) {
-    return (
-      <Link href={href} className={base} style={{ background }}>
-        {inner}
-      </Link>
-    );
-  }
-  return (
-    <article className={base} style={{ background }}>
-      {inner}
-    </article>
-  );
-}
-
-function OutlineBtn({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center justify-center rounded-[11px] border border-[rgba(201,169,110,0.26)] bg-[rgba(201,169,110,0.05)] px-4 py-2 text-[0.66rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.88)] transition-all duration-200 hover:border-[rgba(201,169,110,0.44)] hover:bg-[rgba(201,169,110,0.09)]"
-    >
-      {children}
-    </Link>
-  );
-}
-
-function DotLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1.5 text-[0.64rem] uppercase tracking-[0.10em] text-[rgba(226,201,146,0.78)] transition-colors duration-200 hover:text-[rgba(226,201,146,1)]"
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.70)]" />
-      {children}
+          <div className="mt-4">
+            <TextAction href={href}>{action}</TextAction>
+          </div>
+        </div>
+      </CardShell>
     </Link>
   );
 }
@@ -340,36 +413,59 @@ export default function DashboardPage() {
   useEffect(() => {
     const field = starfieldRef.current;
     if (!field) return;
+
     field.innerHTML = "";
     const stars: HTMLDivElement[] = [];
-    for (let i = 0; i < 140; i++) {
+
+    for (let i = 0; i < 130; i += 1) {
       const star = document.createElement("div");
       star.classList.add("star");
+
       const r = Math.random();
       if (r < 0.55) star.classList.add("star--small");
       else if (r < 0.85) star.classList.add("star--medium");
       else star.classList.add("star--large");
+
+      const opacity = 0.35 + Math.random() * 0.45;
+
       star.style.left = `${Math.random() * 100}%`;
       star.style.top = `${Math.random() * 100}%`;
       star.style.setProperty("--dur", `${2 + Math.random() * 5}s`);
-      star.style.setProperty("--delay", `${Math.random() * 6}s`);
+      star.style.setProperty("--delay", `${Math.random() * 7}s`);
+      star.style.setProperty("--star-opacity", opacity.toFixed(2));
+
       field.appendChild(star);
       stars.push(star);
     }
-    return () => stars.forEach((s) => s.remove());
+
+    return () => stars.forEach((star) => star.remove());
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
+
     const loadUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) { router.replace("/login"); return; }
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        router.replace("/login");
+        return;
+      }
+
       const { data: profile } = await supabase
-        .from("profiles").select("full_name").eq("id", user.id).single();
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
       const fallback = user.email?.split("@")[0] ?? "Учень";
       setDisplayName(profile?.full_name?.trim() || fallback);
       setIsLoadingUser(false);
     };
+
     loadUser();
   }, [router]);
 
@@ -394,286 +490,168 @@ export default function DashboardPage() {
   };
 
   return (
-    <div
-      className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]"
-    >
+    <div className="relative min-h-screen overflow-x-hidden bg-[#0a0a0c] text-[var(--text)]">
       <div ref={starfieldRef} className="starfield" aria-hidden="true" />
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-0"
-        style={{
-          height: "400px",
-          background:
-            "radial-gradient(ellipse 70% 50% at 60% 0%, rgba(180,120,40,0.11), transparent 70%)",
-        }}
-      />
-
-      {/* ── Mobile header ── */}
-      <header className="sticky top-0 z-40 border-b border-[rgba(201,169,110,0.08)] bg-[rgba(10,10,12,0.94)] backdrop-blur xl:hidden">
-        <div className="flex items-center justify-between px-4 py-3">
+      <header className="sticky top-0 z-40 border-b border-[rgba(201,169,110,0.08)] bg-[rgba(8,8,10,0.94)] backdrop-blur xl:hidden">
+        <div className="flex items-center justify-between px-4 py-3.5 sm:px-5">
           <Link
             href="/home"
-            className="font-serif text-[1.32rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.94)]"
+            className="font-serif text-[1.25rem] leading-none tracking-[0.14em] text-[rgba(240,232,218,0.96)]"
           >
             KAYA
           </Link>
+
           <button
             type="button"
             onClick={() => setMobileNavOpen(true)}
-            className="rounded-[9px] border border-[rgba(201,169,110,0.22)] px-3 py-1.5 text-[0.66rem] uppercase tracking-[0.10em] text-[rgba(201,169,110,0.88)]"
+            className="rounded-[10px] border border-[rgba(201,169,110,0.22)] px-3 py-1.5 text-[0.66rem] uppercase tracking-[0.10em] text-[rgba(201,169,110,0.90)]"
           >
             Меню
           </button>
         </div>
       </header>
 
-      {/* ── Desktop: sidebar fixed + scrollable main ── */}
-      <div className="relative z-10 hidden xl:flex" style={{ minHeight: "100vh" }}>
-
-        {/* Sidebar — fixed width, full height */}
-        <div
-          style={{
-            width: "120px",
-            flexShrink: 0,
-            position: "sticky",
-            top: 0,
-            height: "100vh",
-            borderRight: "1px solid rgba(201,169,110,0.07)",
-            background: "rgba(8,8,10,0.82)",
-            overflowY: "auto",
-            zIndex: 10,
-          }}
-        >
-          <SidebarInner
+      <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[120px_1fr] xl:gap-0">
+        <aside className="hidden xl:block">
+          <SidebarContent
             displayName={displayName}
             pathname={pathname}
             onLogout={handleLogout}
             isSigningOut={isSigningOut}
           />
-        </div>
+        </aside>
 
-        {/* Main content — takes remaining width */}
-        <main
-          style={{
-            flex: 1,
-            minWidth: 0,
-            padding: "24px 28px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-          }}
-        >
-          {/* ROW 1: Hero + Stats */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 280px",
-              gap: "16px",
-              alignItems: "stretch",
-            }}
-          >
-            {/* Hero */}
-            <article
-              className="group relative overflow-hidden rounded-[22px] border border-[rgba(201,169,110,0.13)]"
-              style={{
-                background: "linear-gradient(135deg, rgba(48,34,18,0.88), rgba(12,10,14,0.92))",
-                padding: "28px 32px",
-                minHeight: "200px",
-              }}
-            >
-              <HoverGlow />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute"
-                style={{
-                  left: "-20px",
-                  top: "-20px",
-                  width: "200px",
-                  height: "160px",
-                  background: "radial-gradient(circle at 30% 40%, rgba(180,120,40,0.12), transparent 62%)",
-                }}
-              />
-              <div className="relative z-10">
-                <p className="text-[0.56rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.68)]">
-                  Навчальний кабінет
-                </p>
-                <h1 className="mt-2 font-serif text-[2.2rem] leading-[1.15] text-[rgba(240,232,218,0.98)] sm:text-[2.5rem]">
-                  Вітаємо, {displayName}
-                </h1>
-                <p className="mt-2.5 text-[0.86rem] leading-7 text-[rgba(220,210,196,0.70)]" style={{ maxWidth: "52ch" }}>
-                  {heroSubtitle}
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <OutlineBtn href="/courses">Обрати курс</OutlineBtn>
-                  <OutlineBtn href="/home">Як працює KAYA</OutlineBtn>
-                </div>
-                <div className="mt-3 inline-flex items-center gap-1.5 text-[0.60rem] uppercase tracking-[0.08em] text-[rgba(210,200,185,0.42)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.60)]" />
-                  Твій простір для навчання вже готовий
-                </div>
-              </div>
-            </article>
+        <main className="px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6 xl:px-7 xl:py-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_280px]">
+              <CardShell
+                background="linear-gradient(135deg, rgba(48,34,18,0.85), rgba(12,10,14,0.90))"
+                className="min-h-[200px] px-7 py-7"
+              >
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 20% 30%, rgba(180,120,40,0.12), transparent 60%)",
+                  }}
+                />
 
-            {/* Stats 2×2 */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              {stats.map((item) => (
-                <StatTile key={item.label} item={item} />
-              ))}
-            </div>
-          </div>
+                <div className="relative z-10">
+                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.70)]">
+                    НАВЧАЛЬНИЙ КАБІНЕТ
+                  </p>
 
-          {/* ROW 2 */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
-            <Card
-              eyebrow="Продовжити навчання"
-              title="Поки що курс не обрано"
-              description="Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок і домашні завдання."
-              footer={<OutlineBtn href="/courses">Перейти до курсів</OutlineBtn>}
-            />
-            <Card
-              eyebrow="Розклад"
-              title="Найближче заняття"
-              description="Після старту курсу тут з'явиться дата й час наступного уроку з куратором."
-              footer={<DotLink href="/dashboard">Переглянути розклад</DotLink>}
-            >
-              <div className="mt-2.5">
-                <p className="text-[0.54rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.58)]">Статус</p>
-                <p className="mt-1 text-[0.78rem] text-[rgba(220,210,196,0.52)]">Занять поки не заплановано.</p>
-              </div>
-            </Card>
-            <Card
-              eyebrow="Активні завдання"
-              title="Щойно"
-              description="Тут з'являться дедлайни й завдання від куратора після старту першого курсу."
-              footer={<DotLink href="/dashboard">Відкрити</DotLink>}
-            />
-          </div>
+                  <h1 className="mt-3 font-serif text-[2rem] leading-[1.15] text-[rgba(240,232,218,0.98)] sm:text-[2.2rem] xl:text-[2.4rem]">
+                    Вітаємо, {displayName}
+                  </h1>
 
-          {/* ROW 3 */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
-            <Card
-              eyebrow="Навчання"
-              title="Продовжити навчання"
-              description="Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок."
-              footer={<OutlineBtn href="/courses">Перейти до курсів</OutlineBtn>}
-              background="linear-gradient(150deg, rgba(36,26,14,0.80), rgba(12,10,14,0.88))"
-            />
-            <Card
-              href="/courses"
-              eyebrow="Каталог"
-              title="Каталог курсів"
-              description="Обери свій перший курс з історії України або світу і побудуй власний маршрут навчання."
-              footer={<DotLink href="/courses">Відкрити</DotLink>}
-              background="linear-gradient(150deg, rgba(34,26,14,0.78), rgba(12,10,14,0.88))"
-            />
-            <Card
-              href="/dashboard/progress"
-              eyebrow="Аналітика"
-              title="Мій прогрес"
-              description="Детальна статистика навчання: бали за тести, пройдені теми, активність по днях."
-              footer={<DotLink href="/dashboard/progress">Відкрити</DotLink>}
-              background="linear-gradient(150deg, rgba(32,24,14,0.78), rgba(12,10,14,0.88))"
-            />
-          </div>
+                  <p className="mt-3 max-w-[52ch] text-[0.88rem] leading-[1.7] text-[rgba(220,210,196,0.72)]">
+                    {heroSubtitle}
+                  </p>
 
-          {/* ROW 4: Onboarding */}
-          <article
-            className="group relative overflow-hidden rounded-[20px] border border-[rgba(201,169,110,0.10)] p-5 transition-all duration-300 hover:border-[rgba(201,169,110,0.18)]"
-            style={{ background: "linear-gradient(150deg, rgba(28,22,14,0.72), rgba(12,12,15,0.82))" }}
-          >
-            <HoverGlow />
-            <Rings />
-            <div className="relative z-10">
-              <p className="mb-3 text-[0.54rem] uppercase tracking-[0.14em] text-[rgba(171,140,84,0.68)]">
-                Рекомендовані кроки
-              </p>
-              <h2 className="mb-4 font-serif text-[1.38rem] text-[rgba(240,232,218,0.94)]">
-                Рекомендовані кроки
-              </h2>
-              <div className="flex flex-col gap-3">
-                {onboardingSteps.map((step, i) => (
-                  <div
-                    key={step}
-                    className="flex items-start gap-3 rounded-[14px] border border-[rgba(201,169,110,0.08)] bg-[rgba(255,255,255,0.014)] px-4 py-3"
-                  >
-                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] text-[0.70rem] text-[rgba(201,169,110,0.84)]">
-                      {i + 1}
-                    </div>
-                    <p className="text-[0.82rem] leading-6 text-[rgba(220,210,196,0.66)]">{step}</p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <ActionButton href="/courses">ОБРАТИ КУРС</ActionButton>
+                    <ActionButton href="/home" variant="ghost">
+                      ЯК ПРАЦЮЄ KAYA
+                    </ActionButton>
                   </div>
+
+                  <div className="mt-5 inline-flex items-center gap-2 text-[0.62rem] text-[rgba(210,200,185,0.45)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[rgba(201,169,110,0.74)]" />
+                    <span>Твій простір для навчання вже готовий</span>
+                  </div>
+                </div>
+              </CardShell>
+
+              <div className="grid grid-cols-2 gap-3">
+                {stats.map((item) => (
+                  <StatTile key={item.label} item={item} />
                 ))}
               </div>
             </div>
-          </article>
-        </main>
-      </div>
 
-      {/* ── Mobile layout ── */}
-      <div className="relative z-10 xl:hidden">
-        <main style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-          {/* Hero */}
-          <article
-            className="group relative overflow-hidden rounded-[20px] border border-[rgba(201,169,110,0.13)]"
-            style={{
-              background: "linear-gradient(135deg, rgba(48,34,18,0.88), rgba(12,10,14,0.92))",
-              padding: "24px 20px",
-            }}
-          >
-            <HoverGlow />
-            <div className="relative z-10">
-              <p className="text-[0.54rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.68)]">
-                Навчальний кабінет
-              </p>
-              <h1 className="mt-2 font-serif text-[1.8rem] leading-[1.15] text-[rgba(240,232,218,0.98)]">
-                Вітаємо, {displayName}
-              </h1>
-              <p className="mt-2 text-[0.84rem] leading-6 text-[rgba(220,210,196,0.70)]">
-                {heroSubtitle}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <OutlineBtn href="/courses">Обрати курс</OutlineBtn>
-                <OutlineBtn href="/home">Як працює KAYA</OutlineBtn>
-              </div>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <InfoCard
+                eyebrow="ПРОДОВЖИТИ НАВЧАННЯ"
+                title="Поки що курс не обрано"
+                description="Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок і домашні завдання."
+                button={<OutlineButton href="/courses">ПЕРЕЙТИ ДО КУРСІВ</OutlineButton>}
+              />
+
+              <InfoCard
+                eyebrow="РОЗКЛАД"
+                title="З'явиться після перших тестів"
+                description="Після старту навчання тут з’являтиметься актуальна інформація про розклад та наступні уроки."
+                button={<TextAction href="/dashboard">ВІДКРИТИ</TextAction>}
+              />
+
+              <InfoCard
+                eyebrow="АКТИВНІ ЗАВДАННЯ"
+                title="Щойно"
+                description="Нові дедлайни, домашні роботи та активні завдання з’являтимуться тут одразу після початку навчання."
+                button={<TextAction href="/dashboard/progress">ВІДКРИТИ</TextAction>}
+              />
             </div>
-          </article>
 
-          {/* Stats 2×2 mobile */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            {stats.map((item) => <StatTile key={item.label} item={item} />)}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <FeatureCard
+                eyebrow="НАВЧАННЯ"
+                title="Продовжити навчання"
+                description="Швидкий перехід до активного курсу, уроків та домашніх завдань."
+                action="ПЕРЕЙТИ ДО КУРСІВ"
+                href="/courses"
+              />
+
+              <FeatureCard
+                eyebrow="КАТАЛОГ"
+                title="Каталог курсів"
+                description="Обери курс з історії України або світу та сформуй власний маршрут навчання."
+                action="ВІДКРИТИ"
+                href="/courses"
+              />
+
+              <FeatureCard
+                eyebrow="АНАЛІТИКА"
+                title="Мій прогрес"
+                description="Бали, пройдені теми, динаміка навчання та загальна активність по днях."
+                action="ВІДКРИТИ"
+                href="/dashboard/progress"
+              />
+            </div>
+
+            <CardShell
+              background="linear-gradient(150deg, rgba(28,24,18,0.58), rgba(12,12,15,0.68))"
+              className="px-[26px] py-6"
+            >
+              <div className="relative z-10">
+                <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.70)]">
+                  РЕКОМЕНДОВАНІ КРОКИ
+                </p>
+
+                <h3 className="mt-2 font-serif text-[1.5rem] leading-[1.2] text-[rgba(240,232,218,0.96)]">
+                  Рекомендовані кроки
+                </h3>
+
+                <div className="mt-5 flex flex-col gap-3">
+                  {recommendedSteps.map((step, index) => (
+                    <div key={step} className="flex items-start gap-3">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] text-[0.72rem] text-[rgba(201,169,110,0.88)]">
+                        {index + 1}
+                      </div>
+                      <p className="text-[0.84rem] leading-[1.6] text-[rgba(220,210,196,0.68)]">
+                        {step}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardShell>
           </div>
-
-          {/* Cards mobile */}
-          <Card
-            eyebrow="Продовжити навчання"
-            title="Поки що курс не обрано"
-            description="Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок."
-            footer={<OutlineBtn href="/courses">Перейти до курсів</OutlineBtn>}
-          />
-          <Card
-            eyebrow="Розклад"
-            title="Найближче заняття"
-            description="Після старту курсу тут з'явиться дата й час наступного уроку з куратором."
-            footer={<DotLink href="/dashboard">Переглянути розклад</DotLink>}
-          />
-          <Card
-            href="/courses"
-            eyebrow="Каталог"
-            title="Каталог курсів"
-            description="Обери свій перший курс з історії України або світу."
-            footer={<DotLink href="/courses">Відкрити</DotLink>}
-          />
-          <Card
-            href="/dashboard/progress"
-            eyebrow="Аналітика"
-            title="Мій прогрес"
-            description="Детальна статистика навчання: бали, теми, активність."
-            footer={<DotLink href="/dashboard/progress">Відкрити</DotLink>}
-          />
         </main>
       </div>
 
-      {/* ── Mobile nav overlay ── */}
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 xl:hidden">
           <button
@@ -682,23 +660,9 @@ export default function DashboardPage() {
             onClick={() => setMobileNavOpen(false)}
             className="absolute inset-0 bg-black/70"
           />
-          <div
-            className="absolute right-0 top-0 h-full w-[80vw] max-w-[320px] backdrop-blur-md"
-            style={{
-              borderLeft: "1px solid rgba(201,169,110,0.10)",
-              background: "rgba(8,8,10,0.96)",
-            }}
-          >
-            <div className="flex justify-end p-4">
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(false)}
-                className="rounded-[9px] border border-[rgba(201,169,110,0.18)] px-3 py-1.5 text-[0.64rem] uppercase tracking-[0.10em] text-[rgba(201,169,110,0.80)]"
-              >
-                Закрити
-              </button>
-            </div>
-            <SidebarInner
+
+          <div className="absolute left-0 top-0 h-full w-[86vw] max-w-[320px]">
+            <SidebarContent
               displayName={displayName}
               pathname={pathname}
               onNavigate={() => setMobileNavOpen(false)}
