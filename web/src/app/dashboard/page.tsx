@@ -143,7 +143,7 @@ function SidebarNav({
   );
 }
 
-function Sidebar({
+function SidebarInner({
   displayName,
   pathname,
   onNavigate,
@@ -157,7 +157,11 @@ function Sidebar({
   isSigningOut: boolean;
 }) {
   return (
-    <div className="flex h-full flex-col justify-between" style={{ padding: "24px 0" }}>
+    <div
+      className="flex h-full flex-col justify-between"
+      style={{ padding: "24px 0" }}
+    >
+      {/* Top */}
       <div>
         <div style={{ padding: "0 16px", marginBottom: "28px" }}>
           <Link
@@ -189,6 +193,7 @@ function Sidebar({
         </div>
       </div>
 
+      {/* Bottom */}
       <div style={{ padding: "0 16px" }}>
         <div className="mb-3 flex items-center gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.28)] bg-[rgba(201,169,110,0.10)] font-serif text-[0.92rem] text-[rgba(226,201,146,0.96)]">
@@ -357,19 +362,10 @@ export default function DashboardPage() {
   useEffect(() => {
     const supabase = createClient();
     const loadUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-      if (error || !user) {
-        router.replace("/login");
-        return;
-      }
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) { router.replace("/login"); return; }
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .single();
+        .from("profiles").select("full_name").eq("id", user.id).single();
       const fallback = user.email?.split("@")[0] ?? "Учень";
       setDisplayName(profile?.full_name?.trim() || fallback);
       setIsLoadingUser(false);
@@ -398,7 +394,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]">
+    <div
+      className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]"
+    >
       <div ref={starfieldRef} className="starfield" aria-hidden="true" />
 
       <div
@@ -411,7 +409,7 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Mobile header */}
+      {/* ── Mobile header ── */}
       <header className="sticky top-0 z-40 border-b border-[rgba(201,169,110,0.08)] bg-[rgba(10,10,12,0.94)] backdrop-blur xl:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Link
@@ -430,39 +428,36 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Desktop layout: sidebar + main */}
-      <div
-        className="relative z-10"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "120px 1fr",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Sidebar */}
-        <aside
-          className="hidden xl:block"
+      {/* ── Desktop: sidebar fixed + scrollable main ── */}
+      <div className="relative z-10 hidden xl:flex" style={{ minHeight: "100vh" }}>
+
+        {/* Sidebar — fixed width, full height */}
+        <div
           style={{
-            borderRight: "1px solid rgba(201,169,110,0.07)",
-            background: "rgba(8,8,10,0.82)",
+            width: "120px",
+            flexShrink: 0,
             position: "sticky",
             top: 0,
             height: "100vh",
+            borderRight: "1px solid rgba(201,169,110,0.07)",
+            background: "rgba(8,8,10,0.82)",
             overflowY: "auto",
+            zIndex: 10,
           }}
         >
-          <Sidebar
+          <SidebarInner
             displayName={displayName}
             pathname={pathname}
             onLogout={handleLogout}
             isSigningOut={isSigningOut}
           />
-        </aside>
+        </div>
 
-        {/* Main */}
+        {/* Main content — takes remaining width */}
         <main
-          className="min-w-0"
           style={{
+            flex: 1,
+            minWidth: 0,
             padding: "24px 28px",
             display: "flex",
             flexDirection: "column",
@@ -478,12 +473,11 @@ export default function DashboardPage() {
               alignItems: "stretch",
             }}
           >
-            {/* Hero card */}
+            {/* Hero */}
             <article
               className="group relative overflow-hidden rounded-[22px] border border-[rgba(201,169,110,0.13)]"
               style={{
-                background:
-                  "linear-gradient(135deg, rgba(48,34,18,0.88), rgba(12,10,14,0.92))",
+                background: "linear-gradient(135deg, rgba(48,34,18,0.88), rgba(12,10,14,0.92))",
                 padding: "28px 32px",
                 minHeight: "200px",
               }}
@@ -497,8 +491,7 @@ export default function DashboardPage() {
                   top: "-20px",
                   width: "200px",
                   height: "160px",
-                  background:
-                    "radial-gradient(circle at 30% 40%, rgba(180,120,40,0.12), transparent 62%)",
+                  background: "radial-gradient(circle at 30% 40%, rgba(180,120,40,0.12), transparent 62%)",
                 }}
               />
               <div className="relative z-10">
@@ -508,10 +501,7 @@ export default function DashboardPage() {
                 <h1 className="mt-2 font-serif text-[2.2rem] leading-[1.15] text-[rgba(240,232,218,0.98)] sm:text-[2.5rem]">
                   Вітаємо, {displayName}
                 </h1>
-                <p
-                  className="mt-2.5 text-[0.86rem] leading-7 text-[rgba(220,210,196,0.70)]"
-                  style={{ maxWidth: "52ch" }}
-                >
+                <p className="mt-2.5 text-[0.86rem] leading-7 text-[rgba(220,210,196,0.70)]" style={{ maxWidth: "52ch" }}>
                   {heroSubtitle}
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -526,27 +516,15 @@ export default function DashboardPage() {
             </article>
 
             {/* Stats 2×2 */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "12px",
-              }}
-            >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               {stats.map((item) => (
                 <StatTile key={item.label} item={item} />
               ))}
             </div>
           </div>
 
-          {/* ROW 2: три картки */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "16px",
-            }}
-          >
+          {/* ROW 2 */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
             <Card
               eyebrow="Продовжити навчання"
               title="Поки що курс не обрано"
@@ -560,12 +538,8 @@ export default function DashboardPage() {
               footer={<DotLink href="/dashboard">Переглянути розклад</DotLink>}
             >
               <div className="mt-2.5">
-                <p className="text-[0.54rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.58)]">
-                  Статус
-                </p>
-                <p className="mt-1 text-[0.78rem] text-[rgba(220,210,196,0.52)]">
-                  Занять поки не заплановано.
-                </p>
+                <p className="text-[0.54rem] uppercase tracking-[0.10em] text-[rgba(171,140,84,0.58)]">Статус</p>
+                <p className="mt-1 text-[0.78rem] text-[rgba(220,210,196,0.52)]">Занять поки не заплановано.</p>
               </div>
             </Card>
             <Card
@@ -576,14 +550,8 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* ROW 3: три картки */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "16px",
-            }}
-          >
+          {/* ROW 3 */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
             <Card
               eyebrow="Навчання"
               title="Продовжити навчання"
@@ -609,13 +577,10 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* ROW 4: Рекомендовані кроки */}
+          {/* ROW 4: Onboarding */}
           <article
             className="group relative overflow-hidden rounded-[20px] border border-[rgba(201,169,110,0.10)] p-5 transition-all duration-300 hover:border-[rgba(201,169,110,0.18)]"
-            style={{
-              background:
-                "linear-gradient(150deg, rgba(28,22,14,0.72), rgba(12,12,15,0.82))",
-            }}
+            style={{ background: "linear-gradient(150deg, rgba(28,22,14,0.72), rgba(12,12,15,0.82))" }}
           >
             <HoverGlow />
             <Rings />
@@ -635,9 +600,7 @@ export default function DashboardPage() {
                     <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[rgba(201,169,110,0.22)] text-[0.70rem] text-[rgba(201,169,110,0.84)]">
                       {i + 1}
                     </div>
-                    <p className="text-[0.82rem] leading-6 text-[rgba(220,210,196,0.66)]">
-                      {step}
-                    </p>
+                    <p className="text-[0.82rem] leading-6 text-[rgba(220,210,196,0.66)]">{step}</p>
                   </div>
                 ))}
               </div>
@@ -646,7 +609,71 @@ export default function DashboardPage() {
         </main>
       </div>
 
-      {/* Mobile nav overlay */}
+      {/* ── Mobile layout ── */}
+      <div className="relative z-10 xl:hidden">
+        <main style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* Hero */}
+          <article
+            className="group relative overflow-hidden rounded-[20px] border border-[rgba(201,169,110,0.13)]"
+            style={{
+              background: "linear-gradient(135deg, rgba(48,34,18,0.88), rgba(12,10,14,0.92))",
+              padding: "24px 20px",
+            }}
+          >
+            <HoverGlow />
+            <div className="relative z-10">
+              <p className="text-[0.54rem] uppercase tracking-[0.16em] text-[rgba(171,140,84,0.68)]">
+                Навчальний кабінет
+              </p>
+              <h1 className="mt-2 font-serif text-[1.8rem] leading-[1.15] text-[rgba(240,232,218,0.98)]">
+                Вітаємо, {displayName}
+              </h1>
+              <p className="mt-2 text-[0.84rem] leading-6 text-[rgba(220,210,196,0.70)]">
+                {heroSubtitle}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <OutlineBtn href="/courses">Обрати курс</OutlineBtn>
+                <OutlineBtn href="/home">Як працює KAYA</OutlineBtn>
+              </div>
+            </div>
+          </article>
+
+          {/* Stats 2×2 mobile */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            {stats.map((item) => <StatTile key={item.label} item={item} />)}
+          </div>
+
+          {/* Cards mobile */}
+          <Card
+            eyebrow="Продовжити навчання"
+            title="Поки що курс не обрано"
+            description="Почни з каталогу курсів. Після вибору тут з'явиться твій поточний урок."
+            footer={<OutlineBtn href="/courses">Перейти до курсів</OutlineBtn>}
+          />
+          <Card
+            eyebrow="Розклад"
+            title="Найближче заняття"
+            description="Після старту курсу тут з'явиться дата й час наступного уроку з куратором."
+            footer={<DotLink href="/dashboard">Переглянути розклад</DotLink>}
+          />
+          <Card
+            href="/courses"
+            eyebrow="Каталог"
+            title="Каталог курсів"
+            description="Обери свій перший курс з історії України або світу."
+            footer={<DotLink href="/courses">Відкрити</DotLink>}
+          />
+          <Card
+            href="/dashboard/progress"
+            eyebrow="Аналітика"
+            title="Мій прогрес"
+            description="Детальна статистика навчання: бали, теми, активність."
+            footer={<DotLink href="/dashboard/progress">Відкрити</DotLink>}
+          />
+        </main>
+      </div>
+
+      {/* ── Mobile nav overlay ── */}
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 xl:hidden">
           <button
@@ -655,7 +682,13 @@ export default function DashboardPage() {
             onClick={() => setMobileNavOpen(false)}
             className="absolute inset-0 bg-black/70"
           />
-          <div className="absolute right-0 top-0 h-full w-[80vw] max-w-[320px] border-l border-[rgba(201,169,110,0.10)] bg-[rgba(8,8,10,0.96)] backdrop-blur-md">
+          <div
+            className="absolute right-0 top-0 h-full w-[80vw] max-w-[320px] backdrop-blur-md"
+            style={{
+              borderLeft: "1px solid rgba(201,169,110,0.10)",
+              background: "rgba(8,8,10,0.96)",
+            }}
+          >
             <div className="flex justify-end p-4">
               <button
                 type="button"
@@ -665,7 +698,7 @@ export default function DashboardPage() {
                 Закрити
               </button>
             </div>
-            <Sidebar
+            <SidebarInner
               displayName={displayName}
               pathname={pathname}
               onNavigate={() => setMobileNavOpen(false)}
