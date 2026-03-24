@@ -349,14 +349,14 @@ export default function TeacherPage() {
           </section>
 
           {/* Статкарти */}
-          <section style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)", gap: 12, marginBottom: 24 }}>
+          <section style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)", gap: 16, marginBottom: 24 }}>
             {[
               { label: "Учні",       value: "12",  hint: "3 активні групи",        alert: false },
               { label: "Перевірка",  value: "5",   hint: "робіт чекають",          alert: true  },
               { label: "Курси",      value: "4",   hint: "2 опубліковано",          alert: false },
               { label: "Відстають",  value: "4",   hint: "не завершили урок",      alert: true  },
             ].map((s) => (
-              <article key={s.label} className="rounded-[20px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.025)] p-4 sm:p-5">
+              <article key={s.label} style={{ borderRadius: 20, border: "1px solid rgba(201,169,110,0.12)", background: "rgba(201,169,110,0.025)", padding: "20px 24px" }}>
                 <p className="text-[0.62rem] uppercase tracking-[0.22em] text-[rgba(138,116,68,0.8)]">{s.label}</p>
                 <p className={`mt-3 font-serif text-[2.4rem] leading-none sm:text-[2.8rem] ${s.alert ? "text-[rgba(220,80,60,0.85)]" : "text-[var(--gold-light,#e2c992)]"}`}>
                   {s.value}
