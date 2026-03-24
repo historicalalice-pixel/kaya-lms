@@ -12,9 +12,22 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
+    if (!error && data.user) {
+      // Якщо next не вказаний явно — визначаємо за роллю
+      if (next === "/home" || next === "/dashboard") {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
+
+        const role = profile?.role ?? "student";
+        const isTeacher = role === "teacher" || role === "admin";
+        next = isTeacher ? "/teacher" : "/dashboard";
+      }
+
       return NextResponse.redirect(new URL(next, requestUrl.origin));
     }
   }
