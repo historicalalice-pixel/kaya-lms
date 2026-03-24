@@ -225,6 +225,7 @@ export default function TeacherPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Вчитель");
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   // зірки
   useEffect(() => {
@@ -247,6 +248,14 @@ export default function TeacherPage() {
       stars.push(star);
     }
     return () => stars.forEach((s) => s.remove());
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   // завантаження користувача
@@ -292,17 +301,17 @@ export default function TeacherPage() {
       </header>
 
       {/* ── Layout ── */}
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl md:px-6 lg:px-8">
+      <div style={{ display: "flex", minHeight: "100vh", position: "relative", zIndex: 10 }}>
 
         {/* ── Desktop sidebar ── */}
-        <aside className="hidden w-[240px] shrink-0 py-6 md:block lg:w-[260px]">
+        <aside style={{ width: isDesktop ? 240 : 0, flexShrink: 0, display: isDesktop ? "block" : "none", padding: isDesktop ? "24px 0 24px 24px" : 0 }}>
           <div className="sticky top-6 h-[calc(100vh-48px)] overflow-hidden rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,12,0.92)] backdrop-blur">
             <SidebarContent displayName={displayName} onLogout={handleLogout} isSigningOut={isSigningOut} />
           </div>
         </aside>
 
         {/* ── Main content ── */}
-        <main className="min-w-0 flex-1 px-4 pb-10 pt-6 sm:px-5 sm:pt-8 md:pl-7 md:pr-0 lg:pl-9">
+        <main style={{ flex: 1, minWidth: 0, padding: isDesktop ? "24px 32px 40px 28px" : "16px 16px 40px 16px" }}>
 
           {/* Заголовок */}
           <section className="mb-6 rounded-[24px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.03)] p-5 sm:p-7">
