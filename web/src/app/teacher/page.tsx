@@ -255,7 +255,9 @@ export default function TeacherPage() {
     const load = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) { router.replace("/login"); return; }
-      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
+      const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
+      const role = profile?.role ?? "student";
+      if (role !== "teacher" && role !== "admin") { router.replace("/dashboard"); return; }
       setDisplayName(profile?.full_name?.trim() || user.email?.split("@")[0] || "Вчитель");
     };
     load();
