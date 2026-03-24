@@ -349,7 +349,7 @@ export default function TeacherPage() {
           </section>
 
           {/* Статкарти */}
-          <section className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <section style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)", gap: 12, marginBottom: 24 }}>
             {[
               { label: "Учні",       value: "12",  hint: "3 активні групи",        alert: false },
               { label: "Перевірка",  value: "5",   hint: "робіт чекають",          alert: true  },
@@ -367,7 +367,7 @@ export default function TeacherPage() {
           </section>
 
           {/* Два стовпці: активність + розклад */}
-          <section className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr_1fr]">
+          <section style={{ display: "grid", gridTemplateColumns: isDesktop ? "1.3fr 1fr" : "1fr", gap: 16, marginBottom: 24 }}>
 
             {/* Активність учнів */}
             <article className="rounded-[20px] border border-[rgba(201,169,110,0.12)] bg-[rgba(201,169,110,0.02)] p-5 sm:p-6">
@@ -456,7 +456,7 @@ export default function TeacherPage() {
             </div>
 
             {/* На мобільному — список, на desktop — сітка */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : "1fr", gap: 12 }}>
               {works.slice(0, 6).map((w, i) => (
                 <Link
                   key={i}
