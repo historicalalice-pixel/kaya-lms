@@ -225,7 +225,7 @@ export default function TeacherPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Вчитель");
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
 
   // зірки
   useEffect(() => {
