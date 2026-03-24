@@ -128,36 +128,36 @@ const shellPanel: CSSProperties = {
 };
 
 const sectionPanel: CSSProperties = {
-  borderRadius: 26,
-  border: "1px solid rgba(201,169,110,0.15)",
+  borderRadius: 28,
+  border: "1px solid rgba(201,169,110,0.20)",
   background:
-    "linear-gradient(180deg, rgba(16,14,13,0.96) 0%, rgba(10,10,12,0.94) 100%)",
+    "linear-gradient(180deg, rgba(22,18,16,0.98) 0%, rgba(13,11,12,0.97) 100%)",
   boxShadow:
-    "0 12px 30px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.025)",
+    "0 18px 40px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.04)",
 };
 
 const heroPanel: CSSProperties = {
   ...sectionPanel,
   background:
-    "linear-gradient(180deg, rgba(201,169,110,0.055) 0%, rgba(201,169,110,0.02) 100%)",
+    "linear-gradient(180deg, rgba(201,169,110,0.08) 0%, rgba(201,169,110,0.03) 100%)",
 };
 
 const statCard: CSSProperties = {
-  borderRadius: 24,
-  border: "1px solid rgba(201,169,110,0.16)",
+  borderRadius: 26,
+  border: "1px solid rgba(201,169,110,0.20)",
   background:
-    "linear-gradient(180deg, rgba(18,16,14,0.96) 0%, rgba(10,10,12,0.94) 100%)",
+    "linear-gradient(180deg, rgba(24,20,18,0.98) 0%, rgba(14,12,13,0.96) 100%)",
   boxShadow:
-    "0 12px 28px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.03)",
-  minHeight: 168,
+    "0 16px 34px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)",
+  minHeight: 180,
 };
 
 const innerRowCard: CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(201,169,110,0.11)",
+  borderRadius: 20,
+  border: "1px solid rgba(201,169,110,0.16)",
   background:
-    "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.012) 100%)",
-  boxShadow: "0 8px 18px rgba(0,0,0,0.14)",
+    "linear-gradient(180deg, rgba(28,23,20,0.72) 0%, rgba(16,14,15,0.78) 100%)",
+  boxShadow: "0 10px 24px rgba(0,0,0,0.18)",
 };
 
 const chipBase: CSSProperties = {
@@ -257,11 +257,7 @@ const icons = {
   ),
   lessons: (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <path
-        d="M2 2h11v11H2z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
+      <path d="M2 2h11v11H2z" stroke="currentColor" strokeWidth="1.2" />
       <path
         d="M5 5h5M5 7.5h3M5 10h4"
         stroke="currentColor"
@@ -850,8 +846,8 @@ export default function TeacherPage() {
         </button>
       </header>
 
-      <div className="relative z-10 flex min-h-screen">
-        <aside className="hidden w-[272px] flex-shrink-0 pl-6 pb-6 pt-6 md:block">
+      <div className="relative z-10 flex min-h-screen gap-4 md:gap-6 xl:gap-8">
+        <aside className="hidden w-[272px] flex-shrink-0 pl-6 pr-2 pb-6 pt-6 md:block lg:pr-4">
           <div
             className="sticky top-6 h-[calc(100vh-48px)] overflow-hidden"
             style={shellPanel}
@@ -864,19 +860,19 @@ export default function TeacherPage() {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 px-4 pb-10 pt-4 sm:px-6 lg:px-8 xl:px-10">
+        <main className="min-w-0 flex-1 px-4 pb-14 pt-6 sm:px-6 lg:px-8 lg:pt-8 xl:px-10">
           <div
             className="mx-auto w-full"
             style={{ maxWidth: `${pageMaxWidth}px` }}
           >
-            <section className="mb-10 p-6 sm:p-7 lg:p-8" style={heroPanel}>
+            <section className="mb-12 p-6 sm:p-7 lg:p-8" style={heroPanel}>
               <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="mb-3 text-[0.68rem] uppercase tracking-[0.30em] text-[rgba(138,116,68,0.82)]">
                     Кабінет вчителя
                   </p>
 
-                  <h1 className="max-w-[760px] font-serif text-[2rem] leading-[0.95] text-[rgba(245,239,230,0.96)] sm:text-[2.5rem] lg:text-[2.9rem]">
+                  <h1 className="max-w-[640px] font-serif text-[1.85rem] leading-[0.96] text-[rgba(245,239,230,0.96)] sm:text-[2.3rem] lg:text-[2.65rem]">
                     Вітаємо, {firstName}
                   </h1>
                 </div>
@@ -913,7 +909,7 @@ export default function TeacherPage() {
               </div>
             </section>
 
-            <section className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard label="Учні" value="12" hint="3 активні групи" />
               <StatCard label="Перевірка" value="5" hint="робіт чекають" alert />
               <StatCard label="Курси" value="4" hint="2 опубліковано" />
@@ -925,7 +921,7 @@ export default function TeacherPage() {
               />
             </section>
 
-            <section className="mb-10 grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.9fr]">
+            <section className="mb-12 grid grid-cols-1 gap-6 xl:grid-cols-[1.18fr_0.92fr]">
               <article className="p-5 sm:p-6" style={sectionPanel}>
                 <div className="mb-5 flex items-center justify-between">
                   <p className="text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
@@ -1089,7 +1085,7 @@ export default function TeacherPage() {
                   <Link
                     key={`${work.name}-${index}`}
                     href="/teacher/review"
-                    className="flex flex-col gap-3 rounded-[20px] p-4 transition-all"
+                    className="flex min-h-[170px] flex-col gap-4 rounded-[22px] p-5 transition-all"
                     style={innerRowCard}
                   >
                     <div className="flex items-center gap-3">
