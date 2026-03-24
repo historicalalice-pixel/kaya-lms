@@ -47,7 +47,6 @@ type Work = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Тимчасові дані
-// Потім замінимо на реальні з Supabase
 // ─────────────────────────────────────────────────────────────────────────────
 
 const students: Student[] = [
@@ -116,38 +115,62 @@ const works: Work[] = [
 // Візуальні стилі
 // ─────────────────────────────────────────────────────────────────────────────
 
-const panelBase: CSSProperties = {
+const pageMaxWidth = 1680;
+
+const shellPanel: CSSProperties = {
+  borderRadius: 28,
+  border: "1px solid rgba(201,169,110,0.16)",
+  background:
+    "linear-gradient(180deg, rgba(15,13,12,0.96) 0%, rgba(9,9,11,0.95) 100%)",
+  boxShadow:
+    "0 14px 34px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.03)",
+  backdropFilter: "blur(12px)",
+};
+
+const sectionPanel: CSSProperties = {
+  borderRadius: 26,
+  border: "1px solid rgba(201,169,110,0.15)",
+  background:
+    "linear-gradient(180deg, rgba(16,14,13,0.96) 0%, rgba(10,10,12,0.94) 100%)",
+  boxShadow:
+    "0 12px 30px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.025)",
+};
+
+const heroPanel: CSSProperties = {
+  ...sectionPanel,
+  background:
+    "linear-gradient(180deg, rgba(201,169,110,0.055) 0%, rgba(201,169,110,0.02) 100%)",
+};
+
+const statCard: CSSProperties = {
   borderRadius: 24,
   border: "1px solid rgba(201,169,110,0.16)",
   background:
-    "linear-gradient(180deg, rgba(16,14,13,0.96) 0%, rgba(9,9,11,0.94) 100%)",
+    "linear-gradient(180deg, rgba(18,16,14,0.96) 0%, rgba(10,10,12,0.94) 100%)",
   boxShadow:
-    "0 12px 34px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.03)",
-  backdropFilter: "blur(10px)",
+    "0 12px 28px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.03)",
+  minHeight: 168,
 };
 
-const heroPanelStyle: CSSProperties = {
-  ...panelBase,
-  background:
-    "linear-gradient(180deg, rgba(201,169,110,0.06) 0%, rgba(201,169,110,0.025) 100%)",
-};
-
-const statCardStyle: CSSProperties = {
-  ...panelBase,
-  minHeight: 156,
-};
-
-const innerCardStyle: CSSProperties = {
+const innerRowCard: CSSProperties = {
   borderRadius: 18,
-  border: "1px solid rgba(201,169,110,0.10)",
+  border: "1px solid rgba(201,169,110,0.11)",
   background:
-    "linear-gradient(180deg, rgba(255,255,255,0.018) 0%, rgba(255,255,255,0.01) 100%)",
-  boxShadow: "0 8px 22px rgba(0,0,0,0.16)",
+    "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.012) 100%)",
+  boxShadow: "0 8px 18px rgba(0,0,0,0.14)",
 };
 
-const avatarStyle: CSSProperties = {
-  width: 34,
-  height: 34,
+const chipBase: CSSProperties = {
+  fontSize: "0.60rem",
+  letterSpacing: "0.08em",
+  padding: "4px 9px",
+  borderRadius: 999,
+  flexShrink: 0,
+};
+
+const avatarBase: CSSProperties = {
+  width: 36,
+  height: 36,
   borderRadius: "50%",
   border: "1px solid rgba(201,169,110,0.18)",
   background: "rgba(201,169,110,0.06)",
@@ -236,7 +259,6 @@ const icons = {
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
       <path
         d="M2 2h11v11H2z"
-        rx="1.5"
         stroke="currentColor"
         strokeWidth="1.2"
       />
@@ -447,17 +469,17 @@ function NavLink({
         display: "flex",
         alignItems: "center",
         gap: 10,
-        padding: "10px 12px",
-        borderRadius: 12,
+        padding: "11px 12px",
+        borderRadius: 14,
         textDecoration: "none",
-        fontSize: "0.82rem",
+        fontSize: "0.84rem",
         letterSpacing: "0.02em",
         color: item.isActive
           ? "var(--gold-light, #e2c992)"
           : "rgba(232,228,221,0.72)",
-        background: item.isActive ? "rgba(201,169,110,0.10)" : "transparent",
+        background: item.isActive ? "rgba(201,169,110,0.09)" : "transparent",
         border: item.isActive
-          ? "1px solid rgba(201,169,110,0.18)"
+          ? "1px solid rgba(201,169,110,0.17)"
           : "1px solid transparent",
         transition: "all 0.18s ease",
       }}
@@ -466,7 +488,7 @@ function NavLink({
         style={{
           color: item.isActive
             ? "var(--gold-dim, #8a7444)"
-            : "rgba(154,149,141,0.45)",
+            : "rgba(154,149,141,0.42)",
           flexShrink: 0,
         }}
       >
@@ -508,7 +530,7 @@ function SidebarContent({
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div
         style={{
-          padding: "22px 18px 16px",
+          padding: "24px 18px 16px",
           borderBottom: "1px solid rgba(201,169,110,0.10)",
         }}
       >
@@ -517,9 +539,9 @@ function SidebarContent({
           onClick={onNavigate}
           style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: "1.85rem",
+            fontSize: "1.95rem",
             fontWeight: 300,
-            letterSpacing: "0.30em",
+            letterSpacing: "0.28em",
             color: "rgba(245,239,230,0.94)",
             textDecoration: "none",
             display: "block",
@@ -533,7 +555,7 @@ function SidebarContent({
             fontSize: "0.54rem",
             letterSpacing: "0.28em",
             textTransform: "uppercase",
-            color: "rgba(138,116,68,0.62)",
+            color: "rgba(138,116,68,0.60)",
             marginTop: 6,
           }}
         >
@@ -586,16 +608,16 @@ function SidebarContent({
             alignItems: "center",
             gap: 10,
             padding: "10px 12px",
-            borderRadius: 14,
-            background: "rgba(255,255,255,0.02)",
+            borderRadius: 16,
+            background: "rgba(255,255,255,0.018)",
             border: "1px solid rgba(201,169,110,0.08)",
             marginBottom: 8,
           }}
         >
           <div
             style={{
-              width: 34,
-              height: 34,
+              width: 36,
+              height: 36,
               borderRadius: "50%",
               border: "1px solid rgba(201,169,110,0.25)",
               background: "rgba(201,169,110,0.07)",
@@ -614,7 +636,7 @@ function SidebarContent({
           <div style={{ minWidth: 0 }}>
             <p
               style={{
-                fontSize: "0.80rem",
+                fontSize: "0.82rem",
                 color: "rgba(232,228,221,0.76)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -645,13 +667,13 @@ function SidebarContent({
             alignItems: "center",
             gap: 8,
             width: "100%",
-            padding: "9px 12px",
+            padding: "10px 12px",
             background: "transparent",
             border: "1px solid rgba(201,169,110,0.08)",
             cursor: "pointer",
             color: "rgba(154,149,141,0.72)",
             fontSize: "0.76rem",
-            borderRadius: 12,
+            borderRadius: 14,
             transition: "all 0.18s ease",
           }}
         >
@@ -675,13 +697,13 @@ function StatCard({
   alert?: boolean;
 }) {
   return (
-    <article className="p-5 sm:p-6" style={statCardStyle}>
-      <p className="text-[0.62rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
+    <article className="p-6" style={statCard}>
+      <p className="text-[0.62rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.84)]">
         {label}
       </p>
 
       <p
-        className={`mt-4 font-serif text-[2.5rem] leading-none sm:text-[2.9rem] ${
+        className={`mt-5 font-serif text-[2.5rem] leading-none sm:text-[2.8rem] ${
           alert
             ? "text-[rgba(220,80,60,0.88)]"
             : "text-[var(--gold-light,#e2c992)]"
@@ -690,7 +712,7 @@ function StatCard({
         {value}
       </p>
 
-      <p className="mt-3 text-[0.82rem] leading-5 text-[rgba(232,228,221,0.52)]">
+      <p className="mt-3 text-[0.84rem] leading-5 text-[rgba(232,228,221,0.52)]">
         {hint}
       </p>
     </article>
@@ -709,7 +731,6 @@ export default function TeacherPage() {
   const [displayName, setDisplayName] = useState("Вчитель");
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // Зірки
   useEffect(() => {
     const field = starfieldRef.current;
     if (!field) return;
@@ -740,7 +761,6 @@ export default function TeacherPage() {
     };
   }, []);
 
-  // Завантаження користувача
   useEffect(() => {
     let active = true;
 
@@ -813,7 +833,6 @@ export default function TeacherPage() {
         }}
       />
 
-      {/* Мобільний header */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[rgba(201,169,110,0.10)] bg-[rgba(10,10,12,0.94)] px-4 py-4 backdrop-blur md:hidden">
         <Link
           href="/home"
@@ -832,11 +851,10 @@ export default function TeacherPage() {
       </header>
 
       <div className="relative z-10 flex min-h-screen">
-        {/* Desktop sidebar */}
-        <aside className="hidden w-[260px] flex-shrink-0 pl-6 pb-6 pt-6 md:block">
+        <aside className="hidden w-[272px] flex-shrink-0 pl-6 pb-6 pt-6 md:block">
           <div
             className="sticky top-6 h-[calc(100vh-48px)] overflow-hidden"
-            style={panelBase}
+            style={shellPanel}
           >
             <SidebarContent
               displayName={displayName}
@@ -846,18 +864,19 @@ export default function TeacherPage() {
           </div>
         </aside>
 
-        {/* Main */}
         <main className="min-w-0 flex-1 px-4 pb-10 pt-4 sm:px-6 lg:px-8 xl:px-10">
-          <div className="mx-auto w-full max-w-[1600px]">
-            {/* Hero */}
-            <section className="mb-8 p-5 sm:p-7 lg:p-8" style={heroPanelStyle}>
-              <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div
+            className="mx-auto w-full"
+            style={{ maxWidth: `${pageMaxWidth}px` }}
+          >
+            <section className="mb-10 p-6 sm:p-7 lg:p-8" style={heroPanel}>
+              <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="mb-3 text-[0.68rem] uppercase tracking-[0.30em] text-[rgba(138,116,68,0.82)]">
                     Кабінет вчителя
                   </p>
 
-                  <h1 className="font-serif text-[2.2rem] leading-none text-[rgba(245,239,230,0.96)] sm:text-[2.8rem] lg:text-[3.4rem]">
+                  <h1 className="max-w-[760px] font-serif text-[2rem] leading-[0.95] text-[rgba(245,239,230,0.96)] sm:text-[2.5rem] lg:text-[2.9rem]">
                     Вітаємо, {firstName}
                   </h1>
                 </div>
@@ -870,7 +889,7 @@ export default function TeacherPage() {
                       <Link
                         key={btn.href}
                         href={btn.href}
-                        className="inline-flex min-h-[42px] items-center rounded-[14px] px-4 text-[0.72rem] uppercase tracking-[0.18em] transition-all"
+                        className="inline-flex min-h-[42px] items-center rounded-[15px] px-4 text-[0.72rem] uppercase tracking-[0.18em] transition-all"
                         style={{
                           border: isPrimary
                             ? "1px solid rgba(201,169,110,0.40)"
@@ -894,15 +913,9 @@ export default function TeacherPage() {
               </div>
             </section>
 
-            {/* Stats */}
-            <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard label="Учні" value="12" hint="3 активні групи" />
-              <StatCard
-                label="Перевірка"
-                value="5"
-                hint="робіт чекають"
-                alert
-              />
+              <StatCard label="Перевірка" value="5" hint="робіт чекають" alert />
               <StatCard label="Курси" value="4" hint="2 опубліковано" />
               <StatCard
                 label="Відстають"
@@ -912,10 +925,8 @@ export default function TeacherPage() {
               />
             </section>
 
-            {/* Середні секції */}
-            <section className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-2">
-              {/* Активність учнів */}
-              <article className="p-5 sm:p-6" style={panelBase}>
+            <section className="mb-10 grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.9fr]">
+              <article className="p-5 sm:p-6" style={sectionPanel}>
                 <div className="mb-5 flex items-center justify-between">
                   <p className="text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
                     Активність учнів
@@ -933,13 +944,13 @@ export default function TeacherPage() {
                   {students.map((student) => (
                     <div
                       key={student.name}
-                      className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4"
-                      style={innerCardStyle}
+                      className="flex flex-col gap-3 rounded-[18px] px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
+                      style={innerRowCard}
                     >
-                      <div className="flex items-center gap-3 sm:min-w-[220px]">
-                        <div style={avatarStyle}>{student.initials}</div>
+                      <div className="flex min-w-0 items-center gap-3 sm:min-w-[220px]">
+                        <div style={avatarBase}>{student.initials}</div>
 
-                        <p className="truncate text-[0.84rem] text-[rgba(232,228,221,0.84)]">
+                        <p className="truncate text-[0.85rem] text-[rgba(232,228,221,0.84)]">
                           {student.name}
                         </p>
                       </div>
@@ -966,10 +977,7 @@ export default function TeacherPage() {
 
                       <span
                         style={{
-                          fontSize: "0.60rem",
-                          letterSpacing: "0.08em",
-                          padding: "4px 9px",
-                          borderRadius: 999,
+                          ...chipBase,
                           background:
                             student.status === "active"
                               ? "rgba(52,168,83,0.12)"
@@ -982,7 +990,6 @@ export default function TeacherPage() {
                             student.status === "active"
                               ? "1px solid rgba(52,168,83,0.20)"
                               : "1px solid rgba(220,80,60,0.20)",
-                          flexShrink: 0,
                           width: "fit-content",
                         }}
                       >
@@ -993,8 +1000,7 @@ export default function TeacherPage() {
                 </div>
               </article>
 
-              {/* Найближчі заняття */}
-              <article className="p-5 sm:p-6" style={panelBase}>
+              <article className="p-5 sm:p-6" style={sectionPanel}>
                 <div className="mb-5 flex items-center justify-between">
                   <p className="text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
                     Найближчі заняття
@@ -1012,14 +1018,14 @@ export default function TeacherPage() {
                   {lessons.map((lesson, index) => (
                     <div
                       key={`${lesson.title}-${index}`}
-                      className="flex gap-3 p-3 sm:gap-4 sm:p-4"
-                      style={innerCardStyle}
+                      className="flex gap-3 rounded-[18px] px-4 py-3 sm:gap-4"
+                      style={innerRowCard}
                     >
-                      <div className="min-w-[58px] flex-shrink-0 text-right">
+                      <div className="min-w-[60px] flex-shrink-0 text-right">
                         <p className="text-[0.60rem] uppercase tracking-[0.08em] text-[rgba(138,116,68,0.62)]">
                           {lesson.when}
                         </p>
-                        <p className="font-serif text-[0.95rem] text-[rgba(201,169,110,0.82)]">
+                        <p className="font-serif text-[0.98rem] text-[rgba(201,169,110,0.82)]">
                           {lesson.time}
                         </p>
                       </div>
@@ -1036,14 +1042,10 @@ export default function TeacherPage() {
                       {lesson.soon ? (
                         <span
                           style={{
-                            fontSize: "0.58rem",
-                            letterSpacing: "0.08em",
-                            padding: "4px 8px",
-                            borderRadius: 999,
+                            ...chipBase,
                             background: "rgba(52,130,200,0.12)",
                             color: "rgba(100,170,240,0.86)",
                             border: "1px solid rgba(52,130,200,0.20)",
-                            flexShrink: 0,
                             height: "fit-content",
                           }}
                         >
@@ -1056,8 +1058,7 @@ export default function TeacherPage() {
               </article>
             </section>
 
-            {/* Роботи на перевірку */}
-            <section className="p-5 sm:p-6" style={panelBase}>
+            <section className="p-5 sm:p-6" style={sectionPanel}>
               <div className="mb-5 flex items-center justify-between">
                 <p className="flex items-center gap-2 text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
                   <span>Роботи на перевірку</span>
@@ -1088,28 +1089,25 @@ export default function TeacherPage() {
                   <Link
                     key={`${work.name}-${index}`}
                     href="/teacher/review"
-                    className="flex flex-col gap-3 p-4 transition-all"
-                    style={innerCardStyle}
+                    className="flex flex-col gap-3 rounded-[20px] p-4 transition-all"
+                    style={innerRowCard}
                   >
                     <div className="flex items-center gap-3">
-                      <div style={avatarStyle}>{work.initials}</div>
+                      <div style={avatarBase}>{work.initials}</div>
 
                       <span className="truncate text-[0.84rem] font-medium text-[rgba(232,228,221,0.86)]">
                         {work.name}
                       </span>
                     </div>
 
-                    <p className="text-[0.74rem] text-[rgba(154,149,141,0.62)]">
+                    <p className="text-[0.75rem] text-[rgba(154,149,141,0.62)]">
                       {work.lesson}
                     </p>
 
                     <div className="mt-auto flex items-center justify-between">
                       <span
                         style={{
-                          fontSize: "0.60rem",
-                          letterSpacing: "0.06em",
-                          padding: "4px 9px",
-                          borderRadius: 999,
+                          ...chipBase,
                           background: "rgba(220,170,60,0.10)",
                           color: "rgba(220,170,60,0.84)",
                           border: "1px solid rgba(220,170,60,0.18)",
@@ -1130,7 +1128,6 @@ export default function TeacherPage() {
         </main>
       </div>
 
-      {/* Mobile drawer */}
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
