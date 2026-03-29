@@ -15,6 +15,25 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
+      const normalizedEmail = data.user.email?.trim().toLowerCase();
+      const { data: blockedStudent, error: blockedCheckError } = await supabase
+        .from("teacher_students")
+        .select("id, status")
+        .eq("email", normalizedEmail ?? "")
+        .eq("status", "blocked")
+        .maybeSingle();
+
+      if (blockedCheckError && blockedCheckError.code !== "42P01") {
+        console.error("BLOCKED STATUS CHECK ERROR:", blockedCheckError.message);
+      }
+
+      if (blockedStudent) {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(
+          new URL("/login?error=blocked_student", requestUrl.origin),
+        );
+      }
+
       // Якщо next не вказаний явно — визначаємо за роллю
       if (next === "/home" || next === "/dashboard") {
         const { data: profile } = await supabase

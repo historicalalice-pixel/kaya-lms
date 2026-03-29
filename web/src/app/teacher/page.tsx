@@ -1,7 +1,7 @@
 ﻿
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 
 type SectionKey =
   | "dashboard"
@@ -69,6 +69,52 @@ type SearchResult = {
   title: string;
   subtitle: string;
   section: SectionKey;
+};
+
+type DbCourse = {
+  id: string;
+  title: string;
+  topic: string;
+  status: CourseStatus;
+  publish_at: string | null;
+  lessons_count: number;
+  created_at: string;
+};
+
+type DbLesson = {
+  id: string;
+  title: string;
+  course_id: string | null;
+  group_name: string;
+  status: CourseStatus;
+  publish_at: string | null;
+  zoom_link: string | null;
+  content_summary: string;
+  created_at: string;
+};
+
+type DbGroup = {
+  id: string;
+  name: string;
+  invite_code: string;
+  invite_url: string;
+  archived: boolean;
+  created_at: string;
+};
+
+type DbStudent = {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  email: string;
+  telegram: string | null;
+  note: string;
+  status: StudentStatus;
+  last_login_at: string | null;
+  progress: number;
+  group_id: string | null;
+  group_name: string;
+  created_at: string;
 };
 
 const sections: Array<{ key: SectionKey; label: string; note: string }> = [
@@ -155,6 +201,16 @@ const button: CSSProperties = {
   textTransform: "uppercase",
 };
 
+const inputStyle: CSSProperties = {
+  minHeight: 38,
+  borderRadius: 10,
+  border: "1px solid rgba(201,169,110,0.22)",
+  background: "rgba(11,10,11,0.72)",
+  color: "rgba(235,230,223,0.90)",
+  padding: "0 12px",
+  fontSize: "0.78rem",
+};
+
 const chipBase: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -167,6 +223,34 @@ const chipBase: CSSProperties = {
 
 function chip(tone: Tone): CSSProperties {
   return { ...chipBase, background: tones[tone].bg, border: tones[tone].border, color: tones[tone].color };
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("uk-UA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function toLocalStudent(student: DbStudent): Student {
+  return {
+    id: student.id,
+    name: student.full_name,
+    group: student.group_name || "Без групи",
+    email: student.email,
+    phone: student.phone ?? "—",
+    telegram: student.telegram ?? "—",
+    note: student.note,
+    status: student.status,
+    lastLogin: formatDateTime(student.last_login_at),
+    progress: student.progress ?? 0,
+  };
 }
 const courses: Course[] = [
   { id: "c1", title: "Історія України: Київська Русь", topic: "Середньовіччя", lessons: 12, status: "published", publishAt: "20.03.2026, 09:00" },
@@ -298,6 +382,30 @@ export default function TeacherCabinetPage() {
   const [students, setStudents] = useState<Student[]>(studentsSeed);
   const [fileFilter, setFileFilter] = useState<"all" | FileType>("all");
   const [channelFilter, setChannelFilter] = useState<"all" | MessageChannel>("all");
+  const [dbCourses, setDbCourses] = useState<DbCourse[]>([]);
+  const [dbLessons, setDbLessons] = useState<DbLesson[]>([]);
+  const [dbGroups, setDbGroups] = useState<DbGroup[]>([]);
+  const [dbStudents, setDbStudents] = useState<DbStudent[]>([]);
+  const [dbLoading, setDbLoading] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [isSavingCourse, setIsSavingCourse] = useState(false);
+  const [isSavingLesson, setIsSavingLesson] = useState(false);
+  const [isSavingGroup, setIsSavingGroup] = useState(false);
+  const [isSavingStudent, setIsSavingStudent] = useState(false);
+  const [newCourseTitle, setNewCourseTitle] = useState("");
+  const [newCourseTopic, setNewCourseTopic] = useState("");
+  const [newCourseStatus, setNewCourseStatus] = useState<CourseStatus>("draft");
+  const [newLessonTitle, setNewLessonTitle] = useState("");
+  const [newLessonCourseId, setNewLessonCourseId] = useState("");
+  const [newLessonGroupName, setNewLessonGroupName] = useState("");
+  const [newLessonStatus, setNewLessonStatus] = useState<CourseStatus>("draft");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newStudentName, setNewStudentName] = useState("");
+  const [newStudentEmail, setNewStudentEmail] = useState("");
+  const [newStudentPhone, setNewStudentPhone] = useState("");
+  const [newStudentTelegram, setNewStudentTelegram] = useState("");
+  const [newStudentNote, setNewStudentNote] = useState("");
+  const [newStudentGroupId, setNewStudentGroupId] = useState("");
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return true;
     return window.matchMedia("(min-width: 1280px)").matches;
@@ -310,24 +418,235 @@ export default function TeacherCabinetPage() {
     return () => media.removeEventListener("change", onChange);
   }, []);
 
+  const loadTeacherEntities = useCallback(async () => {
+    setDbLoading(true);
+    setDbError(null);
+
+    try {
+      const [coursesRes, lessonsRes, groupsRes, studentsRes] = await Promise.all([
+        fetch("/api/teacher/courses", { cache: "no-store" }),
+        fetch("/api/teacher/lessons", { cache: "no-store" }),
+        fetch("/api/teacher/groups", { cache: "no-store" }),
+        fetch("/api/teacher/students", { cache: "no-store" }),
+      ]);
+
+      const [coursesData, lessonsData, groupsData, studentsData] = await Promise.all([
+        coursesRes.json(),
+        lessonsRes.json(),
+        groupsRes.json(),
+        studentsRes.json(),
+      ]);
+
+      if (!coursesRes.ok || !lessonsRes.ok || !groupsRes.ok || !studentsRes.ok) {
+        const message =
+          coursesData?.error ||
+          lessonsData?.error ||
+          groupsData?.error ||
+          studentsData?.error ||
+          "Не вдалося завантажити дані кабінету вчителя";
+        throw new Error(message);
+      }
+
+      setDbCourses(Array.isArray(coursesData) ? coursesData : []);
+      setDbLessons(Array.isArray(lessonsData) ? lessonsData : []);
+      setDbGroups(Array.isArray(groupsData) ? groupsData : []);
+      setDbStudents(Array.isArray(studentsData) ? studentsData : []);
+
+      if (Array.isArray(studentsData) && studentsData.length > 0) {
+        setStudents(studentsData.map((item: DbStudent) => toLocalStudent(item)));
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Не вдалося завантажити дані кабінету вчителя";
+      setDbError(message);
+    } finally {
+      setDbLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadTeacherEntities();
+  }, [loadTeacherEntities]);
+
+  const handleCreateCourse = async () => {
+    const title = newCourseTitle.trim();
+    if (!title) {
+      setDbError("Вкажіть назву курсу");
+      return;
+    }
+
+    setIsSavingCourse(true);
+    setDbError(null);
+
+    try {
+      const response = await fetch("/api/teacher/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          topic: newCourseTopic.trim(),
+          status: newCourseStatus,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Не вдалося створити курс");
+      }
+
+      setNewCourseTitle("");
+      setNewCourseTopic("");
+      setNewCourseStatus("draft");
+      await loadTeacherEntities();
+    } catch (error) {
+      setDbError(error instanceof Error ? error.message : "Не вдалося створити курс");
+    } finally {
+      setIsSavingCourse(false);
+    }
+  };
+
+  const handleCreateLesson = async () => {
+    const title = newLessonTitle.trim();
+    if (!title) {
+      setDbError("Вкажіть назву уроку");
+      return;
+    }
+
+    setIsSavingLesson(true);
+    setDbError(null);
+
+    try {
+      const response = await fetch("/api/teacher/lessons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          courseId: newLessonCourseId || null,
+          groupName: newLessonGroupName.trim() || "Без групи",
+          status: newLessonStatus,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Не вдалося створити урок");
+      }
+
+      setNewLessonTitle("");
+      setNewLessonCourseId("");
+      setNewLessonGroupName("");
+      setNewLessonStatus("draft");
+      await loadTeacherEntities();
+    } catch (error) {
+      setDbError(error instanceof Error ? error.message : "Не вдалося створити урок");
+    } finally {
+      setIsSavingLesson(false);
+    }
+  };
+
+  const handleCreateGroup = async () => {
+    const name = newGroupName.trim();
+    if (!name) {
+      setDbError("Вкажіть назву групи");
+      return;
+    }
+
+    setIsSavingGroup(true);
+    setDbError(null);
+
+    try {
+      const response = await fetch("/api/teacher/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Не вдалося створити групу");
+      }
+
+      setNewGroupName("");
+      await loadTeacherEntities();
+    } catch (error) {
+      setDbError(error instanceof Error ? error.message : "Не вдалося створити групу");
+    } finally {
+      setIsSavingGroup(false);
+    }
+  };
+
+  const handleCreateStudent = async () => {
+    const fullName = newStudentName.trim();
+    const email = newStudentEmail.trim().toLowerCase();
+    if (!fullName || !email) {
+      setDbError("Для учня обов'язкові ім'я та email");
+      return;
+    }
+
+    setIsSavingStudent(true);
+    setDbError(null);
+
+    try {
+      const response = await fetch("/api/teacher/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone: newStudentPhone.trim(),
+          telegram: newStudentTelegram.trim(),
+          note: newStudentNote.trim(),
+          groupId: newStudentGroupId || null,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Не вдалося створити учня");
+      }
+
+      setNewStudentName("");
+      setNewStudentEmail("");
+      setNewStudentPhone("");
+      setNewStudentTelegram("");
+      setNewStudentNote("");
+      setNewStudentGroupId("");
+      await loadTeacherEntities();
+    } catch (error) {
+      setDbError(error instanceof Error ? error.message : "Не вдалося створити учня");
+    } finally {
+      setIsSavingStudent(false);
+    }
+  };
+
   const queryNorm = query.trim().toLocaleLowerCase("uk-UA");
 
   const searchResults = useMemo(() => {
     if (!queryNorm) return [] as SearchResult[];
 
     const results: SearchResult[] = [];
+    const searchableCourses = dbCourses.length
+      ? dbCourses.map((course) => ({
+          id: course.id,
+          title: course.title,
+          topic: course.topic,
+        }))
+      : courses;
+
     const pushIfMatch = (candidate: SearchResult) => {
       const text = `${candidate.title} ${candidate.subtitle}`.toLocaleLowerCase("uk-UA");
       if (text.includes(queryNorm)) results.push(candidate);
     };
 
     students.forEach((s) => pushIfMatch({ id: `s-${s.id}`, kind: "Учень", title: s.name, subtitle: `${s.group} · ${s.email}`, section: "students" }));
-    courses.forEach((c) => pushIfMatch({ id: `c-${c.id}`, kind: "Курс", title: c.title, subtitle: c.topic, section: "courses" }));
+    searchableCourses.forEach((c) => pushIfMatch({ id: `c-${c.id}`, kind: "Курс", title: c.title, subtitle: c.topic, section: "courses" }));
     assignments.forEach((a) => pushIfMatch({ id: `a-${a.id}`, kind: "Завдання", title: a.title, subtitle: `${a.target} · ${a.deadline}`, section: "assignments" }));
     fileLibrary.forEach((f) => pushIfMatch({ id: `f-${f.id}`, kind: "Файл", title: f.name, subtitle: `${f.target} · ${f.updated}`, section: "files" }));
 
     return results.slice(0, 8);
-  }, [queryNorm, students]);
+  }, [dbCourses, queryNorm, students]);
 
   const filesShown = useMemo(() => {
     if (fileFilter === "all") return fileLibrary;
@@ -341,13 +660,39 @@ export default function TeacherCabinetPage() {
 
   const studentsBehind = students.filter((s) => s.progress < 60 || s.status !== "active").length;
 
-  const toggleStudentBlock = (id: string) => {
-    setStudents((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        return { ...s, status: s.status === "blocked" ? "active" : "blocked" };
-      }),
-    );
+  const toggleStudentBlock = async (id: string) => {
+    const dbStudent = dbStudents.find((student) => student.id === id);
+
+    if (!dbStudent) {
+      setStudents((prev) =>
+        prev.map((s) => {
+          if (s.id !== id) return s;
+          return { ...s, status: s.status === "blocked" ? "active" : "blocked" };
+        }),
+      );
+      return;
+    }
+
+    const nextStatus: StudentStatus =
+      dbStudent.status === "blocked" ? "active" : "blocked";
+
+    try {
+      setDbError(null);
+      const response = await fetch("/api/teacher/students", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: nextStatus }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Не вдалося оновити статус учня");
+      }
+      await loadTeacherEntities();
+    } catch (error) {
+      setDbError(
+        error instanceof Error ? error.message : "Не вдалося оновити статус учня",
+      );
+    }
   };
 
   const toggleBlock = (id: DashboardBlockId) => {
@@ -506,9 +851,52 @@ export default function TeacherCabinetPage() {
     }
 
     if (activeSection === "courses") {
+      const liveCourses = dbCourses.length
+        ? dbCourses.map((c) => ({
+            id: c.id,
+            title: c.title,
+            topic: c.topic || "—",
+            lessons: c.lessons_count ?? 0,
+            status: c.status,
+            publishAt: formatDateTime(c.publish_at),
+          }))
+        : courses;
+
       return (
         <section className="p-5 sm:p-6" style={panel}>
           <SectionHead title="Курси" text="Створення, редагування, копіювання, архівація та планування публікації" />
+          <div className="mt-4 p-4" style={inset}>
+            <p style={sectionTitle}>Створити курс (реальні дані)</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "2fr 1.2fr 1fr auto" : "1fr", gap: 8 }}>
+              <input
+                value={newCourseTitle}
+                onChange={(event) => setNewCourseTitle(event.target.value)}
+                placeholder="Назва курсу"
+                style={inputStyle}
+              />
+              <input
+                value={newCourseTopic}
+                onChange={(event) => setNewCourseTopic(event.target.value)}
+                placeholder="Тема"
+                style={inputStyle}
+              />
+              <select
+                value={newCourseStatus}
+                onChange={(event) => setNewCourseStatus(event.target.value as CourseStatus)}
+                style={inputStyle}
+              >
+                <option value="draft">Чернетка</option>
+                <option value="scheduled">Заплановано</option>
+                <option value="published">Опубліковано</option>
+                <option value="hidden">Приховано</option>
+                <option value="archived">Архів</option>
+              </select>
+              <button style={button} onClick={() => { void handleCreateCourse(); }} disabled={isSavingCourse}>
+                {isSavingCourse ? "Створення..." : "Створити"}
+              </button>
+            </div>
+          </div>
+
           <div className="mt-4 overflow-x-auto">
             <table style={table}>
               <thead>
@@ -521,7 +909,7 @@ export default function TeacherCabinetPage() {
                 </tr>
               </thead>
               <tbody>
-                {courses.map((c) => (
+                {liveCourses.map((c) => (
                   <tr key={c.id} style={row}>
                     <td style={td}>{c.title}</td>
                     <td style={td}>{c.topic}</td>
@@ -541,6 +929,82 @@ export default function TeacherCabinetPage() {
       return (
         <section className="p-5 sm:p-6" style={panel}>
           <SectionHead title="Уроки" text="Текст, фото, відео, файли, тести, ДЗ, Zoom, презентації, зовнішні джерела" />
+          <div className="mt-4 p-4" style={inset}>
+            <p style={sectionTitle}>Створити урок (реальні дані)</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "2fr 1.4fr 1.2fr 1fr auto" : "1fr", gap: 8 }}>
+              <input
+                value={newLessonTitle}
+                onChange={(event) => setNewLessonTitle(event.target.value)}
+                placeholder="Назва уроку"
+                style={inputStyle}
+              />
+              <select
+                value={newLessonCourseId}
+                onChange={(event) => setNewLessonCourseId(event.target.value)}
+                style={inputStyle}
+              >
+                <option value="">Без курсу</option>
+                {dbCourses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.title}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={newLessonGroupName}
+                onChange={(event) => setNewLessonGroupName(event.target.value)}
+                placeholder="Група"
+                style={inputStyle}
+              />
+              <select
+                value={newLessonStatus}
+                onChange={(event) => setNewLessonStatus(event.target.value as CourseStatus)}
+                style={inputStyle}
+              >
+                <option value="draft">Чернетка</option>
+                <option value="scheduled">Заплановано</option>
+                <option value="published">Опубліковано</option>
+                <option value="hidden">Приховано</option>
+                <option value="archived">Архів</option>
+              </select>
+              <button style={button} onClick={() => { void handleCreateLesson(); }} disabled={isSavingLesson}>
+                {isSavingLesson ? "Створення..." : "Створити"}
+              </button>
+            </div>
+          </div>
+
+          {dbLessons.length > 0 ? (
+            <div className="mt-4 overflow-x-auto">
+              <table style={table}>
+                <thead>
+                  <tr>
+                    <th style={th}>Урок</th>
+                    <th style={th}>Група</th>
+                    <th style={th}>Курс</th>
+                    <th style={th}>Статус</th>
+                    <th style={th}>Публікація</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dbLessons.map((lesson) => {
+                    const courseTitle =
+                      dbCourses.find((course) => course.id === lesson.course_id)?.title ||
+                      "Без курсу";
+                    return (
+                      <tr key={lesson.id} style={row}>
+                        <td style={td}>{lesson.title}</td>
+                        <td style={td}>{lesson.group_name || "Без групи"}</td>
+                        <td style={td}>{courseTitle}</td>
+                        <td style={td}><span style={chip(statusTone[lesson.status])}>{lesson.status}</span></td>
+                        <td style={td}>{formatDateTime(lesson.publish_at)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+
           <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
             <span style={chip("gray")}>PDF вбудовано в LMS</span>
             <span style={chip("gray")}>Презентації вбудовано в LMS</span>
@@ -555,12 +1019,39 @@ export default function TeacherCabinetPage() {
       return (
         <section className="p-5 sm:p-6" style={panel}>
           <SectionHead title="Групи" text="Ручне створення, запрошення за кодом/посиланням, призначення курсів і тестів" />
+          <div className="mt-4 p-4" style={inset}>
+            <p style={sectionTitle}>Створити групу (реальні дані)</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "2fr auto" : "1fr", gap: 8 }}>
+              <input
+                value={newGroupName}
+                onChange={(event) => setNewGroupName(event.target.value)}
+                placeholder="Назва групи"
+                style={inputStyle}
+              />
+              <button style={button} onClick={() => { void handleCreateGroup(); }} disabled={isSavingGroup}>
+                {isSavingGroup ? "Створення..." : "Створити"}
+              </button>
+            </div>
+          </div>
+
           <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3,1fr)" : "1fr", gap: 10 }}>
-            {["Група А", "Група Б", "Індивідуальні"].map((g, i) => (
-              <article key={g} className="p-4" style={inset}>
-                <p style={{ fontSize: "0.84rem", color: "rgba(229,223,212,0.88)" }}>{g}</p>
-                <p style={{ marginTop: 6, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>Код: HIST-{i + 1}-2026</p>
-                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>Призначено: курси, уроки, завдання, тести</p>
+            {(dbGroups.length > 0
+              ? dbGroups.map((group) => ({
+                  key: group.id,
+                  name: group.name,
+                  code: group.invite_code,
+                  url: group.invite_url,
+                }))
+              : ["Група А", "Група Б", "Індивідуальні"].map((name, index) => ({
+                  key: `fallback-${index}`,
+                  name,
+                  code: `HIST-${index + 1}-2026`,
+                  url: "—",
+                }))).map((group) => (
+              <article key={group.key} className="p-4" style={inset}>
+                <p style={{ fontSize: "0.84rem", color: "rgba(229,223,212,0.88)" }}>{group.name}</p>
+                <p style={{ marginTop: 6, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>Код: {group.code}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)", wordBreak: "break-all" }}>Посилання: {group.url}</p>
               </article>
             ))}
           </div>
@@ -568,9 +1059,63 @@ export default function TeacherCabinetPage() {
       );
     }
     if (activeSection === "students") {
+      const studentsForTable =
+        dbStudents.length > 0 ? dbStudents.map((student) => toLocalStudent(student)) : students;
+
       return (
         <section className="p-5 sm:p-6" style={panel}>
           <SectionHead title="Учні" text="Картки, блокування доступу, історія входу, внутрішні примітки (непублічні)" />
+          <div className="mt-4 p-4" style={inset}>
+            <p style={sectionTitle}>Створити учня (реальні дані)</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3, minmax(0,1fr))" : "1fr", gap: 8 }}>
+              <input
+                value={newStudentName}
+                onChange={(event) => setNewStudentName(event.target.value)}
+                placeholder="Ім'я та прізвище"
+                style={inputStyle}
+              />
+              <input
+                value={newStudentEmail}
+                onChange={(event) => setNewStudentEmail(event.target.value)}
+                placeholder="Email"
+                style={inputStyle}
+              />
+              <input
+                value={newStudentPhone}
+                onChange={(event) => setNewStudentPhone(event.target.value)}
+                placeholder="Телефон"
+                style={inputStyle}
+              />
+              <input
+                value={newStudentTelegram}
+                onChange={(event) => setNewStudentTelegram(event.target.value)}
+                placeholder="Telegram"
+                style={inputStyle}
+              />
+              <select
+                value={newStudentGroupId}
+                onChange={(event) => setNewStudentGroupId(event.target.value)}
+                style={inputStyle}
+              >
+                <option value="">Без групи</option>
+                {dbGroups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+              <button style={button} onClick={() => { void handleCreateStudent(); }} disabled={isSavingStudent}>
+                {isSavingStudent ? "Створення..." : "Створити учня"}
+              </button>
+            </div>
+            <textarea
+              value={newStudentNote}
+              onChange={(event) => setNewStudentNote(event.target.value)}
+              placeholder="Внутрішня примітка (видима тільки викладачу)"
+              style={{ ...inputStyle, marginTop: 8, minHeight: 74, paddingTop: 10 }}
+            />
+          </div>
+
           <div className="mt-4 overflow-x-auto">
             <table style={table}>
               <thead>
@@ -585,7 +1130,7 @@ export default function TeacherCabinetPage() {
                 </tr>
               </thead>
               <tbody>
-                {students.map((s) => (
+                {studentsForTable.map((s) => (
                   <tr key={s.id} style={row}>
                     <td style={td}>{s.name}<br /><span style={{ fontSize: "0.68rem", color: "rgba(175,165,149,0.74)" }}>{s.telegram}</span></td>
                     <td style={td}>{s.phone}<br />{s.email}</td>
@@ -593,7 +1138,7 @@ export default function TeacherCabinetPage() {
                     <td style={td}><span style={chip(statusTone[s.status])}>{s.status}</span></td>
                     <td style={td}>{s.lastLogin}</td>
                     <td style={td}>{s.note}</td>
-                    <td style={td}><button style={button} onClick={() => toggleStudentBlock(s.id)}>{s.status === "blocked" ? "Розблокувати" : "Заблокувати"}</button></td>
+                    <td style={td}><button style={button} onClick={() => { void toggleStudentBlock(s.id); }}>{s.status === "blocked" ? "Розблокувати" : "Заблокувати"}</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -749,6 +1294,19 @@ export default function TeacherCabinetPage() {
             )}
           </div>
         ) : null}
+      </section>
+
+      <section className="mb-6 p-4 sm:p-5" style={panel}>
+        <p style={sectionTitle}>Вертикальний зріз Supabase</p>
+        <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <span style={chip("blue")}>Курси: {dbCourses.length}</span>
+          <span style={chip("blue")}>Уроки: {dbLessons.length}</span>
+          <span style={chip("blue")}>Групи: {dbGroups.length}</span>
+          <span style={chip("blue")}>Учні: {dbStudents.length}</span>
+          {dbLoading ? <span style={chip("gold")}>Синхронізація...</span> : null}
+          {dbError ? <span style={chip("red")}>{dbError}</span> : null}
+          <button style={button} onClick={() => { void loadTeacherEntities(); }}>Оновити дані</button>
+        </div>
       </section>
 
       <section className="mb-6 p-4 sm:p-5" style={panel}>

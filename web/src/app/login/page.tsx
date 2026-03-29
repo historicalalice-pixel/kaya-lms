@@ -58,7 +58,27 @@ export default function LoginPage() {
       const supabase = createClient();
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { setErrorMessage(error.message); return; }
-      if (data.user) await redirectByRole(data.user.id);
+      if (data.user) {
+        const normalizedEmail = data.user.email?.trim().toLowerCase();
+        const { data: blockedStudent, error: blockedCheckError } = await supabase
+          .from("teacher_students")
+          .select("id, status")
+          .eq("email", normalizedEmail ?? "")
+          .eq("status", "blocked")
+          .maybeSingle();
+
+        if (blockedCheckError && blockedCheckError.code !== "42P01") {
+          console.error("BLOCKED STATUS CHECK ERROR:", blockedCheckError);
+        }
+
+        if (blockedStudent) {
+          await supabase.auth.signOut();
+          setErrorMessage("Ваш доступ заблоковано викладачем. Зверніться до викладача.");
+          return;
+        }
+
+        await redirectByRole(data.user.id);
+      }
     } catch (error) {
       console.error("LOGIN ERROR:", error);
       setErrorMessage("Сталася помилка під час входу. Спробуйте ще раз.");
@@ -137,7 +157,7 @@ export default function LoginPage() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <span className="font-sans text-[0.92rem] text-[rgba(245,239,230,0.72)] transition-colors duration-300 group-hover:text-[rgba(245,239,230,0.9)]">Запам'ятати</span>
+                  <span className="font-sans text-[0.92rem] text-[rgba(245,239,230,0.72)] transition-colors duration-300 group-hover:text-[rgba(245,239,230,0.9)]">Запам&rsquo;ятати</span>
                 </label>
                 <Link href="/forgot-password" className="font-sans text-[0.92rem] text-[rgba(201,169,110,0.86)] hover:text-[var(--gold-light)] transition-colors duration-300 whitespace-nowrap">
                   Забули пароль?
