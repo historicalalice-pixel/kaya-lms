@@ -1,27 +1,11 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Типи
 // ─────────────────────────────────────────────────────────────────────────────
-
-type NavGroup = {
-  label: string;
-  items: NavItem[];
-};
-
-type NavItem = {
-  label: string;
-  href: string;
-  badge?: number;
-  isActive?: boolean;
-  icon: ReactNode;
-};
 
 type Student = {
   initials: string;
@@ -45,18 +29,46 @@ type Work = {
   ago: string;
 };
 
+type Deadline = {
+  type: "assignment" | "test" | "lesson" | "reminder";
+  title: string;
+  date: string;
+  group?: string;
+};
+
+type ActivityItem = {
+  initials: string;
+  name: string;
+  action: string;
+  time: string;
+};
+
+type BlockId =
+  | "stats"
+  | "todayLessons"
+  | "pendingReview"
+  | "studentActivity"
+  | "recentActions"
+  | "deadlines";
+
+type BlockConfig = {
+  id: BlockId;
+  label: string;
+  visible: boolean;
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Тимчасові дані
+// Тимчасові дані (заглушки до підключення Supabase)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const students: Student[] = [
+const mockStudents: Student[] = [
   { initials: "ДК", name: "Дмитро Коваль", progress: 72, status: "active" },
   { initials: "АС", name: "Аліна Савченко", progress: 45, status: "behind" },
   { initials: "МП", name: "Максим Петренко", progress: 88, status: "active" },
   { initials: "ІБ", name: "Ірина Бондар", progress: 20, status: "behind" },
 ];
 
-const lessons: Lesson[] = [
+const mockTodayLessons: Lesson[] = [
   {
     when: "Сьогодні",
     time: "18:00",
@@ -65,67 +77,62 @@ const lessons: Lesson[] = [
     soon: true,
   },
   {
+    when: "Сьогодні",
+    time: "20:00",
+    title: "Індивідуально — Дмитро К.",
+    sub: "Підготовка до НМТ · Zoom",
+  },
+];
+
+const mockUpcomingLessons: Lesson[] = [
+  {
     when: "Завтра",
     time: "16:00",
     title: "Група Б — Київська Русь",
     sub: "5 учнів · Google Meet",
   },
   {
-    when: "Пт",
+    when: "Ср",
     time: "17:30",
     title: "Індивідуально — Аліна С.",
     sub: "Підготовка до НМТ",
   },
+  {
+    when: "Пт",
+    time: "18:00",
+    title: "Група А — Гетьманщина",
+    sub: "4 учні · Zoom",
+  },
 ];
 
-const works: Work[] = [
-  {
-    initials: "ДК",
-    name: "Дмитро Коваль",
-    lesson: "Урок 3 · Козацька держава",
-    ago: "2 год тому",
-  },
-  {
-    initials: "АС",
-    name: "Аліна Савченко",
-    lesson: "Урок 2 · Київська Русь",
-    ago: "вчора",
-  },
-  {
-    initials: "МП",
-    name: "Максим Петренко",
-    lesson: "Урок 4 · УНР та ЗУНР",
-    ago: "3 дні тому",
-  },
-  {
-    initials: "ІБ",
-    name: "Ірина Бондар",
-    lesson: "Урок 1 · Вступ",
-    ago: "тиждень тому",
-  },
-  {
-    initials: "НЛ",
-    name: "Настя Лисенко",
-    lesson: "Урок 3 · Козацька держава",
-    ago: "4 дні тому",
-  },
+const mockWorks: Work[] = [
+  { initials: "ДК", name: "Дмитро Коваль", lesson: "Урок 3 · Козацька держава", ago: "2 год тому" },
+  { initials: "АС", name: "Аліна Савченко", lesson: "Урок 2 · Київська Русь", ago: "вчора" },
+  { initials: "МП", name: "Максим Петренко", lesson: "Урок 4 · УНР та ЗУНР", ago: "3 дні тому" },
+  { initials: "ІБ", name: "Ірина Бондар", lesson: "Урок 1 · Вступ", ago: "тиждень тому" },
+  { initials: "НЛ", name: "Настя Лисенко", lesson: "Урок 3 · Козацька держава", ago: "4 дні тому" },
+];
+
+const mockDeadlines: Deadline[] = [
+  { type: "assignment", title: "ДЗ: Козацька держава", date: "Сьогодні, 23:59", group: "Група А" },
+  { type: "test", title: "Тест: Київська Русь", date: "Завтра, 18:00", group: "Група Б" },
+  { type: "lesson", title: "Zoom-урок: Гетьманщина", date: "Пт, 18:00", group: "Група А" },
+  { type: "reminder", title: "Перевірити ДЗ Аліни С.", date: "Завтра", },
+];
+
+const mockRecentActions: ActivityItem[] = [
+  { initials: "ДК", name: "Дмитро Коваль", action: "здав ДЗ «Козацька держава»", time: "2 год тому" },
+  { initials: "АС", name: "Аліна Савченко", action: "пройшла тест «Київська Русь» — 78%", time: "вчора" },
+  { initials: "МП", name: "Максим Петренко", action: "переглянув урок «УНР та ЗУНР»", time: "вчора" },
+  { initials: "НЛ", name: "Настя Лисенко", action: "приєдналась до Групи А", time: "2 дні тому" },
+  { initials: "ІБ", name: "Ірина Бондар", action: "увійшла в систему", time: "3 дні тому" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Візуальні стилі
+// Стилі
 // ─────────────────────────────────────────────────────────────────────────────
 
 const pageMaxWidth = 1680;
-
-const shellPanel: CSSProperties = {
-  borderRadius: 28,
-  border: "1px solid rgba(201,169,110,0.16)",
-  background:
-    "linear-gradient(180deg, rgba(15,13,12,0.96) 0%, rgba(9,9,11,0.95) 100%)",
-  boxShadow:
-    "0 14px 34px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.03)",
-  backdropFilter: "blur(12px)",
-};
 
 const sectionPanel: CSSProperties = {
   borderRadius: 28,
@@ -149,7 +156,7 @@ const statCard: CSSProperties = {
     "linear-gradient(180deg, rgba(24,20,18,0.98) 0%, rgba(14,12,13,0.96) 100%)",
   boxShadow:
     "0 16px 34px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)",
-  minHeight: 180,
+  minHeight: 160,
 };
 
 const innerRowCard: CSSProperties = {
@@ -179,507 +186,90 @@ const avatarBase: CSSProperties = {
   justifyContent: "center",
   color: "rgba(201,169,110,0.76)",
   flexShrink: 0,
+  fontSize: "0.68rem",
+};
+
+const sectionTitle: CSSProperties = {
+  fontSize: "0.66rem",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.24em",
+  color: "rgba(138,116,68,0.82)",
+};
+
+const sectionLink: CSSProperties = {
+  fontSize: "0.66rem",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.15em",
+  color: "rgba(138,116,68,0.55)",
+  textDecoration: "none",
+  transition: "color 0.2s",
 };
 
 const topActions = [
+  { label: "+ Курс", href: "/teacher/courses/new" },
   { label: "+ Урок", href: "/teacher/lessons/new" },
-  { label: "+ Завдання", href: "/teacher/tasks/new" },
-  { label: "Групи", href: "/teacher/groups" },
-  { label: "Курси", href: "/teacher/courses" },
+  { label: "+ Завдання", href: "/teacher/assignments/new" },
+  { label: "Календар", href: "/teacher/calendar" },
+];
+
+const defaultBlocks: BlockConfig[] = [
+  { id: "stats", label: "Статистика", visible: true },
+  { id: "todayLessons", label: "Уроки сьогодні", visible: true },
+  { id: "pendingReview", label: "Роботи на перевірку", visible: true },
+  { id: "studentActivity", label: "Активність учнів", visible: true },
+  { id: "recentActions", label: "Останні дії учнів", visible: true },
+  { id: "deadlines", label: "Нагадування й дедлайни", visible: true },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Іконки
+// Допоміжні іконки для дедлайнів
 // ─────────────────────────────────────────────────────────────────────────────
 
-const icons = {
-  overview: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <rect
-        x="1"
-        y="1"
-        width="5.5"
-        height="5.5"
-        rx="1.2"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <rect
-        x="8.5"
-        y="1"
-        width="5.5"
-        height="5.5"
-        rx="1.2"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity=".5"
-      />
-      <rect
-        x="1"
-        y="8.5"
-        width="5.5"
-        height="5.5"
-        rx="1.2"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity=".5"
-      />
-      <rect
-        x="8.5"
-        y="8.5"
-        width="5.5"
-        height="5.5"
-        rx="1.2"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity=".5"
-      />
-    </svg>
-  ),
-  courses: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <rect
-        x="1.5"
-        y="2"
-        width="12"
-        height="10"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path
-        d="M4.5 5.5h6M4.5 7.5h4"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  lessons: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <path d="M2 2h11v11H2z" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M5 5h5M5 7.5h3M5 10h4"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  groups: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <circle cx="5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-      <circle
-        cx="10"
-        cy="5"
-        r="2.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity=".5"
-      />
-      <path
-        d="M1 13c0-2.2 1.8-4 4-4s4 1.8 4 4"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M10 9c1.7.3 3 1.8 3 4"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        opacity=".5"
-      />
-    </svg>
-  ),
-  students: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <circle cx="7.5" cy="5" r="2.8" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M2 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  tasks: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <rect
-        x="2"
-        y="2"
-        width="11"
-        height="11"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path
-        d="M5 7.5l2 2 3.5-3.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
-  review: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <path
-        d="M2 3h11v8H9l-2 2-2-2H2V3z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M5 6h5M5 8.5h3"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  tests: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M7.5 4.5v3l2 2"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  schedule: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <rect
-        x="1.5"
-        y="2.5"
-        width="12"
-        height="11"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path
-        d="M4.5 1v3M10.5 1v3M1.5 6.5h12"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  messages: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <path
-        d="M2 2h11v8H9l-3 2.5V10H2V2z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
-  profile: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <circle cx="7.5" cy="5" r="2.8" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M2 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  ),
-  logout: (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-      <path
-        d="M6 2H3a1 1 0 00-1 1v9a1 1 0 001 1h3M10 10l3-2.5L10 5M13 7.5H6"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
-};
+function DeadlineIcon({ type }: { type: Deadline["type"] }) {
+  const colors: Record<Deadline["type"], string> = {
+    assignment: "rgba(220,170,60,0.7)",
+    test: "rgba(100,170,240,0.7)",
+    lesson: "rgba(52,168,83,0.7)",
+    reminder: "rgba(201,169,110,0.5)",
+  };
+  const c = colors[type];
 
-const navGroups: NavGroup[] = [
-  {
-    label: "Навчання",
-    items: [
-      {
-        label: "Огляд",
-        href: "/teacher",
-        icon: icons.overview,
-        isActive: true,
-      },
-      { label: "Курси", href: "/teacher/courses", icon: icons.courses },
-      { label: "Уроки", href: "/teacher/lessons", icon: icons.lessons },
-      { label: "Групи", href: "/teacher/groups", icon: icons.groups },
-      { label: "Учні", href: "/teacher/students", icon: icons.students },
-    ],
-  },
-  {
-    label: "Робота",
-    items: [
-      { label: "Завдання", href: "/teacher/tasks", icon: icons.tasks },
-      {
-        label: "Перевірка",
-        href: "/teacher/review",
-        icon: icons.review,
-        badge: 5,
-      },
-      { label: "Тести", href: "/teacher/tests", icon: icons.tests },
-    ],
-  },
-  {
-    label: "Інше",
-    items: [
-      { label: "Розклад", href: "/teacher/schedule", icon: icons.schedule },
-      {
-        label: "Повідомлення",
-        href: "/teacher/messages",
-        icon: icons.messages,
-      },
-      { label: "Профіль", href: "/teacher/profile", icon: icons.profile },
-    ],
-  },
-];
+  if (type === "assignment") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    );
+  }
+  if (type === "test") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+    );
+  }
+  if (type === "lesson") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Компоненти
 // ─────────────────────────────────────────────────────────────────────────────
-
-function NavLink({
-  item,
-  onClick,
-}: {
-  item: NavItem;
-  onClick?: () => void;
-}) {
-  return (
-    <Link
-      href={item.href}
-      onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "11px 12px",
-        borderRadius: 14,
-        textDecoration: "none",
-        fontSize: "0.84rem",
-        letterSpacing: "0.02em",
-        color: item.isActive
-          ? "var(--gold-light, #e2c992)"
-          : "rgba(232,228,221,0.72)",
-        background: item.isActive ? "rgba(201,169,110,0.09)" : "transparent",
-        border: item.isActive
-          ? "1px solid rgba(201,169,110,0.17)"
-          : "1px solid transparent",
-        transition: "all 0.18s ease",
-      }}
-    >
-      <span
-        style={{
-          color: item.isActive
-            ? "var(--gold-dim, #8a7444)"
-            : "rgba(154,149,141,0.42)",
-          flexShrink: 0,
-        }}
-      >
-        {item.icon}
-      </span>
-
-      <span style={{ flex: 1 }}>{item.label}</span>
-
-      {item.badge ? (
-        <span
-          style={{
-            fontSize: "0.62rem",
-            background: "rgba(192,57,43,0.18)",
-            color: "#e67464",
-            border: "1px solid rgba(192,57,43,0.30)",
-            borderRadius: 999,
-            padding: "2px 7px",
-          }}
-        >
-          {item.badge}
-        </span>
-      ) : null}
-    </Link>
-  );
-}
-
-function SidebarContent({
-  displayName,
-  onNavigate,
-  onLogout,
-  isSigningOut,
-}: {
-  displayName: string;
-  onNavigate?: () => void;
-  onLogout: () => void;
-  isSigningOut: boolean;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div
-        style={{
-          padding: "24px 18px 16px",
-          borderBottom: "1px solid rgba(201,169,110,0.10)",
-        }}
-      >
-        <Link
-          href="/home"
-          onClick={onNavigate}
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: "1.95rem",
-            fontWeight: 300,
-            letterSpacing: "0.28em",
-            color: "rgba(245,239,230,0.94)",
-            textDecoration: "none",
-            display: "block",
-          }}
-        >
-          KAYA
-        </Link>
-
-        <p
-          style={{
-            fontSize: "0.54rem",
-            letterSpacing: "0.28em",
-            textTransform: "uppercase",
-            color: "rgba(138,116,68,0.60)",
-            marginTop: 6,
-          }}
-        >
-          Кабінет вчителя
-        </p>
-      </div>
-
-      <nav
-        style={{
-          flex: 1,
-          padding: "14px 10px",
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            <p
-              style={{
-                fontSize: "0.54rem",
-                letterSpacing: "0.26em",
-                textTransform: "uppercase",
-                color: "rgba(138,116,68,0.42)",
-                padding: "8px 10px 7px",
-              }}
-            >
-              {group.label}
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {group.items.map((item) => (
-                <NavLink key={item.href} item={item} onClick={onNavigate} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
-
-      <div
-        style={{
-          padding: "12px 10px 14px",
-          borderTop: "1px solid rgba(201,169,110,0.08)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 12px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.018)",
-            border: "1px solid rgba(201,169,110,0.08)",
-            marginBottom: 8,
-          }}
-        >
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              border: "1px solid rgba(201,169,110,0.25)",
-              background: "rgba(201,169,110,0.07)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "1rem",
-              color: "var(--gold-dim, #8a7444)",
-              flexShrink: 0,
-            }}
-          >
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-
-          <div style={{ minWidth: 0 }}>
-            <p
-              style={{
-                fontSize: "0.82rem",
-                color: "rgba(232,228,221,0.76)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {displayName}
-            </p>
-            <p
-              style={{
-                fontSize: "0.58rem",
-                color: "rgba(138,116,68,0.55)",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              Вчитель
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onLogout}
-          disabled={isSigningOut}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            width: "100%",
-            padding: "10px 12px",
-            background: "transparent",
-            border: "1px solid rgba(201,169,110,0.08)",
-            cursor: "pointer",
-            color: "rgba(154,149,141,0.72)",
-            fontSize: "0.76rem",
-            borderRadius: 14,
-            transition: "all 0.18s ease",
-          }}
-        >
-          <span style={{ color: "rgba(154,149,141,0.38)" }}>{icons.logout}</span>
-          {isSigningOut ? "Вихід..." : "Вийти"}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function StatCard({
   label,
@@ -693,22 +283,22 @@ function StatCard({
   alert?: boolean;
 }) {
   return (
-    <article className="p-6" style={statCard}>
-      <p className="text-[0.62rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.84)]">
+    <article className="p-5 sm:p-6" style={statCard}>
+      <p style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.24em", color: "rgba(138,116,68,0.84)" }}>
         {label}
       </p>
-
       <p
-        className={`mt-5 font-serif text-[2.5rem] leading-none sm:text-[2.8rem] ${
-          alert
-            ? "text-[rgba(220,80,60,0.88)]"
-            : "text-[var(--gold-light,#e2c992)]"
-        }`}
+        className="font-serif"
+        style={{
+          marginTop: 16,
+          fontSize: "2.4rem",
+          lineHeight: 1,
+          color: alert ? "rgba(220,80,60,0.88)" : "var(--gold-light, #e2c992)",
+        }}
       >
         {value}
       </p>
-
-      <p className="mt-3 text-[0.84rem] leading-5 text-[rgba(232,228,221,0.52)]">
+      <p style={{ marginTop: 10, fontSize: "0.84rem", lineHeight: "1.25rem", color: "rgba(232,228,221,0.52)" }}>
         {hint}
       </p>
     </article>
@@ -716,433 +306,724 @@ function StatCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Сторінка
+// Сторінка дашборду
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function TeacherPage() {
-  const router = useRouter();
-  const starfieldRef = useRef<HTMLDivElement>(null);
-
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [displayName, setDisplayName] = useState("Вчитель");
-  const [isSigningOut, setIsSigningOut] = useState(false);
+export default function TeacherDashboard() {
+  const [blocks, setBlocks] = useState<BlockConfig[]>(defaultBlocks);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
 
   useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-
-    field.innerHTML = "";
-    const stars: HTMLDivElement[] = [];
-
-    for (let i = 0; i < 120; i += 1) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-
-      const r = Math.random();
-      if (r < 0.55) star.classList.add("star--small");
-      else if (r < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-
-      star.style.left = `${Math.random() * 100}%`;
-      star.style.top = `${Math.random() * 100}%`;
-      star.style.setProperty("--dur", `${2 + Math.random() * 5}s`);
-      star.style.setProperty("--delay", `${Math.random() * 6}s`);
-
-      field.appendChild(star);
-      stars.push(star);
-    }
-
-    return () => {
-      stars.forEach((star) => star.remove());
-    };
+    const mq = window.matchMedia("(min-width: 1280px)");
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
-  useEffect(() => {
-    let active = true;
+  const isVisible = (id: BlockId) => blocks.find((b) => b.id === id)?.visible ?? true;
 
-    const loadUser = async () => {
-      const supabase = createClient();
+  const toggleBlock = (id: BlockId) => {
+    setBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, visible: !b.visible } : b))
+    );
+  };
 
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+  const moveBlock = (id: BlockId, direction: "up" | "down") => {
+    setBlocks((prev) => {
+      const idx = prev.findIndex((b) => b.id === id);
+      if (idx < 0) return prev;
+      const swap = direction === "up" ? idx - 1 : idx + 1;
+      if (swap < 0 || swap >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[swap]] = [next[swap], next[idx]];
+      return next;
+    });
+  };
 
-      if (!active) return;
+  // Рендер блоків у порядку, заданому користувачем
+  const renderBlock = (block: BlockConfig) => {
+    if (!block.visible) return null;
 
-      if (error || !user) {
-        router.replace("/login");
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, role")
-        .eq("id", user.id)
-        .single();
-
-      if (!active) return;
-
-      const role = profile?.role ?? "student";
-
-      if (role !== "teacher" && role !== "admin") {
-        router.replace("/dashboard");
-        return;
-      }
-
-      setDisplayName(
-        profile?.full_name?.trim() || user.email?.split("@")[0] || "Вчитель"
-      );
-    };
-
-    loadUser();
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
-
-  const handleLogout = async () => {
-    setIsSigningOut(true);
-
-    try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
-      router.push("/login");
-    } catch {
-      setIsSigningOut(false);
+    switch (block.id) {
+      case "stats":
+        return <StatsBlock key="stats" isDesktop={isDesktop} />;
+      case "todayLessons":
+        return <TodayLessonsBlock key="todayLessons" isDesktop={isDesktop} />;
+      case "pendingReview":
+        return <PendingReviewBlock key="pendingReview" isDesktop={isDesktop} />;
+      case "studentActivity":
+        return <StudentActivityBlock key="studentActivity" />;
+      case "recentActions":
+        return <RecentActionsBlock key="recentActions" />;
+      case "deadlines":
+        return <DeadlinesBlock key="deadlines" />;
+      default:
+        return null;
     }
   };
 
-  const firstName = displayName.split(" ")[0] || displayName;
-
   return (
-    <div className="relative min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <div ref={starfieldRef} className="starfield" aria-hidden="true" />
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72"
-        style={{
-          background:
-            "radial-gradient(circle at top, rgba(201,169,110,0.10), transparent 58%)",
-        }}
-      />
-
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[rgba(201,169,110,0.10)] bg-[rgba(10,10,12,0.94)] px-4 py-4 backdrop-blur md:hidden">
-        <Link
-          href="/home"
-          className="font-serif text-[1.6rem] tracking-[0.22em] text-[rgba(245,239,230,0.92)]"
+    <div className="mx-auto w-full" style={{ maxWidth: `${pageMaxWidth}px` }}>
+      {/* Hero */}
+      <section className="mb-10 p-6 sm:p-7 lg:p-8" style={heroPanel}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: isDesktop ? "row" : "column",
+            gap: 24,
+            alignItems: isDesktop ? "flex-end" : "flex-start",
+            justifyContent: isDesktop ? "space-between" : "flex-start",
+          }}
         >
-          KAYA
-        </Link>
-
-        <button
-          type="button"
-          onClick={() => setMobileNavOpen(true)}
-          className="rounded-xl border border-[rgba(201,169,110,0.18)] px-3 py-2 text-[0.68rem] uppercase tracking-[0.16em] text-[var(--gold-light)]"
-        >
-          Меню
-        </button>
-      </header>
-
-      <div className="relative z-10 flex min-h-screen gap-4 md:gap-6 xl:gap-8">
-        <aside className="hidden w-[272px] flex-shrink-0 pl-6 pr-2 pb-6 pt-6 md:block lg:pr-4">
-          <div
-            className="sticky top-6 h-[calc(100vh-48px)] overflow-hidden"
-            style={shellPanel}
-          >
-            <SidebarContent
-              displayName={displayName}
-              onLogout={handleLogout}
-              isSigningOut={isSigningOut}
-            />
+          <div>
+            <p style={{ marginBottom: 10, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.30em", color: "rgba(138,116,68,0.82)" }}>
+              Кабінет вчителя
+            </p>
+            <h1
+              className="font-serif"
+              style={{
+                maxWidth: 640,
+                fontSize: isDesktop ? "2.65rem" : "1.85rem",
+                lineHeight: 0.96,
+                color: "rgba(245,239,230,0.96)",
+              }}
+            >
+              Дашборд
+            </h1>
           </div>
-        </aside>
 
-        <main className="min-w-0 flex-1 px-4 pb-14 pt-6 sm:px-6 lg:px-8 lg:pt-8 xl:px-10">
-          <div
-            className="mx-auto w-full"
-            style={{ maxWidth: `${pageMaxWidth}px` }}
-          >
-            <section className="mb-12 p-6 sm:p-7 lg:p-8" style={heroPanel}>
-              <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-                <div>
-                  <p className="mb-3 text-[0.68rem] uppercase tracking-[0.30em] text-[rgba(138,116,68,0.82)]">
-                    Кабінет вчителя
-                  </p>
-
-                  <h1 className="max-w-[640px] font-serif text-[1.85rem] leading-[0.96] text-[rgba(245,239,230,0.96)] sm:text-[2.3rem] lg:text-[2.65rem]">
-                    Вітаємо, {firstName}
-                  </h1>
-                </div>
-
-                <div className="flex flex-wrap gap-2.5">
-                  {topActions.map((btn) => {
-                    const isPrimary = btn.label.startsWith("+");
-
-                    return (
-                      <Link
-                        key={btn.href}
-                        href={btn.href}
-                        className="inline-flex min-h-[42px] items-center rounded-[15px] px-4 text-[0.72rem] uppercase tracking-[0.18em] transition-all"
-                        style={{
-                          border: isPrimary
-                            ? "1px solid rgba(201,169,110,0.40)"
-                            : "1px solid rgba(201,169,110,0.16)",
-                          background: isPrimary
-                            ? "rgba(201,169,110,0.08)"
-                            : "rgba(255,255,255,0.015)",
-                          color: isPrimary
-                            ? "var(--gold-light, #e2c992)"
-                            : "rgba(232,228,221,0.72)",
-                          boxShadow: isPrimary
-                            ? "inset 0 1px 0 rgba(255,255,255,0.03)"
-                            : "none",
-                        }}
-                      >
-                        {btn.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-
-            <section className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard label="Учні" value="12" hint="3 активні групи" />
-              <StatCard label="Перевірка" value="5" hint="робіт чекають" alert />
-              <StatCard label="Курси" value="4" hint="2 опубліковано" />
-              <StatCard
-                label="Відстають"
-                value="4"
-                hint="не завершили урок"
-                alert
-              />
-            </section>
-
-            <section className="mb-12 grid grid-cols-1 gap-6 xl:grid-cols-[1.18fr_0.92fr]">
-              <article className="p-5 sm:p-6" style={sectionPanel}>
-                <div className="mb-5 flex items-center justify-between">
-                  <p className="text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
-                    Активність учнів
-                  </p>
-
-                  <Link
-                    href="/teacher/students"
-                    className="text-[0.66rem] uppercase tracking-[0.15em] text-[rgba(138,116,68,0.55)] transition-colors hover:text-[var(--gold-light)]"
-                  >
-                    Всі →
-                  </Link>
-                </div>
-
-                <div className="space-y-3.5">
-                  {students.map((student) => (
-                    <div
-                      key={student.name}
-                      className="flex flex-col gap-3 rounded-[18px] px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
-                      style={innerRowCard}
-                    >
-                      <div className="flex min-w-0 items-center gap-3 sm:min-w-[220px]">
-                        <div style={avatarBase}>{student.initials}</div>
-
-                        <p className="truncate text-[0.85rem] text-[rgba(232,228,221,0.84)]">
-                          {student.name}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-1 items-center gap-3">
-                        <div className="h-[4px] flex-1 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
-                          <div
-                            style={{
-                              width: `${student.progress}%`,
-                              height: "100%",
-                              background:
-                                student.status === "active"
-                                  ? "rgba(201,169,110,0.64)"
-                                  : "rgba(220,80,60,0.56)",
-                              borderRadius: 9999,
-                            }}
-                          />
-                        </div>
-
-                        <span className="w-9 text-right text-[0.72rem] text-[rgba(154,149,141,0.64)]">
-                          {student.progress}%
-                        </span>
-                      </div>
-
-                      <span
-                        style={{
-                          ...chipBase,
-                          background:
-                            student.status === "active"
-                              ? "rgba(52,168,83,0.12)"
-                              : "rgba(220,80,60,0.12)",
-                          color:
-                            student.status === "active"
-                              ? "rgba(52,168,83,0.86)"
-                              : "rgba(220,80,60,0.88)",
-                          border:
-                            student.status === "active"
-                              ? "1px solid rgba(52,168,83,0.20)"
-                              : "1px solid rgba(220,80,60,0.20)",
-                          width: "fit-content",
-                        }}
-                      >
-                        {student.status === "active" ? "Активний" : "Відстає"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              <article className="p-5 sm:p-6" style={sectionPanel}>
-                <div className="mb-5 flex items-center justify-between">
-                  <p className="text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
-                    Найближчі заняття
-                  </p>
-
-                  <Link
-                    href="/teacher/schedule"
-                    className="text-[0.66rem] uppercase tracking-[0.15em] text-[rgba(138,116,68,0.55)] transition-colors hover:text-[var(--gold-light)]"
-                  >
-                    Розклад →
-                  </Link>
-                </div>
-
-                <div className="space-y-3.5">
-                  {lessons.map((lesson, index) => (
-                    <div
-                      key={`${lesson.title}-${index}`}
-                      className="flex gap-3 rounded-[18px] px-4 py-3 sm:gap-4"
-                      style={innerRowCard}
-                    >
-                      <div className="min-w-[60px] flex-shrink-0 text-right">
-                        <p className="text-[0.60rem] uppercase tracking-[0.08em] text-[rgba(138,116,68,0.62)]">
-                          {lesson.when}
-                        </p>
-                        <p className="font-serif text-[0.98rem] text-[rgba(201,169,110,0.82)]">
-                          {lesson.time}
-                        </p>
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[0.84rem] text-[rgba(232,228,221,0.86)]">
-                          {lesson.title}
-                        </p>
-                        <p className="mt-1 text-[0.70rem] text-[rgba(154,149,141,0.58)]">
-                          {lesson.sub}
-                        </p>
-                      </div>
-
-                      {lesson.soon ? (
-                        <span
-                          style={{
-                            ...chipBase,
-                            background: "rgba(52,130,200,0.12)",
-                            color: "rgba(100,170,240,0.86)",
-                            border: "1px solid rgba(52,130,200,0.20)",
-                            height: "fit-content",
-                          }}
-                        >
-                          Скоро
-                        </span>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              </article>
-            </section>
-
-            <section className="p-5 sm:p-6" style={sectionPanel}>
-              <div className="mb-5 flex items-center justify-between">
-                <p className="flex items-center gap-2 text-[0.66rem] uppercase tracking-[0.24em] text-[rgba(138,116,68,0.82)]">
-                  <span>Роботи на перевірку</span>
-                  <span
-                    style={{
-                      fontSize: "0.58rem",
-                      background: "rgba(192,57,43,0.16)",
-                      color: "#e67464",
-                      border: "1px solid rgba(192,57,43,0.26)",
-                      borderRadius: 999,
-                      padding: "2px 8px",
-                    }}
-                  >
-                    {works.length}
-                  </span>
-                </p>
-
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+            {topActions.map((btn) => {
+              const isPrimary = btn.label.startsWith("+");
+              return (
                 <Link
-                  href="/teacher/review"
-                  className="text-[0.66rem] uppercase tracking-[0.15em] text-[rgba(138,116,68,0.55)] transition-colors hover:text-[var(--gold-light)]"
+                  key={btn.href}
+                  href={btn.href}
+                  style={{
+                    display: "inline-flex",
+                    minHeight: 42,
+                    alignItems: "center",
+                    borderRadius: 15,
+                    padding: "0 16px",
+                    fontSize: "0.72rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.18em",
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                    border: isPrimary
+                      ? "1px solid rgba(201,169,110,0.40)"
+                      : "1px solid rgba(201,169,110,0.16)",
+                    background: isPrimary
+                      ? "rgba(201,169,110,0.08)"
+                      : "rgba(255,255,255,0.015)",
+                    color: isPrimary
+                      ? "var(--gold-light, #e2c992)"
+                      : "rgba(232,228,221,0.72)",
+                    boxShadow: isPrimary
+                      ? "inset 0 1px 0 rgba(255,255,255,0.03)"
+                      : "none",
+                  }}
                 >
-                  Всі →
+                  {btn.label}
                 </Link>
-              </div>
+              );
+            })}
 
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-                {works.slice(0, 6).map((work, index) => (
-                  <Link
-                    key={`${work.name}-${index}`}
-                    href="/teacher/review"
-                    className="flex min-h-[170px] flex-col gap-4 rounded-[22px] p-5 transition-all"
-                    style={innerRowCard}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div style={avatarBase}>{work.initials}</div>
-
-                      <span className="truncate text-[0.84rem] font-medium text-[rgba(232,228,221,0.86)]">
-                        {work.name}
-                      </span>
-                    </div>
-
-                    <p className="text-[0.75rem] text-[rgba(154,149,141,0.62)]">
-                      {work.lesson}
-                    </p>
-
-                    <div className="mt-auto flex items-center justify-between">
-                      <span
-                        style={{
-                          ...chipBase,
-                          background: "rgba(220,170,60,0.10)",
-                          color: "rgba(220,170,60,0.84)",
-                          border: "1px solid rgba(220,170,60,0.18)",
-                        }}
-                      >
-                        Чекає
-                      </span>
-
-                      <span className="text-[0.66rem] text-[rgba(154,149,141,0.44)]">
-                        {work.ago}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
-
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <button
-            type="button"
-            aria-label="Закрити меню"
-            onClick={() => setMobileNavOpen(false)}
-            className="absolute inset-0 bg-black/70"
-          />
-
-          <div className="absolute right-0 top-0 h-full w-[88vw] max-w-[320px] overflow-hidden border-l border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,12,0.98)] backdrop-blur">
-            <SidebarContent
-              displayName={displayName}
-              onNavigate={() => setMobileNavOpen(false)}
-              onLogout={handleLogout}
-              isSigningOut={isSigningOut}
-            />
+            {/* Кнопка налаштувань блоків */}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              style={{
+                display: "inline-flex",
+                minHeight: 42,
+                alignItems: "center",
+                borderRadius: 15,
+                padding: "0 14px",
+                fontSize: "0.72rem",
+                letterSpacing: "0.10em",
+                border: showSettings
+                  ? "1px solid rgba(201,169,110,0.40)"
+                  : "1px solid rgba(201,169,110,0.12)",
+                background: showSettings
+                  ? "rgba(201,169,110,0.10)"
+                  : "rgba(255,255,255,0.015)",
+                color: showSettings
+                  ? "var(--gold-light, #e2c992)"
+                  : "rgba(232,228,221,0.50)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              title="Налаштувати блоки"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Панель налаштувань блоків */}
+        {showSettings && (
+          <div
+            style={{
+              marginTop: 20,
+              padding: "16px 20px",
+              borderRadius: 20,
+              border: "1px solid rgba(201,169,110,0.16)",
+              background: "rgba(16,14,15,0.80)",
+            }}
+          >
+            <p style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.20em", color: "rgba(138,116,68,0.70)", marginBottom: 12 }}>
+              Налаштування блоків
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {blocks.map((block, idx) => (
+                <div
+                  key={block.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "6px 10px",
+                    borderRadius: 12,
+                    background: block.visible ? "rgba(201,169,110,0.04)" : "transparent",
+                  }}
+                >
+                  {/* Стрілки вгору/вниз */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <button
+                      onClick={() => moveBlock(block.id, "up")}
+                      disabled={idx === 0}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: idx === 0 ? "rgba(138,116,68,0.20)" : "rgba(138,116,68,0.60)",
+                        cursor: idx === 0 ? "default" : "pointer",
+                        padding: 0,
+                        lineHeight: 1,
+                        fontSize: "0.7rem",
+                      }}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => moveBlock(block.id, "down")}
+                      disabled={idx === blocks.length - 1}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: idx === blocks.length - 1 ? "rgba(138,116,68,0.20)" : "rgba(138,116,68,0.60)",
+                        cursor: idx === blocks.length - 1 ? "default" : "pointer",
+                        padding: 0,
+                        lineHeight: 1,
+                        fontSize: "0.7rem",
+                      }}
+                    >
+                      ▼
+                    </button>
+                  </div>
+
+                  {/* Тогл видимості */}
+                  <button
+                    onClick={() => toggleBlock(block.id)}
+                    style={{
+                      width: 36,
+                      height: 20,
+                      borderRadius: 10,
+                      border: "1px solid rgba(201,169,110,0.20)",
+                      background: block.visible
+                        ? "rgba(201,169,110,0.30)"
+                        : "rgba(255,255,255,0.05)",
+                      cursor: "pointer",
+                      position: "relative",
+                      padding: 0,
+                      transition: "background 0.2s",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: "50%",
+                        background: block.visible
+                          ? "var(--gold-light, #e2c992)"
+                          : "rgba(154,149,141,0.40)",
+                        position: "absolute",
+                        top: 2,
+                        left: block.visible ? 19 : 2,
+                        transition: "left 0.2s, background 0.2s",
+                      }}
+                    />
+                  </button>
+
+                  <span
+                    style={{
+                      fontSize: "0.78rem",
+                      color: block.visible
+                        ? "rgba(232,228,221,0.80)"
+                        : "rgba(154,149,141,0.44)",
+                    }}
+                  >
+                    {block.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Блоки в порядку користувача */}
+      {blocks.map((block) => renderBlock(block))}
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Блок: Статистика (стат-картки)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function StatsBlock({ isDesktop }: { isDesktop: boolean }) {
+  return (
+    <section
+      className="mb-10"
+      style={{
+        display: "grid",
+        gridTemplateColumns: isDesktop
+          ? "repeat(4, 1fr)"
+          : "repeat(2, 1fr)",
+        gap: 20,
+      }}
+    >
+      <StatCard label="Учні" value="12" hint="3 активні групи" />
+      <StatCard label="Перевірка ДЗ" value="5" hint="робіт чекають" alert />
+      <StatCard label="Годин цього тижня" value="8" hint="4 уроки проведено" />
+      <StatCard label="Заплановано" value="6" hint="3 уроки наступного тижня" />
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Блок: Уроки сьогодні + Найближчі заняття
+// ─────────────────────────────────────────────────────────────────────────────
+
+function TodayLessonsBlock({ isDesktop }: { isDesktop: boolean }) {
+  return (
+    <section
+      className="mb-10"
+      style={{
+        display: "grid",
+        gridTemplateColumns: isDesktop ? "1.18fr 0.92fr" : "1fr",
+        gap: 20,
+      }}
+    >
+      {/* Уроки сьогодні */}
+      <article className="p-5 sm:p-6" style={sectionPanel}>
+        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <p style={sectionTitle}>Уроки сьогодні</p>
+          <Link href="/teacher/calendar" style={sectionLink}>
+            Розклад →
+          </Link>
+        </div>
+
+        {mockTodayLessons.length === 0 ? (
+          <p style={{ fontSize: "0.84rem", color: "rgba(154,149,141,0.50)", padding: "20px 0" }}>
+            Сьогодні уроків немає
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {mockTodayLessons.map((lesson, index) => (
+              <div
+                key={`today-${index}`}
+                style={{ ...innerRowCard, display: "flex", gap: 14, padding: "12px 16px" }}
+              >
+                <div style={{ minWidth: 60, flexShrink: 0, textAlign: "right" }}>
+                  <p style={{ fontSize: "0.60rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(138,116,68,0.62)" }}>
+                    {lesson.when}
+                  </p>
+                  <p className="font-serif" style={{ fontSize: "0.98rem", color: "rgba(201,169,110,0.82)" }}>
+                    {lesson.time}
+                  </p>
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: "0.84rem", color: "rgba(232,228,221,0.86)" }}>
+                    {lesson.title}
+                  </p>
+                  <p style={{ marginTop: 4, fontSize: "0.70rem", color: "rgba(154,149,141,0.58)" }}>
+                    {lesson.sub}
+                  </p>
+                </div>
+                {lesson.soon && (
+                  <span
+                    style={{
+                      ...chipBase,
+                      background: "rgba(52,130,200,0.12)",
+                      color: "rgba(100,170,240,0.86)",
+                      border: "1px solid rgba(52,130,200,0.20)",
+                      height: "fit-content",
+                    }}
+                  >
+                    Скоро
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </article>
+
+      {/* Найближчі заняття */}
+      <article className="p-5 sm:p-6" style={sectionPanel}>
+        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <p style={sectionTitle}>Найближчі заняття</p>
+          <Link href="/teacher/calendar" style={sectionLink}>
+            Всі →
+          </Link>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {mockUpcomingLessons.map((lesson, index) => (
+            <div
+              key={`upcoming-${index}`}
+              style={{ ...innerRowCard, display: "flex", gap: 14, padding: "12px 16px" }}
+            >
+              <div style={{ minWidth: 60, flexShrink: 0, textAlign: "right" }}>
+                <p style={{ fontSize: "0.60rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(138,116,68,0.62)" }}>
+                  {lesson.when}
+                </p>
+                <p className="font-serif" style={{ fontSize: "0.98rem", color: "rgba(201,169,110,0.82)" }}>
+                  {lesson.time}
+                </p>
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ fontSize: "0.84rem", color: "rgba(232,228,221,0.86)" }}>
+                  {lesson.title}
+                </p>
+                <p style={{ marginTop: 4, fontSize: "0.70rem", color: "rgba(154,149,141,0.58)" }}>
+                  {lesson.sub}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Блок: Роботи на перевірку
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
+  return (
+    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={{ ...sectionTitle, display: "flex", alignItems: "center", gap: 8 }}>
+          <span>Роботи на перевірку</span>
+          <span
+            style={{
+              fontSize: "0.58rem",
+              background: "rgba(192,57,43,0.16)",
+              color: "#e67464",
+              border: "1px solid rgba(192,57,43,0.26)",
+              borderRadius: 999,
+              padding: "2px 8px",
+            }}
+          >
+            {mockWorks.length}
+          </span>
+        </p>
+        <Link href="/teacher/assignments" style={sectionLink}>
+          Всі →
+        </Link>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isDesktop
+            ? "repeat(3, 1fr)"
+            : "repeat(1, 1fr)",
+          gap: 16,
+        }}
+      >
+        {mockWorks.slice(0, 6).map((work, index) => (
+          <Link
+            key={`work-${index}`}
+            href="/teacher/assignments"
+            style={{
+              ...innerRowCard,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              padding: 20,
+              minHeight: 160,
+              textDecoration: "none",
+              transition: "all 0.2s",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={avatarBase}>{work.initials}</div>
+              <span style={{ fontSize: "0.84rem", fontWeight: 500, color: "rgba(232,228,221,0.86)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {work.name}
+              </span>
+            </div>
+
+            <p style={{ fontSize: "0.75rem", color: "rgba(154,149,141,0.62)" }}>
+              {work.lesson}
+            </p>
+
+            <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span
+                style={{
+                  ...chipBase,
+                  background: "rgba(220,170,60,0.10)",
+                  color: "rgba(220,170,60,0.84)",
+                  border: "1px solid rgba(220,170,60,0.18)",
+                }}
+              >
+                Чекає
+              </span>
+              <span style={{ fontSize: "0.66rem", color: "rgba(154,149,141,0.44)" }}>
+                {work.ago}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Блок: Активність учнів (прогрес)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function StudentActivityBlock() {
+  return (
+    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={sectionTitle}>Активність учнів</p>
+        <Link href="/teacher/students" style={sectionLink}>
+          Всі →
+        </Link>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {mockStudents.map((student) => (
+          <div
+            key={student.name}
+            style={{
+              ...innerRowCard,
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 14,
+              padding: "12px 16px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 200 }}>
+              <div style={avatarBase}>{student.initials}</div>
+              <p style={{ fontSize: "0.85rem", color: "rgba(232,228,221,0.84)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {student.name}
+              </p>
+            </div>
+
+            <div style={{ display: "flex", flex: 1, alignItems: "center", gap: 12, minWidth: 120 }}>
+              <div style={{ height: 4, flex: 1, overflow: "hidden", borderRadius: 9999, background: "rgba(255,255,255,0.06)" }}>
+                <div
+                  style={{
+                    width: `${student.progress}%`,
+                    height: "100%",
+                    background:
+                      student.status === "active"
+                        ? "rgba(201,169,110,0.64)"
+                        : "rgba(220,80,60,0.56)",
+                    borderRadius: 9999,
+                  }}
+                />
+              </div>
+              <span style={{ width: 36, textAlign: "right", fontSize: "0.72rem", color: "rgba(154,149,141,0.64)" }}>
+                {student.progress}%
+              </span>
+            </div>
+
+            <span
+              style={{
+                ...chipBase,
+                background:
+                  student.status === "active"
+                    ? "rgba(52,168,83,0.12)"
+                    : "rgba(220,80,60,0.12)",
+                color:
+                  student.status === "active"
+                    ? "rgba(52,168,83,0.86)"
+                    : "rgba(220,80,60,0.88)",
+                border:
+                  student.status === "active"
+                    ? "1px solid rgba(52,168,83,0.20)"
+                    : "1px solid rgba(220,80,60,0.20)",
+                width: "fit-content",
+              }}
+            >
+              {student.status === "active" ? "Активний" : "Відстає"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Блок: Останні дії учнів
+// ─────────────────────────────────────────────────────────────────────────────
+
+function RecentActionsBlock() {
+  return (
+    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={sectionTitle}>Останні дії учнів</p>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {mockRecentActions.map((item, index) => (
+          <div
+            key={`action-${index}`}
+            style={{
+              ...innerRowCard,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              padding: "10px 16px",
+            }}
+          >
+            <div style={avatarBase}>{item.initials}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: "0.82rem", color: "rgba(232,228,221,0.80)" }}>
+                <span style={{ fontWeight: 500 }}>{item.name}</span>
+                {" "}
+                <span style={{ color: "rgba(154,149,141,0.64)" }}>{item.action}</span>
+              </p>
+            </div>
+            <span style={{ fontSize: "0.66rem", color: "rgba(154,149,141,0.44)", flexShrink: 0 }}>
+              {item.time}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Блок: Нагадування й дедлайни
+// ─────────────────────────────────────────────────────────────────────────────
+
+function DeadlinesBlock() {
+  const typeLabels: Record<Deadline["type"], string> = {
+    assignment: "ДЗ",
+    test: "Тест",
+    lesson: "Урок",
+    reminder: "Нагадування",
+  };
+
+  const typeColors: Record<Deadline["type"], { bg: string; color: string; border: string }> = {
+    assignment: {
+      bg: "rgba(220,170,60,0.10)",
+      color: "rgba(220,170,60,0.84)",
+      border: "1px solid rgba(220,170,60,0.18)",
+    },
+    test: {
+      bg: "rgba(52,130,200,0.10)",
+      color: "rgba(100,170,240,0.84)",
+      border: "1px solid rgba(52,130,200,0.18)",
+    },
+    lesson: {
+      bg: "rgba(52,168,83,0.10)",
+      color: "rgba(52,168,83,0.84)",
+      border: "1px solid rgba(52,168,83,0.18)",
+    },
+    reminder: {
+      bg: "rgba(201,169,110,0.08)",
+      color: "rgba(201,169,110,0.70)",
+      border: "1px solid rgba(201,169,110,0.14)",
+    },
+  };
+
+  return (
+    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={sectionTitle}>Нагадування й дедлайни</p>
+        <Link href="/teacher/calendar" style={sectionLink}>
+          Календар →
+        </Link>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {mockDeadlines.map((item, index) => {
+          const tc = typeColors[item.type];
+          return (
+            <div
+              key={`deadline-${index}`}
+              style={{
+                ...innerRowCard,
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                padding: "12px 16px",
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 10,
+                  background: tc.bg,
+                  border: tc.border,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <DeadlineIcon type={item.type} />
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: "0.84rem", color: "rgba(232,228,221,0.84)" }}>
+                  {item.title}
+                </p>
+                {item.group && (
+                  <p style={{ marginTop: 2, fontSize: "0.70rem", color: "rgba(154,149,141,0.52)" }}>
+                    {item.group}
+                  </p>
+                )}
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <span
+                  style={{
+                    ...chipBase,
+                    background: tc.bg,
+                    color: tc.color,
+                    border: tc.border,
+                  }}
+                >
+                  {typeLabels[item.type]}
+                </span>
+                <span style={{ fontSize: "0.70rem", color: "rgba(154,149,141,0.58)" }}>
+                  {item.date}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
