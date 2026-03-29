@@ -312,17 +312,17 @@ function StatCard({
 export default function TeacherDashboard() {
   const [blocks, setBlocks] = useState<BlockConfig[]>(defaultBlocks);
   const [showSettings, setShowSettings] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1280px)").matches;
+  });
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1280px)");
-    setIsDesktop(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
-
-  const isVisible = (id: BlockId) => blocks.find((b) => b.id === id)?.visible ?? true;
 
   const toggleBlock = (id: BlockId) => {
     setBlocks((prev) =>
