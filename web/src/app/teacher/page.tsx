@@ -167,6 +167,20 @@ const statusTone: Record<CourseStatus | StudentStatus | AssignmentStatus, Tone> 
   checked: "green",
 };
 
+const statusLabel: Record<CourseStatus | StudentStatus | AssignmentStatus, string> = {
+  draft: "Чернетка",
+  scheduled: "Заплановано",
+  published: "Опубліковано",
+  hidden: "Приховано",
+  archived: "Архів",
+  active: "Активний",
+  inactive: "Неактивний",
+  blocked: "Заблокований",
+  missing: "Не здано",
+  submitted: "На перевірці",
+  checked: "Перевірено",
+};
+
 const PAGE_MAX_WIDTH = 1680;
 
 const panel: CSSProperties = {
@@ -183,32 +197,53 @@ const inset: CSSProperties = {
 };
 
 const sectionTitle: CSSProperties = {
-  fontSize: "0.66rem",
+  fontSize: "0.68rem",
   textTransform: "uppercase",
   letterSpacing: "0.22em",
   color: "rgba(162,141,96,0.78)",
 };
 
 const button: CSSProperties = {
-  minHeight: 36,
+  minHeight: 38,
   borderRadius: 12,
   border: "1px solid rgba(201,169,110,0.18)",
   background: "rgba(255,255,255,0.02)",
   color: "rgba(223,217,207,0.82)",
-  padding: "0 12px",
-  fontSize: "0.70rem",
+  padding: "0 14px",
+  fontSize: "0.72rem",
   letterSpacing: "0.10em",
   textTransform: "uppercase",
 };
 
 const inputStyle: CSSProperties = {
-  minHeight: 38,
-  borderRadius: 10,
+  minHeight: 40,
+  borderRadius: 12,
   border: "1px solid rgba(201,169,110,0.22)",
   background: "rgba(11,10,11,0.72)",
   color: "rgba(235,230,223,0.90)",
-  padding: "0 12px",
-  fontSize: "0.78rem",
+  padding: "0 14px",
+  fontSize: "0.80rem",
+};
+
+const navItemButton: CSSProperties = {
+  width: "100%",
+  textAlign: "left",
+  justifyContent: "flex-start",
+  minHeight: 52,
+  padding: "8px 12px",
+  borderRadius: 14,
+  border: "1px solid rgba(201,169,110,0.16)",
+  background: "rgba(18,15,14,0.60)",
+  color: "rgba(231,225,216,0.90)",
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+};
+
+const navItemNote: CSSProperties = {
+  fontSize: "0.68rem",
+  color: "rgba(175,165,149,0.74)",
+  lineHeight: 1.35,
 };
 
 const chipBase: CSSProperties = {
@@ -376,6 +411,7 @@ function Kpi({ label, value, note, tone }: { label: string; value: string; note:
 }
 export default function TeacherCabinetPage() {
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [blocks, setBlocks] = useState<DashboardBlock[]>(defaultBlocks);
   const [showBlockSettings, setShowBlockSettings] = useState(false);
@@ -417,6 +453,12 @@ export default function TeacherCabinetPage() {
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, []);
+
+  useEffect(() => {
+    if (isDesktop && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isDesktop, isMobileMenuOpen]);
 
   const loadTeacherEntities = useCallback(async () => {
     setDbLoading(true);
@@ -711,6 +753,13 @@ export default function TeacherCabinetPage() {
     });
   };
 
+  const handleSelectSection = (section: SectionKey) => {
+    setActiveSection(section);
+    if (!isDesktop) {
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   const renderDashboardBlock = (b: DashboardBlock) => {
     if (!b.visible) return null;
 
@@ -867,7 +916,7 @@ export default function TeacherCabinetPage() {
           <SectionHead title="Курси" text="Створення, редагування, копіювання, архівація та планування публікації" />
           <div className="mt-4 p-4" style={inset}>
             <p style={sectionTitle}>Створити курс (реальні дані)</p>
-            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "2fr 1.2fr 1fr auto" : "1fr", gap: 8 }}>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "repeat(2, minmax(0,1fr))" : "1fr", gap: 10 }}>
               <input
                 value={newCourseTitle}
                 onChange={(event) => setNewCourseTitle(event.target.value)}
@@ -915,7 +964,7 @@ export default function TeacherCabinetPage() {
                     <td style={td}>{c.topic}</td>
                     <td style={td}>{c.lessons}</td>
                     <td style={td}>{c.publishAt}</td>
-                    <td style={td}><span style={chip(statusTone[c.status])}>{c.status}</span></td>
+                    <td style={td}><span style={chip(statusTone[c.status])}>{statusLabel[c.status]}</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -931,7 +980,7 @@ export default function TeacherCabinetPage() {
           <SectionHead title="Уроки" text="Текст, фото, відео, файли, тести, ДЗ, Zoom, презентації, зовнішні джерела" />
           <div className="mt-4 p-4" style={inset}>
             <p style={sectionTitle}>Створити урок (реальні дані)</p>
-            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "2fr 1.4fr 1.2fr 1fr auto" : "1fr", gap: 8 }}>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "repeat(2, minmax(0,1fr))" : "1fr", gap: 10 }}>
               <input
                 value={newLessonTitle}
                 onChange={(event) => setNewLessonTitle(event.target.value)}
@@ -995,7 +1044,7 @@ export default function TeacherCabinetPage() {
                         <td style={td}>{lesson.title}</td>
                         <td style={td}>{lesson.group_name || "Без групи"}</td>
                         <td style={td}>{courseTitle}</td>
-                        <td style={td}><span style={chip(statusTone[lesson.status])}>{lesson.status}</span></td>
+                        <td style={td}><span style={chip(statusTone[lesson.status])}>{statusLabel[lesson.status]}</span></td>
                         <td style={td}>{formatDateTime(lesson.publish_at)}</td>
                       </tr>
                     );
@@ -1067,7 +1116,7 @@ export default function TeacherCabinetPage() {
           <SectionHead title="Учні" text="Картки, блокування доступу, історія входу, внутрішні примітки (непублічні)" />
           <div className="mt-4 p-4" style={inset}>
             <p style={sectionTitle}>Створити учня (реальні дані)</p>
-            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3, minmax(0,1fr))" : "1fr", gap: 8 }}>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isDesktop ? "repeat(2, minmax(0,1fr))" : "1fr", gap: 10 }}>
               <input
                 value={newStudentName}
                 onChange={(event) => setNewStudentName(event.target.value)}
@@ -1135,7 +1184,7 @@ export default function TeacherCabinetPage() {
                     <td style={td}>{s.name}<br /><span style={{ fontSize: "0.68rem", color: "rgba(175,165,149,0.74)" }}>{s.telegram}</span></td>
                     <td style={td}>{s.phone}<br />{s.email}</td>
                     <td style={td}>{s.group}</td>
-                    <td style={td}><span style={chip(statusTone[s.status])}>{s.status}</span></td>
+                    <td style={td}><span style={chip(statusTone[s.status])}>{statusLabel[s.status]}</span></td>
                     <td style={td}>{s.lastLogin}</td>
                     <td style={td}>{s.note}</td>
                     <td style={td}><button style={button} onClick={() => { void toggleStudentBlock(s.id); }}>{s.status === "blocked" ? "Розблокувати" : "Заблокувати"}</button></td>
@@ -1158,7 +1207,7 @@ export default function TeacherCabinetPage() {
                 <p style={{ fontSize: "0.84rem", color: "rgba(229,223,212,0.88)" }}>{a.title}</p>
                 <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{a.target} · {a.deadline}</p>
                 <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{a.comment}</p>
-                <span style={{ ...chip(statusTone[a.status]), marginTop: 8 }}>{a.status}</span>
+                <span style={{ ...chip(statusTone[a.status]), marginTop: 8 }}>{statusLabel[a.status]}</span>
               </article>
             ))}
           </div>
@@ -1252,10 +1301,10 @@ export default function TeacherCabinetPage() {
         <h1 className="font-serif" style={{ marginTop: 10, fontSize: isDesktop ? "2.3rem" : "1.8rem", color: "rgba(245,239,230,0.96)" }}>LMS з історії України</h1>
         <p style={{ marginTop: 8, maxWidth: 820, fontSize: "0.86rem", color: "rgba(224,216,205,0.74)" }}>Єдиний робочий простір: курси, уроки, групи, учні, завдання, тести, журнал, відвідуваність, аналітика, LMS+Telegram, Zoom, файли, календар, чернетки, архів, налаштування.</p>
         <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <button style={button} onClick={() => setActiveSection("courses")}>+ Курс</button>
-          <button style={button} onClick={() => setActiveSection("lessons")}>+ Урок</button>
-          <button style={button} onClick={() => setActiveSection("assignments")}>+ Завдання</button>
-          <button style={button} onClick={() => setActiveSection("calendar")}>Календар</button>
+          <button style={button} onClick={() => handleSelectSection("courses")}>+ Курс</button>
+          <button style={button} onClick={() => handleSelectSection("lessons")}>+ Урок</button>
+          <button style={button} onClick={() => handleSelectSection("assignments")}>+ Завдання</button>
+          <button style={button} onClick={() => handleSelectSection("calendar")}>Календар</button>
         </div>
       </section>
       <section className="mb-6 p-5 sm:p-6" style={panel}>
@@ -1283,7 +1332,7 @@ export default function TeacherCabinetPage() {
             {searchResults.length ? (
               <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
                 {searchResults.map((r) => (
-                  <button key={r.id} onClick={() => setActiveSection(r.section)} style={{ textAlign: "left", ...button }}>
+                  <button key={r.id} onClick={() => handleSelectSection(r.section)} style={{ textAlign: "left", ...button }}>
                     {r.kind}: {r.title}
                     <div style={{ fontSize: "0.66rem", color: "rgba(170,160,146,0.70)" }}>{r.subtitle}</div>
                   </button>
@@ -1309,34 +1358,72 @@ export default function TeacherCabinetPage() {
         </div>
       </section>
 
-      <section className="mb-6 p-4 sm:p-5" style={panel}>
-        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
-          <div style={{ display: "inline-flex", gap: 8, minWidth: "max-content" }}>
-            {sections.map((s) => {
-              const active = s.key === activeSection;
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => setActiveSection(s.key)}
-                  style={{ ...button, border: active ? "1px solid rgba(201,169,110,0.42)" : button.border, background: active ? "rgba(201,169,110,0.14)" : button.background, color: active ? "rgba(230,202,148,0.95)" : button.color }}
-                >
-                  {s.label}
-                </button>
-              );
-            })}
+      <section className="mb-6 grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
+        <aside
+          className="p-4 sm:p-5"
+          style={{
+            ...panel,
+            height: "fit-content",
+            ...(isDesktop ? { position: "sticky", top: 16 } : {}),
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div>
+              <p style={sectionTitle}>Розділи кабінету</p>
+              <p style={{ marginTop: 8, fontSize: "0.76rem", color: "rgba(175,165,149,0.74)", lineHeight: 1.45 }}>
+                {activeMeta?.note}
+              </p>
+            </div>
+            {!isDesktop ? (
+              <button
+                style={{ ...button, minWidth: 126 }}
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="teacher-sections-menu"
+              >
+                {isMobileMenuOpen ? "Закрити меню" : "Меню розділів"}
+              </button>
+            ) : null}
           </div>
-        </div>
-        <p style={{ marginTop: 10, fontSize: "0.78rem", color: "rgba(175,165,149,0.74)" }}>{activeMeta?.note}</p>
-      </section>
 
-      {renderSection()}
+          {isDesktop || isMobileMenuOpen ? (
+            <div id="teacher-sections-menu" style={{ marginTop: 12, display: "grid", gap: 8 }}>
+              {sections.map((s) => {
+                const active = s.key === activeSection;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => handleSelectSection(s.key)}
+                    style={{
+                      ...navItemButton,
+                      border: active ? "1px solid rgba(201,169,110,0.44)" : navItemButton.border,
+                      background: active ? "rgba(201,169,110,0.14)" : navItemButton.background,
+                    }}
+                  >
+                    <span style={{ fontSize: "0.80rem", color: active ? "rgba(232,205,154,0.98)" : "rgba(231,225,216,0.90)" }}>{s.label}</span>
+                    <span style={navItemNote}>{s.note}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ marginTop: 12, fontSize: "0.74rem", color: "rgba(175,165,149,0.74)" }}>
+              Натисніть «Меню розділів», щоб перейти до потрібного блоку.
+            </p>
+          )}
+        </aside>
 
-      <section className="mt-6 p-5" style={panel}>
-        <SectionHead title="Критерії готовності (чекліст)" text="MVP-контроль відповідності ТЗ" />
-        <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {quickReadiness.map((item) => (
-            <span key={item} style={chip("gray")}>{item}</span>
-          ))}
+        <div className="space-y-6">
+          {renderSection()}
+
+          <section className="p-5" style={panel}>
+            <SectionHead title="Критерії готовності (чекліст)" text="MVP-контроль відповідності ТЗ" />
+            <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {quickReadiness.map((item) => (
+                <span key={item} style={chip("gray")}>{item}</span>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
     </div>
@@ -1346,13 +1433,13 @@ export default function TeacherCabinetPage() {
 const table: CSSProperties = {
   width: "100%",
   borderCollapse: "separate",
-  borderSpacing: "0 8px",
+  borderSpacing: "0 10px",
 };
 
 const th: CSSProperties = {
   textAlign: "left",
   padding: "0 12px",
-  fontSize: "0.64rem",
+  fontSize: "0.66rem",
   letterSpacing: "0.14em",
   textTransform: "uppercase",
   color: "rgba(165,145,103,0.78)",
@@ -1364,8 +1451,9 @@ const row: CSSProperties = {
 };
 
 const td: CSSProperties = {
-  padding: "12px",
-  fontSize: "0.74rem",
+  padding: "14px 12px",
+  fontSize: "0.78rem",
+  lineHeight: 1.45,
   color: "rgba(217,210,198,0.82)",
   verticalAlign: "top",
 };
