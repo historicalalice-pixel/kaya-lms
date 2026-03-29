@@ -1,1029 +1,813 @@
+﻿
 "use client";
 
-import { useState, useEffect, type CSSProperties } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Типи
-// ─────────────────────────────────────────────────────────────────────────────
+type SectionKey =
+  | "dashboard"
+  | "courses"
+  | "lessons"
+  | "groups"
+  | "students"
+  | "assignments"
+  | "tests"
+  | "gradebook"
+  | "attendance"
+  | "analytics"
+  | "messages"
+  | "files"
+  | "calendar"
+  | "drafts"
+  | "archive"
+  | "settings";
+
+type Tone = "gold" | "green" | "blue" | "red" | "gray";
+
+type CourseStatus = "draft" | "scheduled" | "published" | "hidden" | "archived";
+type StudentStatus = "active" | "inactive" | "blocked";
+type AssignmentStatus = "missing" | "submitted" | "checked";
+type DashboardBlockId = "today" | "review" | "actions" | "deadlines" | "hours" | "alerts";
+type FileType = "pdf" | "presentation" | "doc" | "video" | "other";
+type MessageChannel = "lms" | "telegram";
+
+type DashboardBlock = { id: DashboardBlockId; label: string; visible: boolean };
 
 type Student = {
-  initials: string;
+  id: string;
   name: string;
+  group: string;
+  email: string;
+  phone: string;
+  telegram: string;
+  note: string;
+  status: StudentStatus;
+  lastLogin: string;
   progress: number;
-  status: "active" | "behind";
 };
 
-type Lesson = {
-  when: string;
-  time: string;
+type Course = {
+  id: string;
   title: string;
-  sub: string;
-  soon?: boolean;
+  topic: string;
+  lessons: number;
+  status: CourseStatus;
+  publishAt: string;
 };
 
-type Work = {
-  initials: string;
-  name: string;
-  lesson: string;
-  ago: string;
-};
-
-type Deadline = {
-  type: "assignment" | "test" | "lesson" | "reminder";
+type Assignment = {
+  id: string;
   title: string;
-  date: string;
-  group?: string;
+  target: string;
+  deadline: string;
+  status: AssignmentStatus;
+  comment: string;
 };
 
-type ActivityItem = {
-  initials: string;
-  name: string;
-  action: string;
-  time: string;
+type SearchResult = {
+  id: string;
+  kind: string;
+  title: string;
+  subtitle: string;
+  section: SectionKey;
 };
 
-type BlockId =
-  | "stats"
-  | "todayLessons"
-  | "pendingReview"
-  | "studentActivity"
-  | "recentActions"
-  | "deadlines";
+const sections: Array<{ key: SectionKey; label: string; note: string }> = [
+  { key: "dashboard", label: "Дашборд", note: "Ключові події та навантаження" },
+  { key: "courses", label: "Курси", note: "Створення, публікація, архів" },
+  { key: "lessons", label: "Уроки", note: "Контент, Zoom, графік" },
+  { key: "groups", label: "Групи", note: "Запрошення, призначення" },
+  { key: "students", label: "Учні", note: "Картки, статуси, доступ" },
+  { key: "assignments", label: "Завдання", note: "Призначення та перевірка" },
+  { key: "tests", label: "Тести", note: "Імпорт із zno.osvita.ua" },
+  { key: "gradebook", label: "Журнал оцінок", note: "Оцінки та експорт" },
+  { key: "attendance", label: "Відвідуваність", note: "Присутність і причини" },
+  { key: "analytics", label: "Аналітика", note: "Прогрес і динаміка" },
+  { key: "messages", label: "Повідомлення", note: "LMS + Telegram" },
+  { key: "files", label: "Файли", note: "Матеріали та фільтри" },
+  { key: "calendar", label: "Календар", note: "Уроки й дедлайни" },
+  { key: "drafts", label: "Чернетки", note: "Повернення до редагування" },
+  { key: "archive", label: "Архів", note: "Відновлення і видалення" },
+  { key: "settings", label: "Налаштування", note: "Профіль та інтеграції" },
+];
 
-type BlockConfig = {
-  id: BlockId;
-  label: string;
-  visible: boolean;
+const defaultBlocks: DashboardBlock[] = [
+  { id: "today", label: "Уроки сьогодні", visible: true },
+  { id: "review", label: "Перевірка ДЗ", visible: true },
+  { id: "actions", label: "Останні дії учнів", visible: true },
+  { id: "deadlines", label: "Дедлайни й нагадування", visible: true },
+  { id: "hours", label: "Навантаження по годинах", visible: true },
+  { id: "alerts", label: "Критичні сигнали", visible: true },
+];
+
+const tones: Record<Tone, { bg: string; border: string; color: string }> = {
+  gold: { bg: "rgba(201,169,110,0.10)", border: "1px solid rgba(201,169,110,0.22)", color: "rgba(230,202,148,0.95)" },
+  green: { bg: "rgba(52,168,83,0.12)", border: "1px solid rgba(52,168,83,0.24)", color: "rgba(129,221,155,0.95)" },
+  blue: { bg: "rgba(52,130,200,0.12)", border: "1px solid rgba(52,130,200,0.24)", color: "rgba(144,200,255,0.95)" },
+  red: { bg: "rgba(220,80,60,0.12)", border: "1px solid rgba(220,80,60,0.24)", color: "rgba(244,150,138,0.96)" },
+  gray: { bg: "rgba(150,145,136,0.12)", border: "1px solid rgba(150,145,136,0.22)", color: "rgba(206,202,195,0.90)" },
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Тимчасові дані (заглушки до підключення Supabase)
-// ─────────────────────────────────────────────────────────────────────────────
-
-const mockStudents: Student[] = [
-  { initials: "ДК", name: "Дмитро Коваль", progress: 72, status: "active" },
-  { initials: "АС", name: "Аліна Савченко", progress: 45, status: "behind" },
-  { initials: "МП", name: "Максим Петренко", progress: 88, status: "active" },
-  { initials: "ІБ", name: "Ірина Бондар", progress: 20, status: "behind" },
-];
-
-const mockTodayLessons: Lesson[] = [
-  {
-    when: "Сьогодні",
-    time: "18:00",
-    title: "Група А — Козацька держава",
-    sub: "4 учні · Zoom",
-    soon: true,
-  },
-  {
-    when: "Сьогодні",
-    time: "20:00",
-    title: "Індивідуально — Дмитро К.",
-    sub: "Підготовка до НМТ · Zoom",
-  },
-];
-
-const mockUpcomingLessons: Lesson[] = [
-  {
-    when: "Завтра",
-    time: "16:00",
-    title: "Група Б — Київська Русь",
-    sub: "5 учнів · Google Meet",
-  },
-  {
-    when: "Ср",
-    time: "17:30",
-    title: "Індивідуально — Аліна С.",
-    sub: "Підготовка до НМТ",
-  },
-  {
-    when: "Пт",
-    time: "18:00",
-    title: "Група А — Гетьманщина",
-    sub: "4 учні · Zoom",
-  },
-];
-
-const mockWorks: Work[] = [
-  { initials: "ДК", name: "Дмитро Коваль", lesson: "Урок 3 · Козацька держава", ago: "2 год тому" },
-  { initials: "АС", name: "Аліна Савченко", lesson: "Урок 2 · Київська Русь", ago: "вчора" },
-  { initials: "МП", name: "Максим Петренко", lesson: "Урок 4 · УНР та ЗУНР", ago: "3 дні тому" },
-  { initials: "ІБ", name: "Ірина Бондар", lesson: "Урок 1 · Вступ", ago: "тиждень тому" },
-  { initials: "НЛ", name: "Настя Лисенко", lesson: "Урок 3 · Козацька держава", ago: "4 дні тому" },
-];
-
-const mockDeadlines: Deadline[] = [
-  { type: "assignment", title: "ДЗ: Козацька держава", date: "Сьогодні, 23:59", group: "Група А" },
-  { type: "test", title: "Тест: Київська Русь", date: "Завтра, 18:00", group: "Група Б" },
-  { type: "lesson", title: "Zoom-урок: Гетьманщина", date: "Пт, 18:00", group: "Група А" },
-  { type: "reminder", title: "Перевірити ДЗ Аліни С.", date: "Завтра", },
-];
-
-const mockRecentActions: ActivityItem[] = [
-  { initials: "ДК", name: "Дмитро Коваль", action: "здав ДЗ «Козацька держава»", time: "2 год тому" },
-  { initials: "АС", name: "Аліна Савченко", action: "пройшла тест «Київська Русь» — 78%", time: "вчора" },
-  { initials: "МП", name: "Максим Петренко", action: "переглянув урок «УНР та ЗУНР»", time: "вчора" },
-  { initials: "НЛ", name: "Настя Лисенко", action: "приєдналась до Групи А", time: "2 дні тому" },
-  { initials: "ІБ", name: "Ірина Бондар", action: "увійшла в систему", time: "3 дні тому" },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Стилі
-// ─────────────────────────────────────────────────────────────────────────────
-
-const pageMaxWidth = 1680;
-
-const sectionPanel: CSSProperties = {
-  borderRadius: 28,
-  border: "1px solid rgba(201,169,110,0.20)",
-  background:
-    "linear-gradient(180deg, rgba(22,18,16,0.98) 0%, rgba(13,11,12,0.97) 100%)",
-  boxShadow:
-    "0 18px 40px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.04)",
+const statusTone: Record<CourseStatus | StudentStatus | AssignmentStatus, Tone> = {
+  draft: "gray",
+  scheduled: "blue",
+  published: "green",
+  hidden: "gold",
+  archived: "red",
+  active: "green",
+  inactive: "gray",
+  blocked: "red",
+  missing: "red",
+  submitted: "blue",
+  checked: "green",
 };
 
-const heroPanel: CSSProperties = {
-  ...sectionPanel,
-  background:
-    "linear-gradient(180deg, rgba(201,169,110,0.08) 0%, rgba(201,169,110,0.03) 100%)",
-};
+const PAGE_MAX_WIDTH = 1680;
 
-const statCard: CSSProperties = {
+const panel: CSSProperties = {
   borderRadius: 26,
   border: "1px solid rgba(201,169,110,0.20)",
-  background:
-    "linear-gradient(180deg, rgba(24,20,18,0.98) 0%, rgba(14,12,13,0.96) 100%)",
-  boxShadow:
-    "0 16px 34px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)",
-  minHeight: 160,
+  background: "linear-gradient(180deg, rgba(22,18,16,0.98) 0%, rgba(13,11,12,0.97) 100%)",
+  boxShadow: "0 18px 40px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.04)",
 };
 
-const innerRowCard: CSSProperties = {
-  borderRadius: 20,
+const inset: CSSProperties = {
+  borderRadius: 18,
   border: "1px solid rgba(201,169,110,0.16)",
-  background:
-    "linear-gradient(180deg, rgba(28,23,20,0.72) 0%, rgba(16,14,15,0.78) 100%)",
-  boxShadow: "0 10px 24px rgba(0,0,0,0.18)",
-};
-
-const chipBase: CSSProperties = {
-  fontSize: "0.60rem",
-  letterSpacing: "0.08em",
-  padding: "4px 9px",
-  borderRadius: 999,
-  flexShrink: 0,
-};
-
-const avatarBase: CSSProperties = {
-  width: 36,
-  height: 36,
-  borderRadius: "50%",
-  border: "1px solid rgba(201,169,110,0.18)",
-  background: "rgba(201,169,110,0.06)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "rgba(201,169,110,0.76)",
-  flexShrink: 0,
-  fontSize: "0.68rem",
+  background: "rgba(23,19,17,0.72)",
 };
 
 const sectionTitle: CSSProperties = {
   fontSize: "0.66rem",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.24em",
-  color: "rgba(138,116,68,0.82)",
+  textTransform: "uppercase",
+  letterSpacing: "0.22em",
+  color: "rgba(162,141,96,0.78)",
 };
 
-const sectionLink: CSSProperties = {
-  fontSize: "0.66rem",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.15em",
-  color: "rgba(138,116,68,0.55)",
-  textDecoration: "none",
-  transition: "color 0.2s",
+const button: CSSProperties = {
+  minHeight: 36,
+  borderRadius: 12,
+  border: "1px solid rgba(201,169,110,0.18)",
+  background: "rgba(255,255,255,0.02)",
+  color: "rgba(223,217,207,0.82)",
+  padding: "0 12px",
+  fontSize: "0.70rem",
+  letterSpacing: "0.10em",
+  textTransform: "uppercase",
 };
 
-const topActions = [
-  { label: "+ Курс", href: "/teacher/courses/new" },
-  { label: "+ Урок", href: "/teacher/lessons/new" },
-  { label: "+ Завдання", href: "/teacher/assignments/new" },
-  { label: "Календар", href: "/teacher/calendar" },
+const chipBase: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  borderRadius: 999,
+  padding: "4px 10px",
+  fontSize: "0.62rem",
+  letterSpacing: "0.10em",
+  textTransform: "uppercase",
+};
+
+function chip(tone: Tone): CSSProperties {
+  return { ...chipBase, background: tones[tone].bg, border: tones[tone].border, color: tones[tone].color };
+}
+const courses: Course[] = [
+  { id: "c1", title: "Історія України: Київська Русь", topic: "Середньовіччя", lessons: 12, status: "published", publishAt: "20.03.2026, 09:00" },
+  { id: "c2", title: "Козацька держава", topic: "Ранньомодерний період", lessons: 9, status: "scheduled", publishAt: "02.04.2026, 18:00" },
+  { id: "c3", title: "Україна у XX столітті", topic: "Новітня історія", lessons: 16, status: "draft", publishAt: "Чернетка" },
+  { id: "c4", title: "НМТ інтенсив", topic: "Підготовка", lessons: 20, status: "hidden", publishAt: "Приховано" },
 ];
 
-const defaultBlocks: BlockConfig[] = [
-  { id: "stats", label: "Статистика", visible: true },
-  { id: "todayLessons", label: "Уроки сьогодні", visible: true },
-  { id: "pendingReview", label: "Роботи на перевірку", visible: true },
-  { id: "studentActivity", label: "Активність учнів", visible: true },
-  { id: "recentActions", label: "Останні дії учнів", visible: true },
-  { id: "deadlines", label: "Нагадування й дедлайни", visible: true },
+const studentsSeed: Student[] = [
+  {
+    id: "s1",
+    name: "Дмитро Коваль",
+    group: "Група А",
+    email: "d.koval@example.com",
+    phone: "+380671112233",
+    telegram: "@dmytro_k",
+    note: "Потрібно більше практики НМТ (внутрішня нотатка).",
+    status: "active",
+    lastLogin: "29.03.2026, 17:42",
+    progress: 78,
+  },
+  {
+    id: "s2",
+    name: "Аліна Савченко",
+    group: "Група А",
+    email: "a.savchenko@example.com",
+    phone: "+380501234567",
+    telegram: "@alina_s",
+    note: "Нагадування про дедлайн за 24 години.",
+    status: "active",
+    lastLogin: "29.03.2026, 21:03",
+    progress: 64,
+  },
+  {
+    id: "s3",
+    name: "Максим Петренко",
+    group: "Група Б",
+    email: "m.petrenko@example.com",
+    phone: "+380631234567",
+    telegram: "@maksym_p",
+    note: "Часто здає ДЗ із запізненням.",
+    status: "inactive",
+    lastLogin: "25.03.2026, 19:20",
+    progress: 46,
+  },
+  {
+    id: "s4",
+    name: "Ірина Бондар",
+    group: "Група Б",
+    email: "i.bondar@example.com",
+    phone: "+380931234567",
+    telegram: "@iryna_b",
+    note: "Акаунт заблоковано до уточнення даних.",
+    status: "blocked",
+    lastLogin: "20.03.2026, 14:10",
+    progress: 34,
+  },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Допоміжні іконки для дедлайнів
-// ─────────────────────────────────────────────────────────────────────────────
+const assignments: Assignment[] = [
+  { id: "a1", title: "Есе: Причини занепаду Київської Русі", target: "Група А", deadline: "Сьогодні, 23:59", status: "submitted", comment: "Чекає перевірки" },
+  { id: "a2", title: "Таблиця: доба козаччини", target: "Група Б", deadline: "30.03.2026, 20:00", status: "missing", comment: "Нагадування відправлено в LMS і Telegram" },
+  { id: "a3", title: "Джерельний аналіз УЦР", target: "Дмитро Коваль", deadline: "28.03.2026, 18:00", status: "checked", comment: "Оцінка виставлена" },
+];
 
-function DeadlineIcon({ type }: { type: Deadline["type"] }) {
-  const colors: Record<Deadline["type"], string> = {
-    assignment: "rgba(220,170,60,0.7)",
-    test: "rgba(100,170,240,0.7)",
-    lesson: "rgba(52,168,83,0.7)",
-    reminder: "rgba(201,169,110,0.5)",
-  };
-  const c = colors[type];
+const todayLessons = [
+  { id: "t1", title: "Група А - Походження Русі", time: "18:00", details: "Zoom, 14 учнів" },
+  { id: "t2", title: "Індивідуально - НМТ симуляція", time: "20:00", details: "LMS + Zoom" },
+];
 
-  if (type === "assignment") {
-    return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-      </svg>
-    );
-  }
-  if (type === "test") {
-    return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 11l3 3L22 4" />
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-      </svg>
-    );
-  }
-  if (type === "lesson") {
-    return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-      </svg>
-    );
-  }
+const deadlines = [
+  { id: "d1", label: "ДЗ: Есе по Русі", date: "Сьогодні, 23:59", type: "assignment" },
+  { id: "d2", label: "Тест: Козаччина", date: "03.04, 18:30", type: "test" },
+  { id: "d3", label: "Zoom-урок: Гетьманщина", date: "31.03, 16:00", type: "lesson" },
+  { id: "d4", label: "Підтвердити оцінки тестів", date: "Завтра, 10:00", type: "reminder" },
+];
+
+const feed = [
+  { id: "f1", who: "Дмитро К.", action: "здав ДЗ", when: "2 год тому" },
+  { id: "f2", who: "Група Б", action: "відкрила Zoom-посилання", when: "5 год тому" },
+  { id: "f3", who: "Аліна С.", action: "пройшла тест на 82%", when: "вчора" },
+];
+
+const fileLibrary: Array<{ id: string; name: string; type: FileType; target: string; updated: string }> = [
+  { id: "f1", name: "Презентація: Київська Русь", type: "presentation", target: "Група А", updated: "29.03.2026" },
+  { id: "f2", name: "PDF: Джерела козаччини", type: "pdf", target: "Група Б", updated: "28.03.2026" },
+  { id: "f3", name: "Методичка НМТ", type: "doc", target: "Усі", updated: "27.03.2026" },
+  { id: "f4", name: "Відео: Розбір тесту", type: "video", target: "Індивідуально", updated: "27.03.2026" },
+];
+
+const messageThreads: Array<{ id: string; target: string; channel: MessageChannel; text: string; status: "отримано" | "відкрито" | "Zoom"; time: string }> = [
+  { id: "m1", target: "Група А", channel: "lms", text: "Нагадування про дедлайн", status: "відкрито", time: "18:40" },
+  { id: "m2", target: "Дмитро К.", channel: "telegram", text: "Надішліть фінальну версію есе", status: "отримано", time: "17:14" },
+  { id: "m3", target: "Група Б", channel: "telegram", text: "Zoom-посилання на урок", status: "Zoom", time: "21:12" },
+];
+
+const quickReadiness = [
+  "Створення курсу і уроку",
+  "Додавання PDF, презентації, YouTube, Zoom",
+  "Групи, учні, ручне створення",
+  "Призначення завдань і тестів",
+  "Журнал оцінок і відвідуваність",
+  "Календар, чернетки, архів, автозбереження",
+];
+
+function SectionHead({ title, text }: { title: string; text: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Компоненти
-// ─────────────────────────────────────────────────────────────────────────────
-
-function StatCard({
-  label,
-  value,
-  hint,
-  alert = false,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  alert?: boolean;
-}) {
-  return (
-    <article className="p-5 sm:p-6" style={statCard}>
-      <p style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.24em", color: "rgba(138,116,68,0.84)" }}>
-        {label}
-      </p>
-      <p
-        className="font-serif"
-        style={{
-          marginTop: 16,
-          fontSize: "2.4rem",
-          lineHeight: 1,
-          color: alert ? "rgba(220,80,60,0.88)" : "var(--gold-light, #e2c992)",
-        }}
-      >
-        {value}
-      </p>
-      <p style={{ marginTop: 10, fontSize: "0.84rem", lineHeight: "1.25rem", color: "rgba(232,228,221,0.52)" }}>
-        {hint}
-      </p>
-    </article>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Сторінка дашборду
-// ─────────────────────────────────────────────────────────────────────────────
-
-export default function TeacherDashboard() {
-  const [blocks, setBlocks] = useState<BlockConfig[]>(defaultBlocks);
-  const [showSettings, setShowSettings] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  const isVisible = (id: BlockId) => blocks.find((b) => b.id === id)?.visible ?? true;
-
-  const toggleBlock = (id: BlockId) => {
-    setBlocks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, visible: !b.visible } : b))
-    );
-  };
-
-  const moveBlock = (id: BlockId, direction: "up" | "down") => {
-    setBlocks((prev) => {
-      const idx = prev.findIndex((b) => b.id === id);
-      if (idx < 0) return prev;
-      const swap = direction === "up" ? idx - 1 : idx + 1;
-      if (swap < 0 || swap >= prev.length) return prev;
-      const next = [...prev];
-      [next[idx], next[swap]] = [next[swap], next[idx]];
-      return next;
-    });
-  };
-
-  // Рендер блоків у порядку, заданому користувачем
-  const renderBlock = (block: BlockConfig) => {
-    if (!block.visible) return null;
-
-    switch (block.id) {
-      case "stats":
-        return <StatsBlock key="stats" isDesktop={isDesktop} />;
-      case "todayLessons":
-        return <TodayLessonsBlock key="todayLessons" isDesktop={isDesktop} />;
-      case "pendingReview":
-        return <PendingReviewBlock key="pendingReview" isDesktop={isDesktop} />;
-      case "studentActivity":
-        return <StudentActivityBlock key="studentActivity" />;
-      case "recentActions":
-        return <RecentActionsBlock key="recentActions" />;
-      case "deadlines":
-        return <DeadlinesBlock key="deadlines" />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="mx-auto w-full" style={{ maxWidth: `${pageMaxWidth}px` }}>
-      {/* Hero */}
-      <section className="mb-10 p-6 sm:p-7 lg:p-8" style={heroPanel}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: isDesktop ? "row" : "column",
-            gap: 24,
-            alignItems: isDesktop ? "flex-end" : "flex-start",
-            justifyContent: isDesktop ? "space-between" : "flex-start",
-          }}
-        >
-          <div>
-            <p style={{ marginBottom: 10, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.30em", color: "rgba(138,116,68,0.82)" }}>
-              Кабінет вчителя
-            </p>
-            <h1
-              className="font-serif"
-              style={{
-                maxWidth: 640,
-                fontSize: isDesktop ? "2.65rem" : "1.85rem",
-                lineHeight: 0.96,
-                color: "rgba(245,239,230,0.96)",
-              }}
-            >
-              Дашборд
-            </h1>
-          </div>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-            {topActions.map((btn) => {
-              const isPrimary = btn.label.startsWith("+");
-              return (
-                <Link
-                  key={btn.href}
-                  href={btn.href}
-                  style={{
-                    display: "inline-flex",
-                    minHeight: 42,
-                    alignItems: "center",
-                    borderRadius: 15,
-                    padding: "0 16px",
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.18em",
-                    textDecoration: "none",
-                    transition: "all 0.2s",
-                    border: isPrimary
-                      ? "1px solid rgba(201,169,110,0.40)"
-                      : "1px solid rgba(201,169,110,0.16)",
-                    background: isPrimary
-                      ? "rgba(201,169,110,0.08)"
-                      : "rgba(255,255,255,0.015)",
-                    color: isPrimary
-                      ? "var(--gold-light, #e2c992)"
-                      : "rgba(232,228,221,0.72)",
-                    boxShadow: isPrimary
-                      ? "inset 0 1px 0 rgba(255,255,255,0.03)"
-                      : "none",
-                  }}
-                >
-                  {btn.label}
-                </Link>
-              );
-            })}
-
-            {/* Кнопка налаштувань блоків */}
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              style={{
-                display: "inline-flex",
-                minHeight: 42,
-                alignItems: "center",
-                borderRadius: 15,
-                padding: "0 14px",
-                fontSize: "0.72rem",
-                letterSpacing: "0.10em",
-                border: showSettings
-                  ? "1px solid rgba(201,169,110,0.40)"
-                  : "1px solid rgba(201,169,110,0.12)",
-                background: showSettings
-                  ? "rgba(201,169,110,0.10)"
-                  : "rgba(255,255,255,0.015)",
-                color: showSettings
-                  ? "var(--gold-light, #e2c992)"
-                  : "rgba(232,228,221,0.50)",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              title="Налаштувати блоки"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Панель налаштувань блоків */}
-        {showSettings && (
-          <div
-            style={{
-              marginTop: 20,
-              padding: "16px 20px",
-              borderRadius: 20,
-              border: "1px solid rgba(201,169,110,0.16)",
-              background: "rgba(16,14,15,0.80)",
-            }}
-          >
-            <p style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.20em", color: "rgba(138,116,68,0.70)", marginBottom: 12 }}>
-              Налаштування блоків
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {blocks.map((block, idx) => (
-                <div
-                  key={block.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "6px 10px",
-                    borderRadius: 12,
-                    background: block.visible ? "rgba(201,169,110,0.04)" : "transparent",
-                  }}
-                >
-                  {/* Стрілки вгору/вниз */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                    <button
-                      onClick={() => moveBlock(block.id, "up")}
-                      disabled={idx === 0}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: idx === 0 ? "rgba(138,116,68,0.20)" : "rgba(138,116,68,0.60)",
-                        cursor: idx === 0 ? "default" : "pointer",
-                        padding: 0,
-                        lineHeight: 1,
-                        fontSize: "0.7rem",
-                      }}
-                    >
-                      ▲
-                    </button>
-                    <button
-                      onClick={() => moveBlock(block.id, "down")}
-                      disabled={idx === blocks.length - 1}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: idx === blocks.length - 1 ? "rgba(138,116,68,0.20)" : "rgba(138,116,68,0.60)",
-                        cursor: idx === blocks.length - 1 ? "default" : "pointer",
-                        padding: 0,
-                        lineHeight: 1,
-                        fontSize: "0.7rem",
-                      }}
-                    >
-                      ▼
-                    </button>
-                  </div>
-
-                  {/* Тогл видимості */}
-                  <button
-                    onClick={() => toggleBlock(block.id)}
-                    style={{
-                      width: 36,
-                      height: 20,
-                      borderRadius: 10,
-                      border: "1px solid rgba(201,169,110,0.20)",
-                      background: block.visible
-                        ? "rgba(201,169,110,0.30)"
-                        : "rgba(255,255,255,0.05)",
-                      cursor: "pointer",
-                      position: "relative",
-                      padding: 0,
-                      transition: "background 0.2s",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: "50%",
-                        background: block.visible
-                          ? "var(--gold-light, #e2c992)"
-                          : "rgba(154,149,141,0.40)",
-                        position: "absolute",
-                        top: 2,
-                        left: block.visible ? 19 : 2,
-                        transition: "left 0.2s, background 0.2s",
-                      }}
-                    />
-                  </button>
-
-                  <span
-                    style={{
-                      fontSize: "0.78rem",
-                      color: block.visible
-                        ? "rgba(232,228,221,0.80)"
-                        : "rgba(154,149,141,0.44)",
-                    }}
-                  >
-                    {block.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Блоки в порядку користувача */}
-      {blocks.map((block) => renderBlock(block))}
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <p style={sectionTitle}>{title}</p>
+      <p style={{ fontSize: "0.84rem", color: "rgba(231,226,216,0.70)" }}>{text}</p>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Блок: Статистика (стат-картки)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function StatsBlock({ isDesktop }: { isDesktop: boolean }) {
+function Kpi({ label, value, note, tone }: { label: string; value: string; note: string; tone: Tone }) {
   return (
-    <section
-      className="mb-10"
-      style={{
-        display: "grid",
-        gridTemplateColumns: isDesktop
-          ? "repeat(4, 1fr)"
-          : "repeat(2, 1fr)",
-        gap: 20,
-      }}
-    >
-      <StatCard label="Учні" value="12" hint="3 активні групи" />
-      <StatCard label="Перевірка ДЗ" value="5" hint="робіт чекають" alert />
-      <StatCard label="Годин цього тижня" value="8" hint="4 уроки проведено" />
-      <StatCard label="Заплановано" value="6" hint="3 уроки наступного тижня" />
-    </section>
+    <article className="p-4" style={inset}>
+      <p style={sectionTitle}>{label}</p>
+      <p className="font-serif" style={{ marginTop: 12, fontSize: "2rem", lineHeight: 1, color: tones[tone].color }}>{value}</p>
+      <p style={{ marginTop: 8, fontSize: "0.78rem", color: "rgba(211,205,194,0.66)" }}>{note}</p>
+    </article>
   );
 }
+export default function TeacherCabinetPage() {
+  const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
+  const [query, setQuery] = useState("");
+  const [blocks, setBlocks] = useState<DashboardBlock[]>(defaultBlocks);
+  const [showBlockSettings, setShowBlockSettings] = useState(false);
+  const [students, setStudents] = useState<Student[]>(studentsSeed);
+  const [fileFilter, setFileFilter] = useState<"all" | FileType>("all");
+  const [channelFilter, setChannelFilter] = useState<"all" | MessageChannel>("all");
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1280px)").matches;
+  });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Блок: Уроки сьогодні + Найближчі заняття
-// ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1280px)");
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
-function TodayLessonsBlock({ isDesktop }: { isDesktop: boolean }) {
-  return (
-    <section
-      className="mb-10"
-      style={{
-        display: "grid",
-        gridTemplateColumns: isDesktop ? "1.18fr 0.92fr" : "1fr",
-        gap: 20,
-      }}
-    >
-      {/* Уроки сьогодні */}
-      <article className="p-5 sm:p-6" style={sectionPanel}>
-        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <p style={sectionTitle}>Уроки сьогодні</p>
-          <Link href="/teacher/calendar" style={sectionLink}>
-            Розклад →
-          </Link>
-        </div>
+  const queryNorm = query.trim().toLocaleLowerCase("uk-UA");
 
-        {mockTodayLessons.length === 0 ? (
-          <p style={{ fontSize: "0.84rem", color: "rgba(154,149,141,0.50)", padding: "20px 0" }}>
-            Сьогодні уроків немає
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {mockTodayLessons.map((lesson, index) => (
-              <div
-                key={`today-${index}`}
-                style={{ ...innerRowCard, display: "flex", gap: 14, padding: "12px 16px" }}
-              >
-                <div style={{ minWidth: 60, flexShrink: 0, textAlign: "right" }}>
-                  <p style={{ fontSize: "0.60rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(138,116,68,0.62)" }}>
-                    {lesson.when}
-                  </p>
-                  <p className="font-serif" style={{ fontSize: "0.98rem", color: "rgba(201,169,110,0.82)" }}>
-                    {lesson.time}
-                  </p>
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ fontSize: "0.84rem", color: "rgba(232,228,221,0.86)" }}>
-                    {lesson.title}
-                  </p>
-                  <p style={{ marginTop: 4, fontSize: "0.70rem", color: "rgba(154,149,141,0.58)" }}>
-                    {lesson.sub}
-                  </p>
-                </div>
-                {lesson.soon && (
-                  <span
-                    style={{
-                      ...chipBase,
-                      background: "rgba(52,130,200,0.12)",
-                      color: "rgba(100,170,240,0.86)",
-                      border: "1px solid rgba(52,130,200,0.20)",
-                      height: "fit-content",
-                    }}
-                  >
-                    Скоро
-                  </span>
-                )}
+  const searchResults = useMemo(() => {
+    if (!queryNorm) return [] as SearchResult[];
+
+    const results: SearchResult[] = [];
+    const pushIfMatch = (candidate: SearchResult) => {
+      const text = `${candidate.title} ${candidate.subtitle}`.toLocaleLowerCase("uk-UA");
+      if (text.includes(queryNorm)) results.push(candidate);
+    };
+
+    students.forEach((s) => pushIfMatch({ id: `s-${s.id}`, kind: "Учень", title: s.name, subtitle: `${s.group} · ${s.email}`, section: "students" }));
+    courses.forEach((c) => pushIfMatch({ id: `c-${c.id}`, kind: "Курс", title: c.title, subtitle: c.topic, section: "courses" }));
+    assignments.forEach((a) => pushIfMatch({ id: `a-${a.id}`, kind: "Завдання", title: a.title, subtitle: `${a.target} · ${a.deadline}`, section: "assignments" }));
+    fileLibrary.forEach((f) => pushIfMatch({ id: `f-${f.id}`, kind: "Файл", title: f.name, subtitle: `${f.target} · ${f.updated}`, section: "files" }));
+
+    return results.slice(0, 8);
+  }, [queryNorm, students]);
+
+  const filesShown = useMemo(() => {
+    if (fileFilter === "all") return fileLibrary;
+    return fileLibrary.filter((f) => f.type === fileFilter);
+  }, [fileFilter]);
+
+  const messagesShown = useMemo(() => {
+    if (channelFilter === "all") return messageThreads;
+    return messageThreads.filter((m) => m.channel === channelFilter);
+  }, [channelFilter]);
+
+  const studentsBehind = students.filter((s) => s.progress < 60 || s.status !== "active").length;
+
+  const toggleStudentBlock = (id: string) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        return { ...s, status: s.status === "blocked" ? "active" : "blocked" };
+      }),
+    );
+  };
+
+  const toggleBlock = (id: DashboardBlockId) => {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, visible: !b.visible } : b)));
+  };
+
+  const moveBlock = (id: DashboardBlockId, dir: "up" | "down") => {
+    setBlocks((prev) => {
+      const idx = prev.findIndex((b) => b.id === id);
+      if (idx < 0) return prev;
+      const swapIdx = dir === "up" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+      return next;
+    });
+  };
+
+  const renderDashboardBlock = (b: DashboardBlock) => {
+    if (!b.visible) return null;
+
+    if (b.id === "today") {
+      return (
+        <article key={b.id} className="p-5" style={panel}>
+          <SectionHead title="Уроки сьогодні" text="Онлайн-уроки, Zoom та найближчі заняття" />
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            {todayLessons.map((l) => (
+              <div key={l.id} className="p-3" style={inset}>
+                <p style={{ fontSize: "0.82rem", color: "rgba(229,223,212,0.88)" }}>{l.title}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{l.time} · {l.details}</p>
               </div>
             ))}
           </div>
-        )}
-      </article>
+        </article>
+      );
+    }
 
-      {/* Найближчі заняття */}
-      <article className="p-5 sm:p-6" style={sectionPanel}>
-        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <p style={sectionTitle}>Найближчі заняття</p>
-          <Link href="/teacher/calendar" style={sectionLink}>
-            Всі →
-          </Link>
+    if (b.id === "review") {
+      return (
+        <article key={b.id} className="p-5" style={panel}>
+          <SectionHead title="Перевірка ДЗ" text="Оцінка, коментар, файл-відповідь, зараховано/не зараховано" />
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            {assignments.filter((a) => a.status !== "checked").map((a) => (
+              <div key={a.id} className="p-3" style={inset}>
+                <p style={{ fontSize: "0.82rem", color: "rgba(229,223,212,0.88)" }}>{a.title}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{a.target} · {a.deadline}</p>
+                <p style={{ marginTop: 6, fontSize: "0.70rem", color: "rgba(175,165,149,0.74)" }}>{a.comment}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      );
+    }
+
+    if (b.id === "actions") {
+      return (
+        <article key={b.id} className="p-5" style={panel}>
+          <SectionHead title="Останні дії учнів" text="Активність у курсах, тестах, матеріалах і Zoom" />
+          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+            {feed.map((item) => (
+              <div key={item.id} className="p-3" style={inset}>
+                <p style={{ fontSize: "0.80rem", color: "rgba(229,223,212,0.88)" }}>{item.who} {item.action}</p>
+                <p style={{ marginTop: 4, fontSize: "0.68rem", color: "rgba(175,165,149,0.70)" }}>{item.when}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      );
+    }
+
+    if (b.id === "deadlines") {
+      return (
+        <article key={b.id} className="p-5" style={panel}>
+          <SectionHead title="Дедлайни і нагадування" text="Уроки, тести, ДЗ та календарні події" />
+          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+            {deadlines.map((d) => (
+              <div key={d.id} className="p-3" style={inset}>
+                <p style={{ fontSize: "0.80rem", color: "rgba(229,223,212,0.88)" }}>{d.label}</p>
+                <p style={{ marginTop: 4, fontSize: "0.68rem", color: "rgba(175,165,149,0.70)" }}>{d.date}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      );
+    }
+
+    if (b.id === "hours") {
+      return (
+        <article key={b.id} className="p-5" style={panel}>
+          <SectionHead title="Навантаження по годинах" text="Години поточного і наступного тижня" />
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3,1fr)" : "1fr", gap: 10 }}>
+            <Kpi label="Поточний тиждень" value="11 год" note="6 уроків" tone="green" />
+            <Kpi label="Наступний тиждень" value="14 год" note="8 уроків" tone="blue" />
+            <Kpi label="Баланс" value="+3" note="навантаження зростає" tone="gold" />
+          </div>
+        </article>
+      );
+    }
+
+    return (
+      <article key={b.id} className="p-5" style={panel}>
+        <SectionHead title="Критичні сигнали" text="Відстаючі учні, ручне підтвердження результатів, синхронізації" />
+        <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3,1fr)" : "1fr", gap: 10 }}>
+          <Kpi label="Відстають" value={`${studentsBehind}`} note="потрібен індивідуальний супровід" tone="red" />
+          <Kpi label="Тести на підтвердженні" value="2" note="до внесення в журнал" tone="gold" />
+          <Kpi label="Telegram sync" value="100%" note="доставлено в обидва канали" tone="green" />
         </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {mockUpcomingLessons.map((lesson, index) => (
-            <div
-              key={`upcoming-${index}`}
-              style={{ ...innerRowCard, display: "flex", gap: 14, padding: "12px 16px" }}
-            >
-              <div style={{ minWidth: 60, flexShrink: 0, textAlign: "right" }}>
-                <p style={{ fontSize: "0.60rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(138,116,68,0.62)" }}>
-                  {lesson.when}
-                </p>
-                <p className="font-serif" style={{ fontSize: "0.98rem", color: "rgba(201,169,110,0.82)" }}>
-                  {lesson.time}
-                </p>
-              </div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ fontSize: "0.84rem", color: "rgba(232,228,221,0.86)" }}>
-                  {lesson.title}
-                </p>
-                <p style={{ marginTop: 4, fontSize: "0.70rem", color: "rgba(154,149,141,0.58)" }}>
-                  {lesson.sub}
-                </p>
-              </div>
+      </article>
+    );
+  };
+  const renderSection = () => {
+    if (activeSection === "dashboard") {
+      return (
+        <section className="space-y-4">
+          <article className="p-5 sm:p-6" style={panel}>
+            <SectionHead title="Дашборд" text="Огляд найважливішої інформації без переходу в інші розділи" />
+            <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: isDesktop ? "repeat(5,1fr)" : "repeat(2,minmax(0,1fr))", gap: 10 }}>
+              <Kpi label="Уроки сьогодні" value={`${todayLessons.length}`} note="включно з Zoom" tone="blue" />
+              <Kpi label="Перевірка ДЗ" value={`${assignments.filter((a) => a.status === "submitted").length}`} note="очікують оцінювання" tone="red" />
+              <Kpi label="Учні" value={`${students.length}`} note="в активних і неактивних групах" tone="gold" />
+              <Kpi label="Годин цього тижня" value="11" note="проведено" tone="green" />
+              <Kpi label="Наступний тиждень" value="14" note="заплановано" tone="blue" />
             </div>
+
+            <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+              <button style={button} onClick={() => setShowBlockSettings((v) => !v)}>
+                {showBlockSettings ? "Сховати налаштування" : "Налаштувати блоки"}
+              </button>
+              <span style={{ fontSize: "0.74rem", color: "rgba(176,166,151,0.72)" }}>
+                Блоки можна переставляти і приховувати.
+              </span>
+            </div>
+
+            {showBlockSettings ? (
+              <div className="mt-3 p-3" style={inset}>
+                {blocks.map((b, idx) => (
+                  <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "8px 0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: "0.70rem", color: "rgba(176,166,151,0.72)" }}>{idx + 1}.</span>
+                      <span style={{ fontSize: "0.78rem", color: "rgba(229,223,212,0.84)" }}>{b.label}</span>
+                      {!b.visible ? <span style={chip("gray")}>Приховано</span> : null}
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button style={button} onClick={() => moveBlock(b.id, "up")}>Вгору</button>
+                      <button style={button} onClick={() => moveBlock(b.id, "down")}>Вниз</button>
+                      <button style={button} onClick={() => toggleBlock(b.id)}>{b.visible ? "Сховати" : "Показати"}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </article>
+          {blocks.map((b) => renderDashboardBlock(b))}
+        </section>
+      );
+    }
+
+    if (activeSection === "courses") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Курси" text="Створення, редагування, копіювання, архівація та планування публікації" />
+          <div className="mt-4 overflow-x-auto">
+            <table style={table}>
+              <thead>
+                <tr>
+                  <th style={th}>Курс</th>
+                  <th style={th}>Тема</th>
+                  <th style={th}>Уроків</th>
+                  <th style={th}>Публікація</th>
+                  <th style={th}>Статус</th>
+                </tr>
+              </thead>
+              <tbody>
+                {courses.map((c) => (
+                  <tr key={c.id} style={row}>
+                    <td style={td}>{c.title}</td>
+                    <td style={td}>{c.topic}</td>
+                    <td style={td}>{c.lessons}</td>
+                    <td style={td}>{c.publishAt}</td>
+                    <td style={td}><span style={chip(statusTone[c.status])}>{c.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    }
+
+    if (activeSection === "lessons") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Уроки" text="Текст, фото, відео, файли, тести, ДЗ, Zoom, презентації, зовнішні джерела" />
+          <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <span style={chip("gray")}>PDF вбудовано в LMS</span>
+            <span style={chip("gray")}>Презентації вбудовано в LMS</span>
+            <span style={chip("gray")}>YouTube авто-вбудування</span>
+            <span style={chip("gray")}>Статуси: чернетка / заплановано / опубліковано / приховано / архів</span>
+          </div>
+        </section>
+      );
+    }
+
+    if (activeSection === "groups") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Групи" text="Ручне створення, запрошення за кодом/посиланням, призначення курсів і тестів" />
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3,1fr)" : "1fr", gap: 10 }}>
+            {["Група А", "Група Б", "Індивідуальні"].map((g, i) => (
+              <article key={g} className="p-4" style={inset}>
+                <p style={{ fontSize: "0.84rem", color: "rgba(229,223,212,0.88)" }}>{g}</p>
+                <p style={{ marginTop: 6, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>Код: HIST-{i + 1}-2026</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>Призначено: курси, уроки, завдання, тести</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    if (activeSection === "students") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Учні" text="Картки, блокування доступу, історія входу, внутрішні примітки (непублічні)" />
+          <div className="mt-4 overflow-x-auto">
+            <table style={table}>
+              <thead>
+                <tr>
+                  <th style={th}>Учень</th>
+                  <th style={th}>Контакти</th>
+                  <th style={th}>Група</th>
+                  <th style={th}>Статус</th>
+                  <th style={th}>Останній вхід</th>
+                  <th style={th}>Внутрішня нотатка</th>
+                  <th style={th}>Дія</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((s) => (
+                  <tr key={s.id} style={row}>
+                    <td style={td}>{s.name}<br /><span style={{ fontSize: "0.68rem", color: "rgba(175,165,149,0.74)" }}>{s.telegram}</span></td>
+                    <td style={td}>{s.phone}<br />{s.email}</td>
+                    <td style={td}>{s.group}</td>
+                    <td style={td}><span style={chip(statusTone[s.status])}>{s.status}</span></td>
+                    <td style={td}>{s.lastLogin}</td>
+                    <td style={td}>{s.note}</td>
+                    <td style={td}><button style={button} onClick={() => toggleStudentBlock(s.id)}>{s.status === "blocked" ? "Розблокувати" : "Заблокувати"}</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    }
+
+    if (activeSection === "assignments") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Завдання" text="Призначення групі/учню, перевірка, оцінювання, шаблони та дедлайни" />
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            {assignments.map((a) => (
+              <article key={a.id} className="p-4" style={inset}>
+                <p style={{ fontSize: "0.84rem", color: "rgba(229,223,212,0.88)" }}>{a.title}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{a.target} · {a.deadline}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{a.comment}</p>
+                <span style={{ ...chip(statusTone[a.status]), marginTop: 8 }}>{a.status}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    if (activeSection === "tests") {
+      return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Тести" text="Імпорт із zno.osvita.ua, налаштування спроб/часу/відповідей, авто або ручне внесення в журнал" /></section>;
+    }
+
+    if (activeSection === "gradebook") {
+      return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Журнал оцінок" text="Оцінки по ДЗ, тестах і темах, середній бал, фільтри, Excel-експорт" /></section>;
+    }
+
+    if (activeSection === "attendance") {
+      return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Відвідуваність" text="Присутній/відсутній, причини, редагування заднім числом, Excel-експорт" /></section>;
+    }
+
+    if (activeSection === "analytics") {
+      return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Аналітика" text="Середній бал, виконання завдань, відвідуваність, прогрес, хто відстає і хто найкращий" /></section>;
+    }
+
+    if (activeSection === "messages") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Повідомлення / чат" text="Листування з учнями і групами, LMS + Telegram, статуси отримано/відкрито/Zoom" />
+          <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button style={button} onClick={() => setChannelFilter("all")}>Усі</button>
+            <button style={button} onClick={() => setChannelFilter("lms")}>LMS</button>
+            <button style={button} onClick={() => setChannelFilter("telegram")}>Telegram</button>
+          </div>
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            {messagesShown.map((m) => (
+              <article key={m.id} className="p-4" style={inset}>
+                <p style={{ fontSize: "0.82rem", color: "rgba(229,223,212,0.88)" }}>{m.target} · {m.channel.toUpperCase()}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{m.text}</p>
+                <p style={{ marginTop: 4, fontSize: "0.68rem", color: "rgba(175,165,149,0.70)" }}>{m.status} · {m.time}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    if (activeSection === "files") {
+      return (
+        <section className="p-5 sm:p-6" style={panel}>
+          <SectionHead title="Файли / матеріали" text="PDF, презентації, методички, фільтри по групі/учню/типу, редагування і видалення" />
+          <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button style={button} onClick={() => setFileFilter("all")}>Усі</button>
+            <button style={button} onClick={() => setFileFilter("pdf")}>PDF</button>
+            <button style={button} onClick={() => setFileFilter("presentation")}>Презентації</button>
+            <button style={button} onClick={() => setFileFilter("doc")}>Методички</button>
+            <button style={button} onClick={() => setFileFilter("video")}>Відео</button>
+          </div>
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            {filesShown.map((f) => (
+              <article key={f.id} className="p-4" style={inset}>
+                <p style={{ fontSize: "0.82rem", color: "rgba(229,223,212,0.88)" }}>{f.name}</p>
+                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{f.type} · {f.target} · {f.updated}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    if (activeSection === "calendar") return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Календар / розклад" text="Онлайн-уроки, дедлайни, заплановані заняття, нагадування" /></section>;
+    if (activeSection === "drafts") return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Чернетки" text="Окремий розділ для уроків, курсів, завдань і повідомлень із продовженням з того ж місця" /></section>;
+    if (activeSection === "archive") return <section className="p-5 sm:p-6" style={panel}><SectionHead title="Архів" text="Відновлення або остаточне видалення після одного підтвердження" /></section>;
+
+    return (
+      <section className="p-5 sm:p-6" style={panel}>
+        <SectionHead title="Налаштування" text="Профіль, логін/пароль, Telegram-інтеграція, шаблони, сповіщення, зовнішні інтеграції" />
+        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <span style={chip("green")}>Telegram підключено</span>
+          <span style={chip("green")}>Zoom активний</span>
+          <span style={chip("gold")}>Імпорт тестів потребує технічної/правової оцінки</span>
+        </div>
+      </section>
+    );
+  };
+
+  const activeMeta = sections.find((s) => s.key === activeSection);
+
+  return (
+    <div className="mx-auto w-full px-4 pb-14 pt-4 sm:px-6 lg:px-8" style={{ maxWidth: `${PAGE_MAX_WIDTH}px` }}>
+      <section className="mb-6 p-5 sm:p-6" style={{ ...panel, background: "linear-gradient(180deg, rgba(201,169,110,0.10) 0%, rgba(16,13,14,0.96) 100%)" }}>
+        <p style={{ ...sectionTitle, letterSpacing: "0.30em" }}>Кабінет вчителя</p>
+        <h1 className="font-serif" style={{ marginTop: 10, fontSize: isDesktop ? "2.3rem" : "1.8rem", color: "rgba(245,239,230,0.96)" }}>LMS з історії України</h1>
+        <p style={{ marginTop: 8, maxWidth: 820, fontSize: "0.86rem", color: "rgba(224,216,205,0.74)" }}>Єдиний робочий простір: курси, уроки, групи, учні, завдання, тести, журнал, відвідуваність, аналітика, LMS+Telegram, Zoom, файли, календар, чернетки, архів, налаштування.</p>
+        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button style={button} onClick={() => setActiveSection("courses")}>+ Курс</button>
+          <button style={button} onClick={() => setActiveSection("lessons")}>+ Урок</button>
+          <button style={button} onClick={() => setActiveSection("assignments")}>+ Завдання</button>
+          <button style={button} onClick={() => setActiveSection("calendar")}>Календар</button>
+        </div>
+      </section>
+      <section className="mb-6 p-5 sm:p-6" style={panel}>
+        <p style={sectionTitle}>Глобальний пошук</p>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Учні, курси, завдання, файли"
+          style={{
+            marginTop: 8,
+            width: "100%",
+            minHeight: 42,
+            borderRadius: 12,
+            border: "1px solid rgba(201,169,110,0.22)",
+            background: "rgba(11,10,11,0.72)",
+            color: "rgba(235,230,223,0.90)",
+            padding: "0 12px",
+            fontSize: "0.82rem",
+          }}
+        />
+
+        {queryNorm ? (
+          <div className="mt-3 p-3" style={inset}>
+            <p style={sectionTitle}>Результати</p>
+            {searchResults.length ? (
+              <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+                {searchResults.map((r) => (
+                  <button key={r.id} onClick={() => setActiveSection(r.section)} style={{ textAlign: "left", ...button }}>
+                    {r.kind}: {r.title}
+                    <div style={{ fontSize: "0.66rem", color: "rgba(170,160,146,0.70)" }}>{r.subtitle}</div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p style={{ marginTop: 8, fontSize: "0.74rem", color: "rgba(170,160,146,0.70)" }}>Нічого не знайдено</p>
+            )}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="mb-6 p-4 sm:p-5" style={panel}>
+        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
+          <div style={{ display: "inline-flex", gap: 8, minWidth: "max-content" }}>
+            {sections.map((s) => {
+              const active = s.key === activeSection;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setActiveSection(s.key)}
+                  style={{ ...button, border: active ? "1px solid rgba(201,169,110,0.42)" : button.border, background: active ? "rgba(201,169,110,0.14)" : button.background, color: active ? "rgba(230,202,148,0.95)" : button.color }}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <p style={{ marginTop: 10, fontSize: "0.78rem", color: "rgba(175,165,149,0.74)" }}>{activeMeta?.note}</p>
+      </section>
+
+      {renderSection()}
+
+      <section className="mt-6 p-5" style={panel}>
+        <SectionHead title="Критерії готовності (чекліст)" text="MVP-контроль відповідності ТЗ" />
+        <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {quickReadiness.map((item) => (
+            <span key={item} style={chip("gray")}>{item}</span>
           ))}
         </div>
-      </article>
-    </section>
+      </section>
+    </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Блок: Роботи на перевірку
-// ─────────────────────────────────────────────────────────────────────────────
+const table: CSSProperties = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: "0 8px",
+};
 
-function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
-  return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
-      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={{ ...sectionTitle, display: "flex", alignItems: "center", gap: 8 }}>
-          <span>Роботи на перевірку</span>
-          <span
-            style={{
-              fontSize: "0.58rem",
-              background: "rgba(192,57,43,0.16)",
-              color: "#e67464",
-              border: "1px solid rgba(192,57,43,0.26)",
-              borderRadius: 999,
-              padding: "2px 8px",
-            }}
-          >
-            {mockWorks.length}
-          </span>
-        </p>
-        <Link href="/teacher/assignments" style={sectionLink}>
-          Всі →
-        </Link>
-      </div>
+const th: CSSProperties = {
+  textAlign: "left",
+  padding: "0 12px",
+  fontSize: "0.64rem",
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  color: "rgba(165,145,103,0.78)",
+  fontWeight: 500,
+};
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isDesktop
-            ? "repeat(3, 1fr)"
-            : "repeat(1, 1fr)",
-          gap: 16,
-        }}
-      >
-        {mockWorks.slice(0, 6).map((work, index) => (
-          <Link
-            key={`work-${index}`}
-            href="/teacher/assignments"
-            style={{
-              ...innerRowCard,
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              padding: 20,
-              minHeight: 160,
-              textDecoration: "none",
-              transition: "all 0.2s",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={avatarBase}>{work.initials}</div>
-              <span style={{ fontSize: "0.84rem", fontWeight: 500, color: "rgba(232,228,221,0.86)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {work.name}
-              </span>
-            </div>
+const row: CSSProperties = {
+  background: "rgba(23,19,17,0.72)",
+};
 
-            <p style={{ fontSize: "0.75rem", color: "rgba(154,149,141,0.62)" }}>
-              {work.lesson}
-            </p>
-
-            <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span
-                style={{
-                  ...chipBase,
-                  background: "rgba(220,170,60,0.10)",
-                  color: "rgba(220,170,60,0.84)",
-                  border: "1px solid rgba(220,170,60,0.18)",
-                }}
-              >
-                Чекає
-              </span>
-              <span style={{ fontSize: "0.66rem", color: "rgba(154,149,141,0.44)" }}>
-                {work.ago}
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Блок: Активність учнів (прогрес)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function StudentActivityBlock() {
-  return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
-      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={sectionTitle}>Активність учнів</p>
-        <Link href="/teacher/students" style={sectionLink}>
-          Всі →
-        </Link>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {mockStudents.map((student) => (
-          <div
-            key={student.name}
-            style={{
-              ...innerRowCard,
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: 14,
-              padding: "12px 16px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 200 }}>
-              <div style={avatarBase}>{student.initials}</div>
-              <p style={{ fontSize: "0.85rem", color: "rgba(232,228,221,0.84)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {student.name}
-              </p>
-            </div>
-
-            <div style={{ display: "flex", flex: 1, alignItems: "center", gap: 12, minWidth: 120 }}>
-              <div style={{ height: 4, flex: 1, overflow: "hidden", borderRadius: 9999, background: "rgba(255,255,255,0.06)" }}>
-                <div
-                  style={{
-                    width: `${student.progress}%`,
-                    height: "100%",
-                    background:
-                      student.status === "active"
-                        ? "rgba(201,169,110,0.64)"
-                        : "rgba(220,80,60,0.56)",
-                    borderRadius: 9999,
-                  }}
-                />
-              </div>
-              <span style={{ width: 36, textAlign: "right", fontSize: "0.72rem", color: "rgba(154,149,141,0.64)" }}>
-                {student.progress}%
-              </span>
-            </div>
-
-            <span
-              style={{
-                ...chipBase,
-                background:
-                  student.status === "active"
-                    ? "rgba(52,168,83,0.12)"
-                    : "rgba(220,80,60,0.12)",
-                color:
-                  student.status === "active"
-                    ? "rgba(52,168,83,0.86)"
-                    : "rgba(220,80,60,0.88)",
-                border:
-                  student.status === "active"
-                    ? "1px solid rgba(52,168,83,0.20)"
-                    : "1px solid rgba(220,80,60,0.20)",
-                width: "fit-content",
-              }}
-            >
-              {student.status === "active" ? "Активний" : "Відстає"}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Блок: Останні дії учнів
-// ─────────────────────────────────────────────────────────────────────────────
-
-function RecentActionsBlock() {
-  return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
-      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={sectionTitle}>Останні дії учнів</p>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {mockRecentActions.map((item, index) => (
-          <div
-            key={`action-${index}`}
-            style={{
-              ...innerRowCard,
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              padding: "10px 16px",
-            }}
-          >
-            <div style={avatarBase}>{item.initials}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: "0.82rem", color: "rgba(232,228,221,0.80)" }}>
-                <span style={{ fontWeight: 500 }}>{item.name}</span>
-                {" "}
-                <span style={{ color: "rgba(154,149,141,0.64)" }}>{item.action}</span>
-              </p>
-            </div>
-            <span style={{ fontSize: "0.66rem", color: "rgba(154,149,141,0.44)", flexShrink: 0 }}>
-              {item.time}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Блок: Нагадування й дедлайни
-// ─────────────────────────────────────────────────────────────────────────────
-
-function DeadlinesBlock() {
-  const typeLabels: Record<Deadline["type"], string> = {
-    assignment: "ДЗ",
-    test: "Тест",
-    lesson: "Урок",
-    reminder: "Нагадування",
-  };
-
-  const typeColors: Record<Deadline["type"], { bg: string; color: string; border: string }> = {
-    assignment: {
-      bg: "rgba(220,170,60,0.10)",
-      color: "rgba(220,170,60,0.84)",
-      border: "1px solid rgba(220,170,60,0.18)",
-    },
-    test: {
-      bg: "rgba(52,130,200,0.10)",
-      color: "rgba(100,170,240,0.84)",
-      border: "1px solid rgba(52,130,200,0.18)",
-    },
-    lesson: {
-      bg: "rgba(52,168,83,0.10)",
-      color: "rgba(52,168,83,0.84)",
-      border: "1px solid rgba(52,168,83,0.18)",
-    },
-    reminder: {
-      bg: "rgba(201,169,110,0.08)",
-      color: "rgba(201,169,110,0.70)",
-      border: "1px solid rgba(201,169,110,0.14)",
-    },
-  };
-
-  return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
-      <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={sectionTitle}>Нагадування й дедлайни</p>
-        <Link href="/teacher/calendar" style={sectionLink}>
-          Календар →
-        </Link>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {mockDeadlines.map((item, index) => {
-          const tc = typeColors[item.type];
-          return (
-            <div
-              key={`deadline-${index}`}
-              style={{
-                ...innerRowCard,
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                padding: "12px 16px",
-              }}
-            >
-              <div
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 10,
-                  background: tc.bg,
-                  border: tc.border,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <DeadlineIcon type={item.type} />
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: "0.84rem", color: "rgba(232,228,221,0.84)" }}>
-                  {item.title}
-                </p>
-                {item.group && (
-                  <p style={{ marginTop: 2, fontSize: "0.70rem", color: "rgba(154,149,141,0.52)" }}>
-                    {item.group}
-                  </p>
-                )}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                <span
-                  style={{
-                    ...chipBase,
-                    background: tc.bg,
-                    color: tc.color,
-                    border: tc.border,
-                  }}
-                >
-                  {typeLabels[item.type]}
-                </span>
-                <span style={{ fontSize: "0.70rem", color: "rgba(154,149,141,0.58)" }}>
-                  {item.date}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
+const td: CSSProperties = {
+  padding: "12px",
+  fontSize: "0.74rem",
+  color: "rgba(217,210,198,0.82)",
+  verticalAlign: "top",
+};
