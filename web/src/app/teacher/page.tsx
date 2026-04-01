@@ -357,20 +357,27 @@ export default function TeacherDashboard() {
       case "pendingReview":
         return <PendingReviewBlock key="pendingReview" isDesktop={isDesktop} works={works} />;
       case "studentActivity":
-        return <StudentActivityBlock key="studentActivity" />;
+        return <StudentActivityBlock key="studentActivity" isDesktop={isDesktop} />;
       case "recentActions":
-        return <RecentActionsBlock key="recentActions" />;
+        return <RecentActionsBlock key="recentActions" isDesktop={isDesktop} />;
       case "deadlines":
-        return <DeadlinesBlock key="deadlines" />;
+        return <DeadlinesBlock key="deadlines" isDesktop={isDesktop} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="mx-auto w-full" style={{ maxWidth: `${pageMaxWidth}px` }}>
+    <div
+      className="mx-auto w-full"
+      style={{
+        maxWidth: `${pageMaxWidth}px`,
+        height: isDesktop ? "calc(100vh - 24px)" : "auto",
+        overflow: "hidden",
+      }}
+    >
       {/* Hero */}
-      <section className="mb-10 p-6 sm:p-7 lg:p-8" style={heroPanel}>
+      <section className="mb-4 p-5 sm:p-6 lg:p-6" style={heroPanel}>
         <div
           style={{
             display: "flex",
@@ -580,7 +587,15 @@ export default function TeacherDashboard() {
       </section>
 
       {/* Блоки в порядку користувача */}
-      {blocks.map((block) => renderBlock(block))}
+      <div
+        style={{
+          height: isDesktop ? "calc(100vh - 300px)" : "auto",
+          overflowY: isDesktop ? "auto" : "visible",
+          paddingRight: isDesktop ? 6 : 0,
+        }}
+      >
+        {blocks.map((block) => renderBlock(block))}
+      </div>
     </div>
   );
 }
@@ -592,13 +607,13 @@ export default function TeacherDashboard() {
 function StatsBlock({ isDesktop }: { isDesktop: boolean }) {
   return (
     <section
-      className="mb-10"
+      className="mb-4 lg:mb-5"
       style={{
         display: "grid",
         gridTemplateColumns: isDesktop
           ? "repeat(4, 1fr)"
           : "repeat(2, 1fr)",
-        gap: 20,
+        gap: isDesktop ? 12 : 20,
       }}
     >
       <StatCard label="Учні" value="12" hint="3 активні групи" />
@@ -616,15 +631,15 @@ function StatsBlock({ isDesktop }: { isDesktop: boolean }) {
 function TodayLessonsBlock({ isDesktop }: { isDesktop: boolean }) {
   return (
     <section
-      className="mb-10"
+      className="mb-4 lg:mb-5"
       style={{
         display: "grid",
         gridTemplateColumns: isDesktop ? "1.18fr 0.92fr" : "1fr",
-        gap: 20,
+        gap: isDesktop ? 12 : 20,
       }}
     >
       {/* Уроки сьогодні */}
-      <article className="p-5 sm:p-6" style={sectionPanel}>
+      <article className="p-4 sm:p-5" style={sectionPanel}>
         <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <p style={sectionTitle}>Уроки сьогодні</p>
           <Link href="/teacher/calendar" style={sectionLink}>
@@ -679,7 +694,7 @@ function TodayLessonsBlock({ isDesktop }: { isDesktop: boolean }) {
       </article>
 
       {/* Найближчі заняття */}
-      <article className="p-5 sm:p-6" style={sectionPanel}>
+      <article className="p-4 sm:p-5" style={sectionPanel}>
         <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <p style={sectionTitle}>Найближчі заняття</p>
           <Link href="/teacher/calendar" style={sectionLink}>
@@ -729,7 +744,7 @@ function PendingReviewBlock({
   works: TeacherAssignment[];
 }) {
   return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+    <section className="mb-4 lg:mb-5 p-4 sm:p-5" style={sectionPanel}>
       <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <p style={{ ...sectionTitle, display: "flex", alignItems: "center", gap: 8 }}>
           <span>Роботи на перевірку</span>
@@ -760,7 +775,7 @@ function PendingReviewBlock({
           gap: 16,
         }}
       >
-        {works.slice(0, 6).map((work) => (
+        {works.slice(0, isDesktop ? 3 : 6).map((work) => (
           <Link
             key={work.id}
             href="/teacher/assignments"
@@ -812,9 +827,9 @@ function PendingReviewBlock({
 // Блок: Активність учнів (прогрес)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function StudentActivityBlock() {
+function StudentActivityBlock({ isDesktop }: { isDesktop: boolean }) {
   return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+    <section className="mb-4 lg:mb-5 p-4 sm:p-5" style={sectionPanel}>
       <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <p style={sectionTitle}>Активність учнів</p>
         <Link href="/teacher/students" style={sectionLink}>
@@ -823,7 +838,7 @@ function StudentActivityBlock() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {mockStudents.map((student) => (
+        {mockStudents.slice(0, isDesktop ? 4 : mockStudents.length).map((student) => (
           <div
             key={student.name}
             style={{
@@ -892,15 +907,15 @@ function StudentActivityBlock() {
 // Блок: Останні дії учнів
 // ─────────────────────────────────────────────────────────────────────────────
 
-function RecentActionsBlock() {
+function RecentActionsBlock({ isDesktop }: { isDesktop: boolean }) {
   return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+    <section className="mb-4 lg:mb-5 p-4 sm:p-5" style={sectionPanel}>
       <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <p style={sectionTitle}>Останні дії учнів</p>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {mockRecentActions.map((item, index) => (
+        {mockRecentActions.slice(0, isDesktop ? 3 : mockRecentActions.length).map((item, index) => (
           <div
             key={`action-${index}`}
             style={{
@@ -933,7 +948,7 @@ function RecentActionsBlock() {
 // Блок: Нагадування й дедлайни
 // ─────────────────────────────────────────────────────────────────────────────
 
-function DeadlinesBlock() {
+function DeadlinesBlock({ isDesktop }: { isDesktop: boolean }) {
   const typeLabels: Record<Deadline["type"], string> = {
     assignment: "ДЗ",
     test: "Тест",
@@ -965,7 +980,7 @@ function DeadlinesBlock() {
   };
 
   return (
-    <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
+    <section className="mb-4 lg:mb-5 p-4 sm:p-5" style={sectionPanel}>
       <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <p style={sectionTitle}>Нагадування й дедлайни</p>
         <Link href="/teacher/calendar" style={sectionLink}>
@@ -974,7 +989,7 @@ function DeadlinesBlock() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {mockDeadlines.map((item, index) => {
+        {mockDeadlines.slice(0, isDesktop ? 3 : mockDeadlines.length).map((item, index) => {
           const tc = typeColors[item.type];
           return (
             <div
