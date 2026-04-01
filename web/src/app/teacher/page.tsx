@@ -2,6 +2,12 @@
 
 import { useState, useEffect, type CSSProperties } from "react";
 import Link from "next/link";
+import {
+  defaultTeacherAssignments,
+  formatTimeAgo,
+  readTeacherAssignments,
+  type TeacherAssignment,
+} from "@/lib/teacher/assignments";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Типи
@@ -20,13 +26,6 @@ type Lesson = {
   title: string;
   sub: string;
   soon?: boolean;
-};
-
-type Work = {
-  initials: string;
-  name: string;
-  lesson: string;
-  ago: string;
 };
 
 type Deadline = {
@@ -103,14 +102,6 @@ const mockUpcomingLessons: Lesson[] = [
     title: "Група А — Гетьманщина",
     sub: "4 учні · Zoom",
   },
-];
-
-const mockWorks: Work[] = [
-  { initials: "ДК", name: "Дмитро Коваль", lesson: "Урок 3 · Козацька держава", ago: "2 год тому" },
-  { initials: "АС", name: "Аліна Савченко", lesson: "Урок 2 · Київська Русь", ago: "вчора" },
-  { initials: "МП", name: "Максим Петренко", lesson: "Урок 4 · УНР та ЗУНР", ago: "3 дні тому" },
-  { initials: "ІБ", name: "Ірина Бондар", lesson: "Урок 1 · Вступ", ago: "тиждень тому" },
-  { initials: "НЛ", name: "Настя Лисенко", lesson: "Урок 3 · Козацька держава", ago: "4 дні тому" },
 ];
 
 const mockDeadlines: Deadline[] = [
@@ -312,10 +303,22 @@ function StatCard({
 export default function TeacherDashboard() {
   const [blocks, setBlocks] = useState<BlockConfig[]>(defaultBlocks);
   const [showSettings, setShowSettings] = useState(false);
+  const [works, setWorks] = useState<TeacherAssignment[]>(defaultTeacherAssignments);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return true;
     return window.matchMedia("(min-width: 1280px)").matches;
   });
+
+  useEffect(() => {
+    const syncAssignments = () => setWorks(readTeacherAssignments());
+    syncAssignments();
+    window.addEventListener("teacher-assignments-updated", syncAssignments);
+    window.addEventListener("storage", syncAssignments);
+    return () => {
+      window.removeEventListener("teacher-assignments-updated", syncAssignments);
+      window.removeEventListener("storage", syncAssignments);
+    };
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1280px)");
@@ -352,7 +355,7 @@ export default function TeacherDashboard() {
       case "todayLessons":
         return <TodayLessonsBlock key="todayLessons" isDesktop={isDesktop} />;
       case "pendingReview":
-        return <PendingReviewBlock key="pendingReview" isDesktop={isDesktop} />;
+        return <PendingReviewBlock key="pendingReview" isDesktop={isDesktop} works={works} />;
       case "studentActivity":
         return <StudentActivityBlock key="studentActivity" />;
       case "recentActions":
@@ -718,7 +721,13 @@ function TodayLessonsBlock({ isDesktop }: { isDesktop: boolean }) {
 // Блок: Роботи на перевірку
 // ─────────────────────────────────────────────────────────────────────────────
 
-function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
+function PendingReviewBlock({
+  isDesktop,
+  works,
+}: {
+  isDesktop: boolean;
+  works: TeacherAssignment[];
+}) {
   return (
     <section className="mb-10 p-5 sm:p-6" style={sectionPanel}>
       <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -734,7 +743,7 @@ function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
               padding: "2px 8px",
             }}
           >
-            {mockWorks.length}
+            {works.length}
           </span>
         </p>
         <Link href="/teacher/assignments" style={sectionLink}>
@@ -751,9 +760,9 @@ function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
           gap: 16,
         }}
       >
-        {mockWorks.slice(0, 6).map((work, index) => (
+        {works.slice(0, 6).map((work) => (
           <Link
-            key={`work-${index}`}
+            key={work.id}
             href="/teacher/assignments"
             style={{
               ...innerRowCard,
@@ -767,9 +776,9 @@ function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={avatarBase}>{work.initials}</div>
+              <div style={avatarBase}>{work.studentInitials}</div>
               <span style={{ fontSize: "0.84rem", fontWeight: 500, color: "rgba(232,228,221,0.86)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {work.name}
+                {work.studentName}
               </span>
             </div>
 
@@ -789,7 +798,7 @@ function PendingReviewBlock({ isDesktop }: { isDesktop: boolean }) {
                 Чекає
               </span>
               <span style={{ fontSize: "0.66rem", color: "rgba(154,149,141,0.44)" }}>
-                {work.ago}
+                {formatTimeAgo(work.submittedAt)}
               </span>
             </div>
           </Link>
