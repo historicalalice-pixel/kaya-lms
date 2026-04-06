@@ -2,6 +2,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 type SectionKey =
   | "dashboard"
@@ -442,6 +444,17 @@ export default function TeacherCabinetPage() {
   const [newStudentTelegram, setNewStudentTelegram] = useState("");
   const [newStudentNote, setNewStudentNote] = useState("");
   const [newStudentGroupId, setNewStudentGroupId] = useState("");
+  const [userRole, setUserRole] = useState<string | null>(null);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        supabase.from("profiles").select("role").eq("id", data.user.id).single().then(({ data: profile }) => {
+          setUserRole(profile?.role ?? null);
+        });
+      }
+    });
+  }, []);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return true;
     return window.matchMedia("(min-width: 1280px)").matches;
@@ -1411,10 +1424,29 @@ export default function TeacherCabinetPage() {
               Натисніть «Меню розділів», щоб перейти до потрібного блоку.
             </p>
           )}
+       {userRole === "admin" && (
+            <Link
+              href="/dashboard"
+              style={{
+                display: "block",
+                marginTop: 16,
+                padding: "10px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(201,169,110,0.18)",
+                background: "rgba(201,169,110,0.06)",
+                fontSize: "0.76rem",
+                color: "rgba(226,201,146,0.85)",
+                textDecoration: "none",
+                textAlign: "center",
+                letterSpacing: "0.12em",
+              }}
+            >
+              Перейти в кабінет учня
+            </Link>
+          )}
         </aside>
 
         <div className="space-y-6">
-          {renderSection()}
 
           <section className="p-5" style={panel}>
             <SectionHead title="Критерії готовності (чекліст)" text="MVP-контроль відповідності ТЗ" />
