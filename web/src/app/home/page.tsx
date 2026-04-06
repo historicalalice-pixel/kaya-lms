@@ -227,6 +227,7 @@ export default function HomePage() {
   const starfieldRef = useRef<HTMLDivElement>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -258,11 +259,13 @@ export default function HomePage() {
       const { data, error } = await supabase.auth.getUser();
       if (!error && data.user) {
         setUserEmail(data.user.email ?? null);
-        const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", data.user.id).single();
+        const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", data.user.id).single();
         setUserName(profile?.full_name ?? null);
+        setUserRole(profile?.role ?? null);
       } else {
         setUserEmail(null);
         setUserName(null);
+        setUserRole(null);
       }
       setAuthLoading(false);
     };
@@ -270,10 +273,11 @@ export default function HomePage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUserEmail(session.user.email ?? null);
-        createClient().from("profiles").select("full_name").eq("id", session.user.id).single().then(({ data: p }) => setUserName(p?.full_name ?? null));
+        createClient().from("profiles").select("full_name, role").eq("id", session.user.id).single().then(({ data: p }) => { setUserName(p?.full_name ?? null); setUserRole(p?.role ?? null); });
       } else {
         setUserEmail(null);
         setUserName(null);
+        setUserRole(null);
       }
       setAuthLoading(false);
     });
@@ -288,6 +292,7 @@ export default function HomePage() {
   }, [mobileMenuOpen]);
 
   const displayName = userName || userEmail;
+  const cabinetHref = (userRole === "teacher" || userRole === "admin") ? "/teacher" : "/dashboard";
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
@@ -307,7 +312,7 @@ export default function HomePage() {
             ) : userEmail ? (
               <>
                 <span className="hidden md:inline font-sans text-[0.85rem] text-[var(--text-dim)] max-w-[180px] truncate">{displayName}</span>
-                <Link href="/dashboard" className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300">Кабінет</Link>
+                <Link href={cabinetHref} className="font-sans text-[0.82rem] tracking-[0.18em] uppercase text-[rgba(245,239,230,0.82)] hover:text-[var(--gold-light)] transition-colors duration-300">Кабінет</Link>
                 <LogoutButton />
               </>
             ) : (
@@ -340,7 +345,7 @@ export default function HomePage() {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
             {userEmail ? (
               <>
-                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-dim)", textDecoration: "none" }}>Кабінет</Link>
+                <Link href={cabinetHref} onClick={() => setMobileMenuOpen(false)} style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-dim)", textDecoration: "none" }}>Кабінет</Link>
                 <LogoutButton />
               </>
             ) : (
