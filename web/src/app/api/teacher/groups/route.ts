@@ -73,3 +73,57 @@ export async function POST(request: Request) {
 
   return NextResponse.json(data, { status: 201 });
 }
+
+export async function PATCH(request: Request) {
+  const { context, response } = await requireTeacherContext();
+  if (response || !context) return response;
+
+  const { supabase, userId } = context;
+  const payload = (await request.json()) as { id?: string; name?: string };
+
+  const id = payload.id?.trim();
+  const name = payload.name?.trim();
+  if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+  if (!name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
+
+  const { data, error } = await supabase
+    .from("teacher_groups")
+    .update({ name })
+    .eq("id", id)
+    .eq("teacher_id", userId)
+    .select("*")
+    .single();
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to update teacher group", details: error.message },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json(data);
+}
+
+export async function DELETE(request: Request) {
+  const { context, response } = await requireTeacherContext();
+  if (response || !context) return response;
+
+  const { supabase, userId } = context;
+  const id = new URL(request.url).searchParams.get("id")?.trim();
+  if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+  const { error } = await supabase
+    .from("teacher_groups")
+    .delete()
+    .eq("id", id)
+    .eq("teacher_id", userId);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to delete teacher group", details: error.message },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
+}
