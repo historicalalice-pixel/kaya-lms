@@ -1,13 +1,17 @@
-import type { ComponentType } from "react";
-import type { DashboardWidgetDefinition, DashboardWidgetProps } from "./dashboard-types";
+import type { DashboardWidgetDefinition } from "./dashboard-types";
 
-// =====================================================
-// Тимчасова заглушка для всіх віджетів
-// На наступному етапі замінимо на реальні компоненти
-// з components/dashboard/widgets/
-// =====================================================
-
-const PlaceholderWidget: ComponentType<DashboardWidgetProps> = () => null;
+import TodayScheduleWidget from "@/components/dashboard/widgets/TodayScheduleWidget";
+import PendingReviewsWidget from "@/components/dashboard/widgets/PendingReviewsWidget";
+import MessagesWidget from "@/components/dashboard/widgets/MessagesWidget";
+import StudentsStatsWidget from "@/components/dashboard/widgets/StudentsStatsWidget";
+import CoursesWidget from "@/components/dashboard/widgets/CoursesWidget";
+import GroupsWidget from "@/components/dashboard/widgets/GroupsWidget";
+import TestsWidget from "@/components/dashboard/widgets/TestsWidget";
+import QuickActionsWidget from "@/components/dashboard/widgets/QuickActionsWidget";
+import AnnouncementsWidget from "@/components/dashboard/widgets/AnnouncementsWidget";
+import RecentActivityWidget from "@/components/dashboard/widgets/RecentActivityWidget";
+import AtRiskStudentsWidget from "@/components/dashboard/widgets/AtRiskStudentsWidget";
+import CalendarWidget from "@/components/dashboard/widgets/CalendarWidget";
 
 // =====================================================
 // Реєстр усіх доступних віджетів
@@ -20,7 +24,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Розклад занять, Zoom-посилання та найближчі уроки",
     defaultSize: "wide",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: TodayScheduleWidget,
   },
   {
     id: "pending_reviews",
@@ -28,7 +32,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Здані роботи, що очікують оцінювання",
     defaultSize: "medium",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: PendingReviewsWidget,
   },
   {
     id: "messages",
@@ -36,7 +40,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Останні повідомлення від учнів і колег",
     defaultSize: "medium",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: MessagesWidget,
   },
   {
     id: "students_stats",
@@ -44,7 +48,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Прогрес, активність і успішність ваших учнів",
     defaultSize: "medium",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: StudentsStatsWidget,
   },
   {
     id: "courses",
@@ -52,7 +56,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Швидкий доступ до ваших курсів",
     defaultSize: "medium",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: CoursesWidget,
   },
   {
     id: "groups",
@@ -60,7 +64,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Огляд активних груп та їхніх учасників",
     defaultSize: "small",
     defaultVisible: false,
-    component: PlaceholderWidget,
+    component: GroupsWidget,
   },
   {
     id: "tests",
@@ -68,7 +72,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Заплановані та активні тести",
     defaultSize: "small",
     defaultVisible: false,
-    component: PlaceholderWidget,
+    component: TestsWidget,
   },
   {
     id: "quick_actions",
@@ -76,7 +80,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Кнопки для частих операцій: створити урок, тест, ДЗ",
     defaultSize: "small",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: QuickActionsWidget,
   },
   {
     id: "announcements",
@@ -84,7 +88,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Важливі повідомлення для учнів і груп",
     defaultSize: "small",
     defaultVisible: false,
-    component: PlaceholderWidget,
+    component: AnnouncementsWidget,
   },
   {
     id: "recent_activity",
@@ -92,7 +96,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Що нещодавно робили ваші учні в курсах",
     defaultSize: "medium",
     defaultVisible: true,
-    component: PlaceholderWidget,
+    component: RecentActivityWidget,
   },
   {
     id: "at_risk_students",
@@ -100,7 +104,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Учні з низькою активністю або відстаючою успішністю",
     defaultSize: "medium",
     defaultVisible: false,
-    component: PlaceholderWidget,
+    component: AtRiskStudentsWidget,
   },
   {
     id: "calendar",
@@ -108,7 +112,7 @@ export const WIDGET_REGISTRY: DashboardWidgetDefinition[] = [
     description: "Найближчі події, дедлайни та зустрічі",
     defaultSize: "wide",
     defaultVisible: false,
-    component: PlaceholderWidget,
+    component: CalendarWidget,
   },
 ];
 
