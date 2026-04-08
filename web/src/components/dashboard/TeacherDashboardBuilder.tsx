@@ -31,6 +31,9 @@ export function TeacherDashboardBuilder() {
       setPersistedLayout(ready);
       setDraftLayout(ready);
     } catch (loadError) {
+      const fallback = buildDefaultLayout();
+      setPersistedLayout(fallback);
+      setDraftLayout(fallback);
       setError(loadError instanceof Error ? loadError.message : "Помилка завантаження дашборду");
     } finally {
       setLoading(false);
