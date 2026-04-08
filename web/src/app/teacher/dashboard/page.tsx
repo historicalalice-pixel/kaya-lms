@@ -1,5 +1,5 @@
 import { TeacherDashboard } from "@/components/dashboard/TeacherDashboard";
 
-export default function TeacherPage() {
+export default function TeacherDashboardPage() {
   return <TeacherDashboard />;
 }

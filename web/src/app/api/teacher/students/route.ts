@@ -130,22 +130,40 @@ export async function PATCH(request: Request) {
   const payload = (await request.json()) as {
     id?: string;
     status?: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    telegram?: string;
+    note?: string;
+    groupId?: string | null;
   };
 
   const id = payload.id?.trim();
-  const status = payload.status?.trim();
 
   if (!id) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  if (!status || !allowedStatuses.has(status)) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  const updates: Record<string, string | null> = {};
+
+  if (typeof payload.status === "string") {
+    const status = payload.status.trim();
+    if (!allowedStatuses.has(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+    updates.status = status;
   }
+
+  if (typeof payload.fullName === "string") updates.full_name = payload.fullName.trim();
+  if (typeof payload.email === "string") updates.email = payload.email.trim().toLowerCase();
+  if (typeof payload.phone === "string") updates.phone = payload.phone.trim() || null;
+  if (typeof payload.telegram === "string") updates.telegram = payload.telegram.trim() || null;
+  if (typeof payload.note === "string") updates.note = payload.note.trim();
+  if (payload.groupId !== undefined) updates.group_id = payload.groupId?.trim() || null;
 
   const { data, error } = await supabase
     .from("teacher_students")
-    .update({ status })
+    .update(updates)
     .eq("id", id)
     .eq("teacher_id", userId)
     .select("*")
@@ -159,4 +177,31 @@ export async function PATCH(request: Request) {
   }
 
   return NextResponse.json(data);
+}
+
+export async function DELETE(request: Request) {
+  const { context, response } = await requireTeacherContext();
+  if (response || !context) return response;
+
+  const { supabase, userId } = context;
+  const id = new URL(request.url).searchParams.get("id")?.trim();
+
+  if (!id) {
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from("teacher_students")
+    .delete()
+    .eq("id", id)
+    .eq("teacher_id", userId);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to delete teacher student", details: error.message },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }
