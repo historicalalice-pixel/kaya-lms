@@ -1,5 +1,4 @@
-﻿
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
@@ -31,7 +30,6 @@ type StudentStatus = "active" | "inactive" | "blocked";
 type AssignmentStatus = "missing" | "submitted" | "checked";
 type FileType = "pdf" | "presentation" | "doc" | "video" | "other";
 type MessageChannel = "lms" | "telegram";
-
 
 type Student = {
   id: string;
@@ -136,8 +134,6 @@ const sections: Array<{ key: SectionKey; label: string; note: string }> = [
   { key: "archive", label: "Архів", note: "Відновлення і видалення" },
   { key: "settings", label: "Налаштування", note: "Профіль та інтеграції" },
 ];
-
-
 
 const tones: Record<Tone, { bg: string; border: string; color: string }> = {
   gold: { bg: "rgba(201,169,110,0.10)", border: "1px solid rgba(201,169,110,0.22)", color: "rgba(230,202,148,0.95)" },
@@ -407,7 +403,6 @@ export default function TeacherCabinetPage() {
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-
   const [students, setStudents] = useState<Student[]>(studentsSeed);
   const [fileFilter, setFileFilter] = useState<"all" | FileType>("all");
   const [channelFilter, setChannelFilter] = useState<"all" | MessageChannel>("all");
@@ -741,10 +736,6 @@ export default function TeacherCabinetPage() {
     }
   };
 
-
-
-
-
   const handleSelectSection = (section: SectionKey) => {
     setActiveSection(section);
     if (!isDesktop) {
@@ -752,15 +743,16 @@ export default function TeacherCabinetPage() {
     }
   };
 
-
   const renderSection = () => {
-if (activeSection === "dashboard") {
+    if (activeSection === "dashboard") {
       return (
         <section className="space-y-4">
           <TeacherDashboardBuilder />
         </section>
       );
     }
+
+
     if (activeSection === "courses") {
       const liveCourses = dbCourses.length
         ? dbCourses.map((c) => ({
