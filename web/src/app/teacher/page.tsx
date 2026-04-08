@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import TeacherDashboardBuilder from "@/components/dashboard/TeacherDashboardBuilder";
 
 type SectionKey =
   | "dashboard"
@@ -28,11 +29,9 @@ type Tone = "gold" | "green" | "blue" | "red" | "gray";
 type CourseStatus = "draft" | "scheduled" | "published" | "hidden" | "archived";
 type StudentStatus = "active" | "inactive" | "blocked";
 type AssignmentStatus = "missing" | "submitted" | "checked";
-type DashboardBlockId = "today" | "review" | "actions" | "deadlines" | "hours" | "alerts";
 type FileType = "pdf" | "presentation" | "doc" | "video" | "other";
 type MessageChannel = "lms" | "telegram";
 
-type DashboardBlock = { id: DashboardBlockId; label: string; visible: boolean };
 
 type Student = {
   id: string;
@@ -138,14 +137,7 @@ const sections: Array<{ key: SectionKey; label: string; note: string }> = [
   { key: "settings", label: "Налаштування", note: "Профіль та інтеграції" },
 ];
 
-const defaultBlocks: DashboardBlock[] = [
-  { id: "today", label: "Уроки сьогодні", visible: true },
-  { id: "review", label: "Перевірка ДЗ", visible: true },
-  { id: "actions", label: "Останні дії учнів", visible: true },
-  { id: "deadlines", label: "Дедлайни й нагадування", visible: true },
-  { id: "hours", label: "Навантаження по годинах", visible: true },
-  { id: "alerts", label: "Критичні сигнали", visible: true },
-];
+
 
 const tones: Record<Tone, { bg: string; border: string; color: string }> = {
   gold: { bg: "rgba(201,169,110,0.10)", border: "1px solid rgba(201,169,110,0.22)", color: "rgba(230,202,148,0.95)" },
@@ -415,8 +407,7 @@ export default function TeacherCabinetPage() {
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [blocks, setBlocks] = useState<DashboardBlock[]>(defaultBlocks);
-  const [showBlockSettings, setShowBlockSettings] = useState(false);
+
   const [students, setStudents] = useState<Student[]>(studentsSeed);
   const [fileFilter, setFileFilter] = useState<"all" | FileType>("all");
   const [channelFilter, setChannelFilter] = useState<"all" | MessageChannel>("all");
@@ -750,21 +741,9 @@ export default function TeacherCabinetPage() {
     }
   };
 
-  const toggleBlock = (id: DashboardBlockId) => {
-    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, visible: !b.visible } : b)));
-  };
 
-  const moveBlock = (id: DashboardBlockId, dir: "up" | "down") => {
-    setBlocks((prev) => {
-      const idx = prev.findIndex((b) => b.id === id);
-      if (idx < 0) return prev;
-      const swapIdx = dir === "up" ? idx - 1 : idx + 1;
-      if (swapIdx < 0 || swapIdx >= prev.length) return prev;
-      const next = [...prev];
-      [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
-      return next;
-    });
-  };
+
+
 
   const handleSelectSection = (section: SectionKey) => {
     setActiveSection(section);
@@ -773,145 +752,15 @@ export default function TeacherCabinetPage() {
     }
   };
 
-  const renderDashboardBlock = (b: DashboardBlock) => {
-    if (!b.visible) return null;
 
-    if (b.id === "today") {
-      return (
-        <article key={b.id} className="p-5" style={panel}>
-          <SectionHead title="Уроки сьогодні" text="Онлайн-уроки, Zoom та найближчі заняття" />
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-            {todayLessons.map((l) => (
-              <div key={l.id} className="p-3" style={inset}>
-                <p style={{ fontSize: "0.82rem", color: "rgba(229,223,212,0.88)" }}>{l.title}</p>
-                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{l.time} · {l.details}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-      );
-    }
-
-    if (b.id === "review") {
-      return (
-        <article key={b.id} className="p-5" style={panel}>
-          <SectionHead title="Перевірка ДЗ" text="Оцінка, коментар, файл-відповідь, зараховано/не зараховано" />
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-            {assignments.filter((a) => a.status !== "checked").map((a) => (
-              <div key={a.id} className="p-3" style={inset}>
-                <p style={{ fontSize: "0.82rem", color: "rgba(229,223,212,0.88)" }}>{a.title}</p>
-                <p style={{ marginTop: 4, fontSize: "0.72rem", color: "rgba(175,165,149,0.74)" }}>{a.target} · {a.deadline}</p>
-                <p style={{ marginTop: 6, fontSize: "0.70rem", color: "rgba(175,165,149,0.74)" }}>{a.comment}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-      );
-    }
-
-    if (b.id === "actions") {
-      return (
-        <article key={b.id} className="p-5" style={panel}>
-          <SectionHead title="Останні дії учнів" text="Активність у курсах, тестах, матеріалах і Zoom" />
-          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-            {feed.map((item) => (
-              <div key={item.id} className="p-3" style={inset}>
-                <p style={{ fontSize: "0.80rem", color: "rgba(229,223,212,0.88)" }}>{item.who} {item.action}</p>
-                <p style={{ marginTop: 4, fontSize: "0.68rem", color: "rgba(175,165,149,0.70)" }}>{item.when}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-      );
-    }
-
-    if (b.id === "deadlines") {
-      return (
-        <article key={b.id} className="p-5" style={panel}>
-          <SectionHead title="Дедлайни і нагадування" text="Уроки, тести, ДЗ та календарні події" />
-          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-            {deadlines.map((d) => (
-              <div key={d.id} className="p-3" style={inset}>
-                <p style={{ fontSize: "0.80rem", color: "rgba(229,223,212,0.88)" }}>{d.label}</p>
-                <p style={{ marginTop: 4, fontSize: "0.68rem", color: "rgba(175,165,149,0.70)" }}>{d.date}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-      );
-    }
-
-    if (b.id === "hours") {
-      return (
-        <article key={b.id} className="p-5" style={panel}>
-          <SectionHead title="Навантаження по годинах" text="Години поточного і наступного тижня" />
-          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3,1fr)" : "1fr", gap: 10 }}>
-            <Kpi label="Поточний тиждень" value="11 год" note="6 уроків" tone="green" />
-            <Kpi label="Наступний тиждень" value="14 год" note="8 уроків" tone="blue" />
-            <Kpi label="Баланс" value="+3" note="навантаження зростає" tone="gold" />
-          </div>
-        </article>
-      );
-    }
-
-    return (
-      <article key={b.id} className="p-5" style={panel}>
-        <SectionHead title="Критичні сигнали" text="Відстаючі учні, ручне підтвердження результатів, синхронізації" />
-        <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: isDesktop ? "repeat(3,1fr)" : "1fr", gap: 10 }}>
-          <Kpi label="Відстають" value={`${studentsBehind}`} note="потрібен індивідуальний супровід" tone="red" />
-          <Kpi label="Тести на підтвердженні" value="2" note="до внесення в журнал" tone="gold" />
-          <Kpi label="Telegram sync" value="100%" note="доставлено в обидва канали" tone="green" />
-        </div>
-      </article>
-    );
-  };
   const renderSection = () => {
-    if (activeSection === "dashboard") {
+if (activeSection === "dashboard") {
       return (
         <section className="space-y-4">
-          <article className="p-5 sm:p-6" style={panel}>
-            <SectionHead title="Дашборд" text="Огляд найважливішої інформації без переходу в інші розділи" />
-            <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: isDesktop ? "repeat(5,1fr)" : "repeat(2,minmax(0,1fr))", gap: 10 }}>
-              <Kpi label="Уроки сьогодні" value={`${todayLessons.length}`} note="включно з Zoom" tone="blue" />
-              <Kpi label="Перевірка ДЗ" value={`${assignments.filter((a) => a.status === "submitted").length}`} note="очікують оцінювання" tone="red" />
-              <Kpi label="Учні" value={`${students.length}`} note="в активних і неактивних групах" tone="gold" />
-              <Kpi label="Годин цього тижня" value="11" note="проведено" tone="green" />
-              <Kpi label="Наступний тиждень" value="14" note="заплановано" tone="blue" />
-            </div>
-
-            <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-              <button style={button} onClick={() => setShowBlockSettings((v) => !v)}>
-                {showBlockSettings ? "Сховати налаштування" : "Налаштувати блоки"}
-              </button>
-              <span style={{ fontSize: "0.74rem", color: "rgba(176,166,151,0.72)" }}>
-                Блоки можна переставляти і приховувати.
-              </span>
-            </div>
-
-            {showBlockSettings ? (
-              <div className="mt-3 p-3" style={inset}>
-                {blocks.map((b, idx) => (
-                  <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "8px 0" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: "0.70rem", color: "rgba(176,166,151,0.72)" }}>{idx + 1}.</span>
-                      <span style={{ fontSize: "0.78rem", color: "rgba(229,223,212,0.84)" }}>{b.label}</span>
-                      {!b.visible ? <span style={chip("gray")}>Приховано</span> : null}
-                    </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button style={button} onClick={() => moveBlock(b.id, "up")}>Вгору</button>
-                      <button style={button} onClick={() => moveBlock(b.id, "down")}>Вниз</button>
-                      <button style={button} onClick={() => toggleBlock(b.id)}>{b.visible ? "Сховати" : "Показати"}</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </article>
-          {blocks.map((b) => renderDashboardBlock(b))}
+          <TeacherDashboardBuilder />
         </section>
       );
     }
-
     if (activeSection === "courses") {
       const liveCourses = dbCourses.length
         ? dbCourses.map((c) => ({
