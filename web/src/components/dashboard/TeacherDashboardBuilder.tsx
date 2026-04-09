@@ -85,6 +85,7 @@ function addWidgetToDraft(
 // =====================================================
 
 export default function TeacherDashboardBuilder() {
+  console.log("[Builder] rendered");
   const [persistedLayout, setPersistedLayout] = useState<DashboardLayout | null>(null);
   const [draftItems, setDraftItems] = useState<DashboardLayoutItem[]>([]);
   const [isEditing, setIsEditing] = useState(false);
