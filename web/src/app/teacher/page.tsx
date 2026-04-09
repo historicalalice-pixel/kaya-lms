@@ -277,6 +277,7 @@ function toLocalStudent(student: DbStudent): Student {
     progress: student.progress ?? 0,
   };
 }
+
 const courses: Course[] = [
   { id: "c1", title: "Історія України: Київська Русь", topic: "Середньовіччя", lessons: 12, status: "published", publishAt: "20.03.2026, 09:00" },
   { id: "c2", title: "Козацька держава", topic: "Ранньомодерний період", lessons: 9, status: "scheduled", publishAt: "02.04.2026, 18:00" },
@@ -341,24 +342,6 @@ const assignments: Assignment[] = [
   { id: "a3", title: "Джерельний аналіз УЦР", target: "Дмитро Коваль", deadline: "28.03.2026, 18:00", status: "checked", comment: "Оцінка виставлена" },
 ];
 
-const todayLessons = [
-  { id: "t1", title: "Група А - Походження Русі", time: "18:00", details: "Zoom, 14 учнів" },
-  { id: "t2", title: "Індивідуально - НМТ симуляція", time: "20:00", details: "LMS + Zoom" },
-];
-
-const deadlines = [
-  { id: "d1", label: "ДЗ: Есе по Русі", date: "Сьогодні, 23:59", type: "assignment" },
-  { id: "d2", label: "Тест: Козаччина", date: "03.04, 18:30", type: "test" },
-  { id: "d3", label: "Zoom-урок: Гетьманщина", date: "31.03, 16:00", type: "lesson" },
-  { id: "d4", label: "Підтвердити оцінки тестів", date: "Завтра, 10:00", type: "reminder" },
-];
-
-const feed = [
-  { id: "f1", who: "Дмитро К.", action: "здав ДЗ", when: "2 год тому" },
-  { id: "f2", who: "Група Б", action: "відкрила Zoom-посилання", when: "5 год тому" },
-  { id: "f3", who: "Аліна С.", action: "пройшла тест на 82%", when: "вчора" },
-];
-
 const fileLibrary: Array<{ id: string; name: string; type: FileType; target: string; updated: string }> = [
   { id: "f1", name: "Презентація: Київська Русь", type: "presentation", target: "Група А", updated: "29.03.2026" },
   { id: "f2", name: "PDF: Джерела козаччини", type: "pdf", target: "Група Б", updated: "28.03.2026" },
@@ -390,15 +373,6 @@ function SectionHead({ title, text }: { title: string; text: string }) {
   );
 }
 
-function Kpi({ label, value, note, tone }: { label: string; value: string; note: string; tone: Tone }) {
-  return (
-    <article className="p-4" style={inset}>
-      <p style={sectionTitle}>{label}</p>
-      <p className="font-serif" style={{ marginTop: 12, fontSize: "2rem", lineHeight: 1, color: tones[tone].color }}>{value}</p>
-      <p style={{ marginTop: 8, fontSize: "0.78rem", color: "rgba(211,205,194,0.66)" }}>{note}</p>
-    </article>
-  );
-}
 export default function TeacherCabinetPage() {
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -431,6 +405,7 @@ export default function TeacherCabinetPage() {
   const [newStudentNote, setNewStudentNote] = useState("");
   const [newStudentGroupId, setNewStudentGroupId] = useState("");
   const [userRole, setUserRole] = useState<string | null>(null);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
@@ -441,13 +416,14 @@ export default function TeacherCabinetPage() {
       }
     });
   }, []);
-  const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.matchMedia("(min-width: 1280px)").matches;
-  });
+
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const media = window.matchMedia("(min-width: 1280px)");
+    setIsDesktop(media.matches);
     const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
@@ -699,8 +675,6 @@ export default function TeacherCabinetPage() {
     return messageThreads.filter((m) => m.channel === channelFilter);
   }, [channelFilter]);
 
-  const studentsBehind = students.filter((s) => s.progress < 60 || s.status !== "active").length;
-
   const toggleStudentBlock = async (id: string) => {
     const dbStudent = dbStudents.find((student) => student.id === id);
 
@@ -751,7 +725,6 @@ export default function TeacherCabinetPage() {
         </section>
       );
     }
-
 
     if (activeSection === "courses") {
       const liveCourses = dbCourses.length
@@ -961,6 +934,7 @@ export default function TeacherCabinetPage() {
         </section>
       );
     }
+
     if (activeSection === "students") {
       const studentsForTable =
         dbStudents.length > 0 ? dbStudents.map((student) => toLocalStudent(student)) : students;
@@ -1148,6 +1122,16 @@ export default function TeacherCabinetPage() {
 
   const activeMeta = sections.find((s) => s.key === activeSection);
 
+  if (!isMounted) {
+    return (
+      <div className="mx-auto w-full px-4 pb-14 pt-4 sm:px-6 lg:px-8" style={{ maxWidth: `${PAGE_MAX_WIDTH}px` }}>
+        <section className="mb-6 p-5 sm:p-6" style={panel}>
+          <p style={sectionTitle}>Завантаження...</p>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full px-4 pb-14 pt-4 sm:px-6 lg:px-8" style={{ maxWidth: `${PAGE_MAX_WIDTH}px` }}>
       <section className="mb-6 p-5 sm:p-6" style={{ ...panel, background: "linear-gradient(180deg, rgba(201,169,110,0.10) 0%, rgba(16,13,14,0.96) 100%)" }}>
@@ -1161,6 +1145,7 @@ export default function TeacherCabinetPage() {
           <button style={button} onClick={() => handleSelectSection("calendar")}>Календар</button>
         </div>
       </section>
+
       <section className="mb-6 p-5 sm:p-6" style={panel}>
         <p style={sectionTitle}>Глобальний пошук</p>
         <input
@@ -1212,7 +1197,14 @@ export default function TeacherCabinetPage() {
         </div>
       </section>
 
-      <section className="mb-6 grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
+      <section
+        className="mb-6"
+        style={{
+          display: "grid",
+          gap: 24,
+          gridTemplateColumns: isDesktop ? "290px minmax(0,1fr)" : "1fr",
+        }}
+      >
         <aside
           className="p-4 sm:p-5"
           style={{
@@ -1265,7 +1257,8 @@ export default function TeacherCabinetPage() {
               Натисніть «Меню розділів», щоб перейти до потрібного блоку.
             </p>
           )}
-       {userRole === "admin" && (
+
+          {userRole === "admin" && (
             <Link
               href="/dashboard"
               style={{
@@ -1288,6 +1281,7 @@ export default function TeacherCabinetPage() {
         </aside>
 
         <div className="space-y-6">
+          {renderSection()}
 
           <section className="p-5" style={panel}>
             <SectionHead title="Критерії готовності (чекліст)" text="MVP-контроль відповідності ТЗ" />
