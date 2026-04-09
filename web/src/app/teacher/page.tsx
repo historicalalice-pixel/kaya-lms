@@ -3,11 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import dynamic from "next/dynamic";
-const TeacherDashboardBuilder = dynamic(
-  () => import("@/components/dashboard/TeacherDashboardBuilder"),
-  { ssr: false }
-);
+import TeacherDashboardBuilder from "@/components/dashboard/TeacherDashboardBuilder";
 
 type SectionKey =
   | "dashboard"
