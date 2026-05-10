@@ -22,7 +22,7 @@ function useBreakpoint(): GridBreakpoint {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const desktopQuery = window.matchMedia("(min-width: 1280px)");
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
     const tabletQuery = window.matchMedia("(min-width: 768px)");
 
     const update = () => {

@@ -227,7 +227,9 @@ export default function DashboardPage() {
 
   // Responsive detection — runs only on client, no SSR mismatch
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
+    // 1024px = Tailwind 'lg'. Catches laptops in 1024–1279 range that
+    // were previously stuck on the mobile layout.
+    const mq = window.matchMedia("(min-width: 1024px)");
     setIsDesktop(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener("change", handler);

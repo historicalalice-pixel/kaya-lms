@@ -422,7 +422,7 @@ export default function TeacherCabinetPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    const media = window.matchMedia("(min-width: 1280px)");
+    const media = window.matchMedia("(min-width: 1024px)");
     setIsDesktop(media.matches);
     const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     media.addEventListener("change", onChange);

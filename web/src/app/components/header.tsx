@@ -2,232 +2,151 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Sheet } from "@/components/ui";
+import { cn } from "@/lib/cn";
+
+type ActivePage = "courses" | "about" | "contacts";
 
 type HeaderProps = {
-  activePage?: "courses" | "about" | "contacts";
+  activePage?: ActivePage;
   showAuth?: boolean;
   logoHref?: string;
 };
 
-export default function Header({ activePage, showAuth = true, logoHref = "/home" }: HeaderProps) {
+const NAV_LINKS: Array<{ href: string; label: string; key: ActivePage }> = [
+  { href: "/courses", label: "Курси", key: "courses" },
+  { href: "/about", label: "Про нас", key: "about" },
+  { href: "/contacts", label: "Контакти", key: "contacts" },
+];
+
+export default function Header({
+  activePage,
+  showAuth = true,
+  logoHref = "/home",
+}: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const navLinks = [
-    { href: "/courses", label: "Курси", key: "courses" },
-    { href: "/about", label: "Про нас", key: "about" },
-    { href: "/contacts", label: "Контакти", key: "contacts" },
-  ];
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <>
       <header className="relative z-20 w-full border-b border-[rgba(201,169,110,0.08)]">
-        <div
-          className="w-full flex items-center justify-between"
-          style={{
-            paddingLeft: "clamp(20px, 5vw, 80px)",
-            paddingRight: "clamp(20px, 5vw, 80px)",
-            paddingTop: "18px",
-            paddingBottom: "18px",
-          }}
-        >
-          {/* LOGO */}
+        <div className="flex w-full items-center justify-between px-[clamp(20px,5vw,80px)] py-[18px]">
+          {/* Logo */}
           <Link
             href={logoHref}
-            className="font-serif text-2xl md:text-3xl tracking-[0.2em] text-[var(--text)] hover:text-[var(--gold-light)] transition-colors duration-300"
+            className="press font-serif text-2xl tracking-[0.2em] text-[var(--text)] transition-colors duration-[var(--dur-popover)] ease-[var(--ease-out)] hover:text-[var(--gold-light)] md:text-3xl"
           >
             KAYA
           </Link>
 
-          {/* DESKTOP NAV */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+          {/* Desktop nav */}
+          <nav className="hidden items-center gap-8 md:flex" aria-label="Основна навігація">
+            {NAV_LINKS.map((link) => (
               <Link
                 key={link.key}
                 href={link.href}
-                className={`nav-link text-[0.85rem] ${
-                  activePage === link.key ? "text-[var(--gold-light)]" : ""
-                }`}
+                aria-current={activePage === link.key ? "page" : undefined}
+                className={cn(
+                  "nav-link text-[0.85rem]",
+                  activePage === link.key && "text-[var(--gold-light)]"
+                )}
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          {/* DESKTOP AUTH */}
-          {showAuth && (
-            <div className="hidden md:flex items-center gap-4">
+          {/* Desktop auth */}
+          {showAuth ? (
+            <div className="hidden items-center gap-4 md:flex">
               <Link href="/login" className="nav-link text-[0.85rem]">
                 Увійти
               </Link>
-              <Link href="/register" className="header-btn text-[0.85rem]">
+              <Link
+                href="/register"
+                className="press header-btn ui-hover text-[0.85rem]"
+              >
                 Реєстрація
               </Link>
             </div>
-          )}
+          ) : null}
 
-          {/* HAMBURGER */}
+          {/* Hamburger — opens Sheet */}
           <button
-            className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-[6px] focus:outline-none"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Меню"
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Відкрити меню"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            className="press flex h-10 w-10 flex-col items-center justify-center gap-[6px] rounded-[10px] border border-transparent text-[var(--gold)] outline-none transition-colors duration-[var(--dur-popover)] ease-[var(--ease-out)] focus-visible:ring-2 focus-visible:ring-[rgba(201,169,110,0.6)] md:hidden"
           >
-            <span
-              style={{
-                display: "block",
-                width: "22px",
-                height: "1px",
-                background: "var(--gold)",
-                transition: "all 0.3s ease",
-                transform: menuOpen ? "translateY(7px) rotate(45deg)" : "none",
-              }}
-            />
-            <span
-              style={{
-                display: "block",
-                width: "22px",
-                height: "1px",
-                background: "var(--gold)",
-                transition: "all 0.3s ease",
-                opacity: menuOpen ? 0 : 1,
-              }}
-            />
-            <span
-              style={{
-                display: "block",
-                width: "22px",
-                height: "1px",
-                background: "var(--gold)",
-                transition: "all 0.3s ease",
-                transform: menuOpen ? "translateY(-7px) rotate(-45deg)" : "none",
-              }}
-            />
+            <span className="block h-px w-[22px] bg-current" aria-hidden="true" />
+            <span className="block h-px w-[22px] bg-current" aria-hidden="true" />
+            <span className="block h-px w-[22px] bg-current" aria-hidden="true" />
           </button>
         </div>
       </header>
 
-      {/* MOBILE MENU OVERLAY */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 50,
-          background: "rgba(10,10,12,0.97)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0",
-          transition: "opacity 0.35s ease, visibility 0.35s ease",
-          opacity: menuOpen ? 1 : 0,
-          visibility: menuOpen ? "visible" : "hidden",
-        }}
+      {/* Mobile menu — Sheet handles focus-trap, ESC, scroll-lock, slide animation */}
+      <Sheet
+        open={menuOpen}
+        onClose={closeMenu}
+        side="right"
+        title="Меню"
+        width={320}
       >
-        {/* Close button */}
-        <button
-          onClick={() => setMenuOpen(false)}
-          style={{
-            position: "absolute",
-            top: "24px",
-            right: "clamp(20px, 5vw, 80px)",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--gold)",
-            fontSize: "1.5rem",
-            lineHeight: 1,
-          }}
-          aria-label="Закрити"
-        >
-          ✕
-        </button>
+        <div id="mobile-menu" className="flex flex-col gap-2">
+          <p className="mb-2 font-sans text-[0.62rem] uppercase tracking-[0.22em] text-[rgba(171,140,84,0.55)]">
+            Навігація
+          </p>
 
-        {/* Logo in menu */}
-        <div
-          style={{
-            fontFamily: "var(--font-serif), serif",
-            fontSize: "1.6rem",
-            letterSpacing: "0.3em",
-            color: "var(--text-dim)",
-            marginBottom: "48px",
-          }}
-        >
-          KAYA
+          <nav className="flex flex-col gap-1" aria-label="Мобільна навігація">
+            {NAV_LINKS.map((link) => {
+              const active = activePage === link.key;
+              return (
+                <Link
+                  key={link.key}
+                  href={link.href}
+                  onClick={closeMenu}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "press rounded-[10px] px-3 py-3 font-serif text-[1.4rem] tracking-[0.04em] transition-colors duration-[var(--dur-popover)] ease-[var(--ease-out)]",
+                    active
+                      ? "bg-[rgba(201,169,110,0.08)] text-[var(--gold-light)]"
+                      : "text-[var(--text)] hover:bg-[rgba(201,169,110,0.06)] hover:text-[var(--gold-light)]"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {showAuth ? (
+            <>
+              <div className="my-4 h-px w-full bg-[rgba(201,169,110,0.14)]" aria-hidden="true" />
+
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/login"
+                  onClick={closeMenu}
+                  className="press ui-hover inline-flex h-12 w-full items-center justify-center rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(255,255,255,0.02)] font-sans text-[0.78rem] uppercase tracking-[0.22em] text-[rgba(223,217,207,0.85)] transition-[color,border-color,background-color] duration-[var(--dur-popover)] ease-[var(--ease-out)] hover:border-[rgba(227,196,136,0.7)] hover:bg-[rgba(201,169,110,0.06)]"
+                >
+                  Увійти
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={closeMenu}
+                  className="press ui-hover inline-flex h-12 w-full items-center justify-center rounded-[12px] border border-[rgba(201,169,110,0.5)] bg-[rgba(201,169,110,0.05)] font-sans text-[0.78rem] uppercase tracking-[0.22em] text-[rgba(245,239,230,0.96)] transition-[color,border-color,background-color,box-shadow] duration-[var(--dur-popover)] ease-[var(--ease-out)] hover:border-[rgba(227,196,136,0.92)] hover:bg-[rgba(201,169,110,0.09)] hover:shadow-[0_10px_26px_rgba(201,169,110,0.08)]"
+                >
+                  Реєстрація
+                </Link>
+              </div>
+            </>
+          ) : null}
         </div>
-
-        {/* Nav links */}
-        <nav style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", width: "100%" }}>
-          {navLinks.map((link) => (
-            <Link
-              key={link.key}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                fontFamily: "var(--font-serif), serif",
-                fontSize: "clamp(1.8rem, 8vw, 2.4rem)",
-                fontWeight: 300,
-                letterSpacing: "0.08em",
-                color: activePage === link.key ? "var(--gold-light)" : "var(--text)",
-                textDecoration: "none",
-                padding: "12px 40px",
-                transition: "color 0.2s",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Divider */}
-        <div
-          style={{
-            width: "40px",
-            height: "1px",
-            background: "rgba(201,169,110,0.25)",
-            margin: "32px 0",
-          }}
-        />
-
-        {/* Auth links */}
-        {showAuth && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: "0.85rem",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "var(--text-dim)",
-                textDecoration: "none",
-              }}
-            >
-              Увійти
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMenuOpen(false)}
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: "0.85rem",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "var(--gold-light)",
-                textDecoration: "none",
-                border: "1px solid rgba(201,169,110,0.4)",
-                padding: "12px 32px",
-              }}
-            >
-              Реєстрація
-            </Link>
-          </div>
-        )}
-      </div>
+      </Sheet>
     </>
   );
 }
