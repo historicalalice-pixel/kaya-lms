@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Starfield } from "@/components/ui";
+import { Starfield, Input, Button } from "@/components/ui";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -13,15 +13,12 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
       setLoading(true);
-
       const supabase = createClient();
-
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
@@ -42,87 +39,80 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
+    <div className="flex min-h-screen flex-col overflow-hidden bg-[var(--bg)]">
       <Starfield count={150} />
 
       <header className="relative z-10 w-full">
-        <div className="flex items-center justify-center px-6 pt-6 pb-4 md:px-10 md:pt-8 md:pb-5">
+        <div className="flex items-center justify-center px-6 pb-4 pt-6 md:px-10 md:pb-5 md:pt-8">
           <Link
             href="/home"
-            className="font-serif text-[2rem] md:text-[2.35rem] tracking-[0.24em] text-[rgba(245,239,230,0.92)] hover:text-[var(--text)] transition-colors duration-300"
+            className="press font-serif text-[2rem] tracking-[0.24em] text-[rgba(245,239,230,0.92)] transition-colors duration-[var(--dur-popover)] ease-[var(--ease-out)] hover:text-[var(--text)] md:text-[2.35rem]"
           >
             KAYA
           </Link>
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-6 md:px-10 md:py-8">
+      <main className="relative z-10 flex flex-1 items-center justify-center px-6 py-6 md:px-10 md:py-8">
         <div className="w-full max-w-[500px] md:translate-y-4">
-          <div className="text-center mb-8 md:mb-10">
+          <div className="mb-8 text-center md:mb-10">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-[0.95rem] text-[rgba(245,239,230,0.62)] hover:text-[var(--gold-light)] transition-colors duration-300 mb-5"
+              className="mb-5 inline-flex items-center gap-2 font-sans text-[0.95rem] text-[rgba(245,239,230,0.62)] transition-colors duration-[var(--dur-popover)] ease-[var(--ease-out)] hover:text-[var(--gold-light)]"
             >
               <span aria-hidden="true">←</span>
-              <span className="font-sans">Назад до входу</span>
+              <span>Назад до входу</span>
             </Link>
-
-            <h1 className="font-serif text-[2.4rem] leading-none md:text-[3.2rem] font-light text-[rgba(245,239,230,0.96)] mb-3">
+            <h1 className="mb-3 font-serif text-[2.4rem] font-light leading-none text-[rgba(245,239,230,0.96)] md:text-[3.2rem]">
               Відновлення пароля
             </h1>
-
-            <p className="font-sans text-[1rem] md:text-[1.08rem] text-[rgba(245,239,230,0.72)]">
+            <p className="font-sans text-[1rem] text-[rgba(245,239,230,0.72)] md:text-[1.08rem]">
               Введіть email, і ми надішлемо вам посилання для скидання пароля
             </p>
           </div>
 
-          <div className="rounded-[20px] border border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,14,0.3)] backdrop-blur-[6px] px-5 py-7 md:px-7 md:py-9 shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_14px_40px_rgba(0,0,0,0.24)]">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block font-sans text-[0.94rem] text-[rgba(245,239,230,0.78)] mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  autoComplete="email"
-                  required
-                  className="w-full h-[54px] rounded-[12px] border border-[rgba(201,169,110,0.22)] bg-[rgba(201,169,110,0.045)] px-4 font-sans text-[1rem] text-[rgba(245,239,230,0.94)] placeholder:text-[rgba(245,239,230,0.34)] outline-none transition-all duration-300 focus:border-[rgba(227,196,136,0.88)] focus:bg-[rgba(201,169,110,0.075)] focus:shadow-[0_0_0_4px_rgba(201,169,110,0.08)]"
-                />
-              </div>
+          <div className="rounded-[20px] border border-[rgba(201,169,110,0.12)] bg-[rgba(10,10,14,0.3)] px-5 py-7 backdrop-blur-[6px] shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_14px_40px_rgba(0,0,0,0.24)] md:px-7 md:py-9">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <Input
+                label="Email"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                autoComplete="email"
+                required
+              />
 
-              {errorMessage && (
-                <p className="font-sans text-[0.92rem] text-red-400">
+              {errorMessage ? (
+                <p role="alert" className="font-sans text-[0.92rem] text-red-400">
                   {errorMessage}
                 </p>
-              )}
+              ) : null}
 
-              {successMessage && (
-                <p className="font-sans text-[0.92rem] text-emerald-400">
+              {successMessage ? (
+                <p role="status" className="font-sans text-[0.92rem] text-emerald-400">
                   {successMessage}
                 </p>
-              )}
+              ) : null}
 
-              <button
+              <Button
                 type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth
+                isLoading={loading}
                 disabled={loading}
-                className="w-full h-[56px] rounded-[14px] border border-[rgba(201,169,110,0.5)] bg-[rgba(201,169,110,0.05)] font-sans text-[0.97rem] font-medium uppercase tracking-[0.22em] text-[rgba(245,239,230,0.96)] transition-all duration-300 hover:border-[rgba(227,196,136,0.92)] hover:bg-[rgba(201,169,110,0.09)] hover:shadow-[0_10px_26px_rgba(201,169,110,0.08),inset_0_0_0_1px_rgba(255,255,255,0.03)] active:scale-[0.995] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? "Надсилання..." : "Надіслати посилання"}
-              </button>
+              </Button>
             </form>
 
-            <p className="text-center mt-8 md:mt-9 font-sans text-[0.98rem] text-[rgba(245,239,230,0.62)]">
+            <p className="mt-7 text-center font-sans text-[0.94rem] text-[rgba(245,239,230,0.64)]">
               Згадали пароль?{" "}
               <Link
                 href="/login"
-                className="text-[rgba(227,196,136,0.96)] hover:text-[var(--gold-light)] hover:underline underline-offset-4 transition-colors duration-300"
+                className="text-[rgba(227,196,136,0.96)] transition-colors duration-[var(--dur-popover)] ease-[var(--ease-out)] hover:text-[var(--gold-light)]"
               >
                 Увійти
               </Link>
