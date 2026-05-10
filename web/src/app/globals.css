@@ -1,14 +1,46 @@
 @import "tailwindcss";
 
+/* =====================================================
+   DESIGN TOKENS
+   ===================================================== */
 :root {
+  /* Color */
   --bg: #0a0a0c;
   --gold: #c9a96e;
   --gold-light: #e2c992;
   --gold-dim: #8a7444;
   --text: #e8e4dd;
   --text-dim: #9a958d;
+
+  /* Surfaces */
+  --surface-1: rgba(255, 255, 255, 0.02);
+  --surface-2: rgba(201, 169, 110, 0.05);
+  --border-soft: rgba(201, 169, 110, 0.12);
+  --border: rgba(201, 169, 110, 0.22);
+  --border-strong: rgba(201, 169, 110, 0.4);
+
+  /* Easing — Emil-style strong curves (never `ease-in` for UI) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Durations — UI animations stay under 300ms */
+  --dur-press: 160ms;
+  --dur-popover: 200ms;
+  --dur-modal: 250ms;
+  --dur-sheet: 320ms;
+  --dur-hero: 900ms; /* rare/first-time animations may be longer */
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
 }
 
+/* =====================================================
+   FONTS
+   ===================================================== */
 .font-serif {
   font-family: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
   font-weight: 300;
@@ -18,6 +50,9 @@
   font-family: var(--font-sans), 'Manrope', sans-serif;
 }
 
+/* =====================================================
+   RESET
+   ===================================================== */
 * {
   margin: 0;
   padding: 0;
@@ -40,7 +75,10 @@ body {
   max-width: 100vw;
 }
 
-/* ===== STARFIELD ===== */
+/* =====================================================
+   STARFIELD (legacy DOM-based; kept for backward-compat).
+   Prefer <Starfield/> canvas component for new code.
+   ===================================================== */
 .starfield {
   position: fixed;
   top: 0; left: 0;
@@ -65,7 +103,9 @@ body {
   50% { opacity: 0.8; }
 }
 
-/* ===== CORNER FRAMES ===== */
+/* =====================================================
+   CORNER FRAMES
+   ===================================================== */
 .corner {
   position: absolute;
   width: 40px;
@@ -94,7 +134,9 @@ body {
 .corner--br::before { bottom: 0; right: 0; width: 1px; height: 40px; }
 .corner--br::after { bottom: 0; right: 0; width: 40px; height: 1px; }
 
-/* ===== HERO ===== */
+/* =====================================================
+   HERO
+   ===================================================== */
 .hero {
   position: relative;
   z-index: 2;
@@ -119,7 +161,7 @@ body {
   pointer-events: none;
 }
 
-/* ===== GOLD LINE ===== */
+/* GOLD LINE */
 .hero-line {
   width: 200px;
   height: 1px;
@@ -144,7 +186,9 @@ body {
   background: var(--gold);
 }
 
-/* ===== CTA BUTTON ===== */
+/* =====================================================
+   CTA — gold button (ease-out, specific properties)
+   ===================================================== */
 .hero-cta {
   display: inline-block;
   padding: 16px 40px;
@@ -156,13 +200,21 @@ body {
   font-weight: 400;
   letter-spacing: 0.35em;
   text-transform: uppercase;
-  transition: all 0.5s ease;
   position: relative;
   overflow: hidden;
   cursor: pointer;
   background: transparent;
   text-align: center;
   min-width: 220px;
+  transition:
+    border-color var(--dur-popover) var(--ease-out),
+    color var(--dur-popover) var(--ease-out),
+    box-shadow var(--dur-popover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+
+.hero-cta:active {
+  transform: scale(0.97);
 }
 
 .hero-cta::before {
@@ -171,17 +223,7 @@ body {
   top: 0; left: -100%;
   width: 100%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(201,169,110,0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.hero-cta:hover {
-  border-color: var(--gold);
-  color: #fff;
-  box-shadow: 0 0 30px rgba(201,169,110,0.15);
-}
-
-.hero-cta:hover::before {
-  left: 100%;
+  transition: left 600ms var(--ease-out);
 }
 
 .hero-cta-secondary {
@@ -193,16 +235,19 @@ body {
   text-transform: uppercase;
   color: var(--gold-light);
   border: 1px solid rgba(201, 169, 110, 0.2);
-  transition: all 0.4s;
   text-align: center;
   min-width: 220px;
+  transition:
+    border-color var(--dur-popover) var(--ease-out),
+    color var(--dur-popover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 
-.hero-cta-secondary:hover {
-  border-color: var(--gold-dim);
+.hero-cta-secondary:active {
+  transform: scale(0.97);
 }
 
-/* ===== HORIZON ===== */
+/* HORIZON */
 .horizon-glow {
   position: fixed;
   bottom: 0; left: 0;
@@ -216,21 +261,19 @@ body {
   pointer-events: none;
 }
 
-/* ===== NAV & CARDS ===== */
+/* =====================================================
+   NAV / HEADER / CARD legacy classes
+   ===================================================== */
 .nav-link {
   font-family: var(--font-sans);
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--text-dim);
-  transition: color 0.3s;
   background: none;
   border: none;
   cursor: pointer;
-}
-
-.nav-link:hover {
-  color: var(--gold-light);
+  transition: color var(--dur-popover) var(--ease-out);
 }
 
 .header-btn {
@@ -241,58 +284,146 @@ body {
   color: var(--gold-light);
   border: 1px solid var(--gold-dim);
   padding: 10px 20px;
-  transition: all 0.4s;
+  transition:
+    border-color var(--dur-popover) var(--ease-out),
+    color var(--dur-popover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 
-.header-btn:hover {
-  border-color: var(--gold);
-  color: #fff;
+.header-btn:active {
+  transform: scale(0.97);
 }
 
 .kaya-card {
   padding: 32px;
   border: 1px solid rgba(201, 169, 110, 0.1);
   background: rgba(201, 169, 110, 0.02);
-  transition: all 0.5s;
+  transition:
+    border-color var(--dur-popover) var(--ease-out),
+    background-color var(--dur-popover) var(--ease-out);
 }
 
-.kaya-card:hover {
-  border-color: rgba(201, 169, 110, 0.3);
-  background: rgba(201, 169, 110, 0.04);
+/* Hover effects — only on real pointer devices, never on touch */
+@media (hover: hover) and (pointer: fine) {
+  .hero-cta:hover {
+    border-color: var(--gold);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(201,169,110,0.15);
+  }
+
+  .hero-cta:hover::before {
+    left: 100%;
+  }
+
+  .hero-cta-secondary:hover {
+    border-color: var(--gold-dim);
+  }
+
+  .nav-link:hover {
+    color: var(--gold-light);
+  }
+
+  .header-btn:hover {
+    border-color: var(--gold);
+    color: #fff;
+  }
+
+  .kaya-card:hover {
+    border-color: rgba(201, 169, 110, 0.3);
+    background: rgba(201, 169, 110, 0.04);
+  }
 }
 
-/* ===== ANIMATIONS ===== */
+/* =====================================================
+   ANIMATIONS — entering elements use ease-out
+   ===================================================== */
 @keyframes fadeDown {
   from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes fadeScale {
+  /* never start from scale(0); 0.95 keeps a visible "shape" */
   from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-.animate-fade-down { animation: fadeDown 1s ease forwards; }
-.animate-fade-up { animation: fadeUp 1s ease forwards; }
-.animate-fade-in { animation: fadeIn 1s ease forwards; }
-.animate-fade-scale { animation: fadeScale 1.2s ease forwards; }
+.animate-fade-down  { animation: fadeDown  var(--dur-hero) var(--ease-out) forwards; }
+.animate-fade-up    { animation: fadeUp    var(--dur-hero) var(--ease-out) forwards; }
+.animate-fade-in    { animation: fadeIn    var(--dur-hero) var(--ease-out) forwards; }
+.animate-fade-scale { animation: fadeScale calc(var(--dur-hero) + 200ms) var(--ease-out) forwards; }
 
-/* ===== MOBILE ===== */
+/* =====================================================
+   PRESS UTILITY — apply to any pressable element
+   ===================================================== */
+.press {
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.press:active {
+  transform: scale(0.97);
+}
+
+/* =====================================================
+   HOVER GATE for UI primitives
+   Components mark hover effects with `.ui-hover` and Tailwind's
+   plain `hover:` utilities. This block ensures those :hover states
+   only paint on real pointer devices, not on touch-tap.
+   ===================================================== */
+@media not all and (hover: hover) and (pointer: fine) {
+  .ui-hover:hover {
+    /* Reset paint-affecting hover declarations on touch devices */
+    border-color: inherit !important;
+    background-color: inherit !important;
+    color: inherit !important;
+    box-shadow: none !important;
+  }
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
 @media (max-width: 768px) {
   .hero-cta,
   .hero-cta-secondary {
     min-width: 180px;
     padding: 14px 24px;
     font-size: 0.65rem;
+  }
+}
+
+/* =====================================================
+   REDUCED MOTION — keep opacity/colour, remove movement
+   ===================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .star {
+    animation: none !important;
+    opacity: 0.45 !important;
+  }
+
+  .press:active,
+  .hero-cta:active,
+  .hero-cta-secondary:active,
+  .header-btn:active {
+    transform: none !important;
   }
 }

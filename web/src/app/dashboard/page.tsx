@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Starfield } from "@/components/ui";
 
 type NavigationItem = { label: string; href?: string; badge?: string };
 type StatItem = { label: string; value: string; hint: string };
@@ -217,7 +218,6 @@ function DotLink({ href, children }: { href: string; children: ReactNode }) {
 export default function DashboardPage() {
   const pathname = usePathname();
   const router = useRouter();
-  const starfieldRef = useRef<HTMLDivElement>(null);
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Учень");
@@ -232,29 +232,6 @@ export default function DashboardPage() {
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  // Starfield
-  useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-    field.innerHTML = "";
-    const stars: HTMLDivElement[] = [];
-    for (let i = 0; i < 160; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-      const r = Math.random();
-      if (r < 0.55) star.classList.add("star--small");
-      else if (r < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-      star.style.left = `${Math.random() * 100}%`;
-      star.style.top = `${Math.random() * 100}%`;
-      star.style.setProperty("--dur", `${2.5 + Math.random() * 5}s`);
-      star.style.setProperty("--delay", `${Math.random() * 7}s`);
-      field.appendChild(star);
-      stars.push(star);
-    }
-    return () => stars.forEach((s) => s.remove());
   }, []);
 
   // Auth
@@ -376,7 +353,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ position: "relative", minHeight: "100vh", overflowX: "hidden", background: "#080608" }}>
-      <div ref={starfieldRef} className="starfield" aria-hidden="true" />
+      <Starfield count={160} />
 
       {/* Global ambient */}
       <div aria-hidden="true" style={{ pointerEvents: "none", position: "absolute", inset: 0, zIndex: 0, background: "radial-gradient(ellipse 80% 55% at 55% 0%, rgba(160,95,15,0.14), transparent 65%)" }} />

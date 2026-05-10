@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import LogoutButton from "@/app/components/logout-button";
 import { createClient } from "@/lib/supabase/client";
+import { Starfield } from "@/components/ui";
 
 function WaxSeal({
   label,
@@ -224,34 +225,11 @@ function WaxSeal({
 }
 
 export default function HomePage() {
-  const starfieldRef = useRef<HTMLDivElement>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-    field.innerHTML = "";
-    const stars: HTMLDivElement[] = [];
-    for (let i = 0; i < 150; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-      const rand = Math.random();
-      if (rand < 0.55) star.classList.add("star--small");
-      else if (rand < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-      star.style.setProperty("--dur", `${2 + Math.random() * 5}s`);
-      star.style.setProperty("--delay", `${Math.random() * 6}s`);
-      star.style.left = `${Math.random() * 100}%`;
-      star.style.top = `${Math.random() * 100}%`;
-      field.appendChild(star);
-      stars.push(star);
-    }
-    return () => { stars.forEach((s) => s.remove()); };
-  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -296,7 +274,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
-      <div ref={starfieldRef} className="starfield" />
+      <Starfield count={150} />
 
       <header className="relative z-20 w-full">
         <div

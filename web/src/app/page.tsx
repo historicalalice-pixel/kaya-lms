@@ -1,36 +1,13 @@
-"use client";
+import { Starfield } from "@/components/ui";
 
-import { useEffect, useRef } from "react";
+export const metadata = {
+  title: "KAYA — Платформа з вивчення історії України",
+};
 
 export default function Home() {
-  const starfieldRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-
-    for (let i = 0; i < 250; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-
-      const rand = Math.random();
-      if (rand < 0.55) star.classList.add("star--small");
-      else if (rand < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-
-      star.style.setProperty("--dur", (2 + Math.random() * 5) + "s");
-      star.style.setProperty("--delay", (Math.random() * 6) + "s");
-
-      star.style.left = Math.random() * 100 + "%";
-      star.style.top = Math.random() * 100 + "%";
-
-      field.appendChild(star);
-    }
-  }, []);
-
   return (
     <div>
-      <div ref={starfieldRef} className="starfield" />
+      <Starfield count={250} />
 
       <div className="fixed inset-0 z-[1] pointer-events-none">
         <div className="corner corner--tl" />
@@ -45,6 +22,7 @@ export default function Home() {
         <div
           className="w-3 h-3 rounded-full border border-[var(--gold-dim)] relative mb-28 opacity-0 animate-fade-down"
           style={{ animationDelay: "0.3s" }}
+          aria-hidden="true"
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
         </div>
@@ -75,7 +53,11 @@ export default function Home() {
           Пройди крізь час. Відчуй кожну епоху.
         </p>
 
-        <a href="/home" className="hero-cta opacity-0 animate-fade-up" style={{ animationDelay: "1.7s" }}>
+        <a
+          href="/home"
+          className="hero-cta opacity-0 animate-fade-up"
+          style={{ animationDelay: "1.7s" }}
+        >
           Увійти
         </a>
       </section>

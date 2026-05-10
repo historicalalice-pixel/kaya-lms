@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "@/app/components/header";
+import { Starfield } from "@/components/ui";
 
 type Course = {
   id: string;
@@ -12,7 +13,6 @@ type Course = {
 };
 
 export default function CoursesPage() {
-  const starfieldRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const positionRef = useRef(0);
   const isDraggingRef = useRef(false);
@@ -35,25 +35,6 @@ export default function CoursesPage() {
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  }, []);
-
-  // Зірки
-  useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-    for (let i = 0; i < 150; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-      const rand = Math.random();
-      if (rand < 0.55) star.classList.add("star--small");
-      else if (rand < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-      star.style.setProperty("--dur", (2 + Math.random() * 5) + "s");
-      star.style.setProperty("--delay", (Math.random() * 6) + "s");
-      star.style.left = Math.random() * 100 + "%";
-      star.style.top = Math.random() * 100 + "%";
-      field.appendChild(star);
-    }
   }, []);
 
   // Карусель
@@ -111,7 +92,7 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
-      <div ref={starfieldRef} className="starfield" />
+      <Starfield count={150} />
 
       <Header activePage="courses" />
 

@@ -1,41 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Starfield } from "@/components/ui";
 
 export default function LoginPage() {
   const router = useRouter();
-  const starfieldRef = useRef<HTMLDivElement>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-    field.innerHTML = "";
-    const stars: HTMLDivElement[] = [];
-    for (let i = 0; i < 150; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-      const rand = Math.random();
-      if (rand < 0.55) star.classList.add("star--small");
-      else if (rand < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-      star.style.setProperty("--dur", `${2 + Math.random() * 5}s`);
-      star.style.setProperty("--delay", `${Math.random() * 6}s`);
-      star.style.left = `${Math.random() * 100}%`;
-      star.style.top = `${Math.random() * 100}%`;
-      field.appendChild(star);
-      stars.push(star);
-    }
-    return () => { stars.forEach((star) => star.remove()); };
-  }, []);
 
   const redirectByRole = async (userId: string) => {
     const supabase = createClient();
@@ -108,7 +86,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden bg-[var(--bg)]">
-      <div ref={starfieldRef} className="starfield" aria-hidden="true" />
+      <Starfield count={150} />
 
       <header className="relative z-10 w-full">
         <div className="flex items-center justify-center px-6 pt-6 pb-4 md:px-10 md:pt-8 md:pb-5">

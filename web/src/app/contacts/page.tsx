@@ -1,33 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Header from "@/app/components/header";
+import { Starfield } from "@/components/ui";
 
 export default function ContactsPage() {
-  const starfieldRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const field = starfieldRef.current;
-    if (!field) return;
-    for (let i = 0; i < 150; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-      const rand = Math.random();
-      if (rand < 0.55) star.classList.add("star--small");
-      else if (rand < 0.85) star.classList.add("star--medium");
-      else star.classList.add("star--large");
-      star.style.setProperty("--dur", (2 + Math.random() * 5) + "s");
-      star.style.setProperty("--delay", (Math.random() * 6) + "s");
-      star.style.left = Math.random() * 100 + "%";
-      star.style.top = Math.random() * 100 + "%";
-      field.appendChild(star);
-    }
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
-      <div ref={starfieldRef} className="starfield" />
+      <Starfield count={150} />
       <Header activePage="contacts" />
       <main className="relative z-10 flex-1 py-10 md:py-16 px-5 md:px-6">
         <div className="max-w-[800px] mx-auto">
