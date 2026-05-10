@@ -16,10 +16,11 @@ const FOCUSABLE_SELECTOR = [
  * - Restores focus to whatever was active when the trap turned on.
  * - Tab / Shift+Tab cycles within the container.
  *
- * Intentionally minimal — no portal, no stacking. Use one trap at a time.
+ * Generic over the ref's element type so callers can pass any HTMLElement
+ * subclass (RefObject is invariant in React 19's typings).
  */
-export function useFocusTrap(
-  containerRef: RefObject<HTMLElement | null>,
+export function useFocusTrap<T extends HTMLElement>(
+  containerRef: RefObject<T | null>,
   enabled: boolean
 ) {
   useEffect(() => {

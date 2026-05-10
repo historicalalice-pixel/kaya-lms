@@ -7,7 +7,6 @@ type Variant = "panel" | "inset" | "subtle";
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   variant?: Variant;
-  as?: "div" | "article" | "section";
   /** Show subtle hover treatment. Touch devices auto-suppress via .ui-hover gate. */
   interactive?: boolean;
   children?: ReactNode;
@@ -30,19 +29,23 @@ const interactiveCls =
   "ui-hover transition-[border-color,background-color] duration-[var(--dur-popover)] ease-[var(--ease-out)] " +
   "hover:border-[rgba(201,169,110,0.34)] hover:bg-[rgba(201,169,110,0.04)]";
 
+/**
+ * Container card. Always renders a <div> for predictable typing —
+ * if you need <article>/<section> semantics, wrap Card or use the
+ * appropriate landmark on the parent.
+ */
 const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
-  { children, className, variant = "panel", as = "article", interactive, ...rest },
+  { children, className, variant = "panel", interactive, ...rest },
   ref
 ) {
-  const Tag = as;
   return (
-    <Tag
-      ref={ref as never}
+    <div
+      ref={ref}
       className={cn(base, variants[variant], interactive && interactiveCls, className)}
       {...rest}
     >
       {children}
-    </Tag>
+    </div>
   );
 });
 
