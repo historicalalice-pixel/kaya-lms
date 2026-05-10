@@ -4,136 +4,25 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "r
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import TeacherDashboardBuilder from "@/components/dashboard/TeacherDashboardBuilder";
-
-type SectionKey =
-  | "dashboard"
-  | "courses"
-  | "lessons"
-  | "groups"
-  | "students"
-  | "assignments"
-  | "tests"
-  | "gradebook"
-  | "attendance"
-  | "analytics"
-  | "messages"
-  | "files"
-  | "calendar"
-  | "drafts"
-  | "archive"
-  | "settings";
-
-type Tone = "gold" | "green" | "blue" | "red" | "gray";
-
-type CourseStatus = "draft" | "scheduled" | "published" | "hidden" | "archived";
-type StudentStatus = "active" | "inactive" | "blocked";
-type AssignmentStatus = "missing" | "submitted" | "checked";
-type FileType = "pdf" | "presentation" | "doc" | "video" | "other";
-type MessageChannel = "lms" | "telegram";
-
-type Student = {
-  id: string;
-  name: string;
-  group: string;
-  email: string;
-  phone: string;
-  telegram: string;
-  note: string;
-  status: StudentStatus;
-  lastLogin: string;
-  progress: number;
-};
-
-type Course = {
-  id: string;
-  title: string;
-  topic: string;
-  lessons: number;
-  status: CourseStatus;
-  publishAt: string;
-};
-
-type Assignment = {
-  id: string;
-  title: string;
-  target: string;
-  deadline: string;
-  status: AssignmentStatus;
-  comment: string;
-};
-
-type SearchResult = {
-  id: string;
-  kind: string;
-  title: string;
-  subtitle: string;
-  section: SectionKey;
-};
-
-type DbCourse = {
-  id: string;
-  title: string;
-  topic: string;
-  status: CourseStatus;
-  publish_at: string | null;
-  lessons_count: number;
-  created_at: string;
-};
-
-type DbLesson = {
-  id: string;
-  title: string;
-  course_id: string | null;
-  group_name: string;
-  status: CourseStatus;
-  publish_at: string | null;
-  zoom_link: string | null;
-  content_summary: string;
-  created_at: string;
-};
-
-type DbGroup = {
-  id: string;
-  name: string;
-  invite_code: string;
-  invite_url: string;
-  archived: boolean;
-  created_at: string;
-};
-
-type DbStudent = {
-  id: string;
-  full_name: string;
-  phone: string | null;
-  email: string;
-  telegram: string | null;
-  note: string;
-  status: StudentStatus;
-  last_login_at: string | null;
-  progress: number;
-  group_id: string | null;
-  group_name: string;
-  created_at: string;
-};
-
-const sections: Array<{ key: SectionKey; label: string; note: string }> = [
-  { key: "dashboard", label: "Дашборд", note: "Ключові події та навантаження" },
-  { key: "courses", label: "Курси", note: "Створення, публікація, архів" },
-  { key: "lessons", label: "Уроки", note: "Контент, Zoom, графік" },
-  { key: "groups", label: "Групи", note: "Запрошення, призначення" },
-  { key: "students", label: "Учні", note: "Картки, статуси, доступ" },
-  { key: "assignments", label: "Завдання", note: "Призначення та перевірка" },
-  { key: "tests", label: "Тести", note: "Імпорт із zno.osvita.ua" },
-  { key: "gradebook", label: "Журнал оцінок", note: "Оцінки та експорт" },
-  { key: "attendance", label: "Відвідуваність", note: "Присутність і причини" },
-  { key: "analytics", label: "Аналітика", note: "Прогрес і динаміка" },
-  { key: "messages", label: "Повідомлення", note: "LMS + Telegram" },
-  { key: "files", label: "Файли", note: "Матеріали та фільтри" },
-  { key: "calendar", label: "Календар", note: "Уроки й дедлайни" },
-  { key: "drafts", label: "Чернетки", note: "Повернення до редагування" },
-  { key: "archive", label: "Архів", note: "Відновлення і видалення" },
-  { key: "settings", label: "Налаштування", note: "Профіль та інтеграції" },
-];
+import {
+  SECTIONS,
+  STATUS_LABEL,
+  STATUS_TONE,
+  type Assignment,
+  type Course,
+  type CourseStatus,
+  type DbCourse,
+  type DbGroup,
+  type DbLesson,
+  type DbStudent,
+  type FileType,
+  type MessageChannel,
+  type SearchResult,
+  type SectionKey,
+  type Student,
+  type StudentStatus,
+  type Tone,
+} from "@/lib/types/teacher";
 
 const tones: Record<Tone, { bg: string; border: string; color: string }> = {
   gold: { bg: "rgba(201,169,110,0.10)", border: "1px solid rgba(201,169,110,0.22)", color: "rgba(230,202,148,0.95)" },
@@ -143,33 +32,11 @@ const tones: Record<Tone, { bg: string; border: string; color: string }> = {
   gray: { bg: "rgba(150,145,136,0.12)", border: "1px solid rgba(150,145,136,0.22)", color: "rgba(206,202,195,0.90)" },
 };
 
-const statusTone: Record<CourseStatus | StudentStatus | AssignmentStatus, Tone> = {
-  draft: "gray",
-  scheduled: "blue",
-  published: "green",
-  hidden: "gold",
-  archived: "red",
-  active: "green",
-  inactive: "gray",
-  blocked: "red",
-  missing: "red",
-  submitted: "blue",
-  checked: "green",
-};
-
-const statusLabel: Record<CourseStatus | StudentStatus | AssignmentStatus, string> = {
-  draft: "Чернетка",
-  scheduled: "Заплановано",
-  published: "Опубліковано",
-  hidden: "Приховано",
-  archived: "Архів",
-  active: "Активний",
-  inactive: "Неактивний",
-  blocked: "Заблокований",
-  missing: "Не здано",
-  submitted: "На перевірці",
-  checked: "Перевірено",
-};
+// Aliases for the locally-used names to keep the rest of the file untouched.
+// Once the file is split into sections we'll inline these calls.
+const sections = SECTIONS;
+const statusTone = STATUS_TONE;
+const statusLabel = STATUS_LABEL;
 
 const PAGE_MAX_WIDTH = 1680;
 
